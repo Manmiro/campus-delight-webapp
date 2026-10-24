@@ -5,11 +5,11 @@ import type { Json } from "@/integrations/supabase/types";
 const PAYSTACK_BASE = "https://api.paystack.co";
 function paymentSecret() {
   const secret = process.env["PAYSTACK_SECRET_KEY"];
-  if (!secret) throw new Error("Card payments are not configured yet");
+  if (!secret) throw new Error("Paystack payments are not configured yet");
   return secret;
 }
 
-export async function startCardPayment(input: PaymentInput, customerId: string, email: string, outletId: string) {
+export async function startPayment(input: PaymentInput, customerId: string, email: string, outletId: string) {
   paymentSecret();
   const origin = new URL(input.origin);
   // Only return to this app; never accept an arbitrary external callback.
@@ -17,16 +17,7 @@ export async function startCardPayment(input: PaymentInput, customerId: string, 
   if (!allowed.includes(origin.origin) && !(origin.hostname === "localhost" && origin.port === "8080")) throw new Error("Invalid payment return address");
   const reference = `CDPS-${crypto.randomUUID()}`;
   let amountKobo = input.amountKobo ?? 0;
-  let relatedId = input.relatedId;
-  if (input.purpose === "order_payment") {
-    if (!input.items) throw new Error("Order items required");
-    const { data, error } = await db.rpc("prepare_card_order", { p_customer_id: customerId, p_items: input.items, p_reference: reference });
-    if (error || !data) throw new Error(error?.message ?? "Could not prepare order");
-    relatedId = data;
-    const { data: order, error: orderError } = await db.from("orders").select("total_kobo").eq("id", data).single();
-    if (orderError || !order) throw new Error("Could not read order total");
-    amountKobo = order.total_kobo;
-  } else {
+  const relatedId = input.relatedId;
     if (input.purpose === "subscription") {
       const { data: sub, error } = await db.from("subscriptions").select("id,plan,tier,status,outlet_id").eq("id", input.relatedId ?? "").eq("customer_id", customerId).single();
       if (error || !sub || sub.outlet_id !== outletId || !["awaiting_payment", "renewal_pending"].includes(sub.status)) throw new Error("Subscription is not awaiting payment");
@@ -39,13 +30,11 @@ export async function startCardPayment(input: PaymentInput, customerId: string, 
     if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0) throw new Error("Invalid amount");
     const { error } = await db.from("payment_transactions").insert({ customer_id: customerId, purpose: input.purpose, amount_kobo: amountKobo, paystack_reference: reference, status: "pending", related_id: relatedId ?? null });
     if (error) throw new Error(error.message);
-  }
   try {
     const authorizationUrl = await paystackInitialize({ email, amountKobo, reference, callbackUrl: `${origin.origin}/payment/callback` });
     return { authorizationUrl, reference };
   } catch (error) {
     await db.from("payment_transactions").update({ status: "failed" }).eq("paystack_reference", reference);
-    if (input.purpose === "order_payment" && relatedId) await db.from("orders").update({ status: "cancelled" }).eq("id", relatedId).eq("status", "pending");
     throw error;
   }
 }
@@ -54,12 +43,12 @@ export async function paystackInitialize(input: { email: string; amountKobo: num
   const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
     method: "POST",
     headers: { Authorization: `Bearer ${paymentSecret()}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ email: input.email, amount: input.amountKobo, reference: input.reference, currency: "NGN", channels: ["card"], callback_url: input.callbackUrl }),
+    body: JSON.stringify({ email: input.email, amount: input.amountKobo, reference: input.reference, currency: "NGN", callback_url: input.callbackUrl }),
   });
   const json = await res.json() as { status: boolean; message: string; data?: { authorization_url: string } };
   if (!res.ok || !json.status || !json.data) {
-    if (json.message?.includes("No active channel")) throw new Error("Card payments are temporarily unavailable. Please use another payment method or contact Campus Delight.");
-    throw new Error(json.message || "Could not start card payment");
+    if (json.message?.includes("No active channel")) throw new Error("Paystack payments are temporarily unavailable. Please contact Campus Delight.");
+    throw new Error(json.message || "Could not start payment");
   }
   return json.data.authorization_url;
 }
