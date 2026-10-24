@@ -14,16 +14,266 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      outlet_staff: {
+        Row: {
+          id: string
+          outlet_id: string
+          staff_role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          outlet_id: string
+          staff_role: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          outlet_id?: string
+          staff_role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_staff_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outlets: {
+        Row: {
+          address: string | null
+          code: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          status: string
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+          status?: string
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          customer_code: string
+          email: string | null
+          full_name: string
+          id: string
+          is_active: boolean
+          outlet_id: string | null
+          phone: string | null
+          referral_code: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_code: string
+          email?: string | null
+          full_name: string
+          id: string
+          is_active?: boolean
+          outlet_id?: string | null
+          phone?: string | null
+          referral_code: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_code?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          outlet_id?: string | null
+          phone?: string | null
+          referral_code?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_accounts: {
+        Row: {
+          available_tokens: number
+          customer_id: string
+          locked_tokens: number
+          updated_at: string
+        }
+        Insert: {
+          available_tokens?: number
+          customer_id: string
+          locked_tokens?: number
+          updated_at?: string
+        }
+        Update: {
+          available_tokens?: number
+          customer_id?: string
+          locked_tokens?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_accounts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_ledger: {
+        Row: {
+          amount: number
+          available_after: number
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          locked_after: number
+          reference: string
+          related_customer_id: string | null
+          related_transfer_id: string | null
+          to_available: number
+          to_locked: number
+          tx_type: string
+        }
+        Insert: {
+          amount: number
+          available_after: number
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          locked_after: number
+          reference: string
+          related_customer_id?: string | null
+          related_transfer_id?: string | null
+          to_available?: number
+          to_locked?: number
+          tx_type: string
+        }
+        Update: {
+          amount?: number
+          available_after?: number
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          locked_after?: number
+          reference?: string
+          related_customer_id?: string | null
+          related_transfer_id?: string | null
+          to_available?: number
+          to_locked?: number
+          tx_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance_kobo: number
+          customer_id: string
+          updated_at: string
+        }
+        Insert: {
+          balance_kobo?: number
+          customer_id: string
+          updated_at?: string
+        }
+        Update: {
+          balance_kobo?: number
+          customer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallets_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_central_admin: { Args: never; Returns: boolean }
+      is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
+      is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
+      my_outlet_id: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "customer" | "outlet_manager" | "outlet_staff" | "central_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +400,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["customer", "outlet_manager", "outlet_staff", "central_admin"],
+    },
   },
 } as const
