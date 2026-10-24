@@ -69,10 +69,10 @@ function Landing() {
           <Logo />
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link to="/auth">Sign in</Link>
+              <Link to="/auth" search={{}}>Sign in</Link>
             </Button>
             <Button asChild>
-              <Link to="/auth">Get started</Link>
+              <Link to="/auth" search={{}}>Get started</Link>
             </Button>
           </div>
         </div>
@@ -100,7 +100,7 @@ function Landing() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button size="lg" asChild>
-                  <Link to="/auth">
+                  <Link to="/auth" search={{}}>
                     Create free account <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -267,7 +267,7 @@ function Landing() {
               Register in under two minutes and get 1,000 Campus Delight tokens on the house.
             </p>
             <Button size="lg" variant="secondary" className="mt-6" asChild>
-              <Link to="/auth">
+              <Link to="/auth" search={{}}>
                 Join Campus Delight <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

@@ -78,7 +78,7 @@ export function AppShell({
             <Button
               variant="outline"
               className="mt-6 w-full"
-              onClick={() => void signOut(queryClient, () => navigate({ to: "/auth", replace: true }))}
+              onClick={() => void signOut(queryClient, () => navigate({ to: "/auth", search: {}, replace: true }))}
             >
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </Button>
@@ -95,7 +95,7 @@ export function AppShell({
           <div className="mt-4 flex-1 overflow-y-auto">{navList}</div>
           <Button
             variant="outline"
-            onClick={() => void signOut(queryClient, () => navigate({ to: "/auth", replace: true }))}
+            onClick={() => void signOut(queryClient, () => navigate({ to: "/auth", search: {}, replace: true }))}
           >
             <LogOut className="mr-2 h-4 w-4" /> Sign out
           </Button>
