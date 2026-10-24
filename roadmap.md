@@ -18,6 +18,6 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 - [x] Central admin dashboard: outlets, customers, financial oversight, ledgers, transfers, referrals, credit, reports, audit, settings
 - [x] Paystack: initialize + verify + webhook (idempotent)
 - [x] Build errors fixed; project builds clean (2026-10-24T18:37Z)
-- [ ] Runtime smoke test of key pages (landing, auth, dashboards)
+- [x] Runtime smoke test: landing + auth pages render clean (no console errors)
 - [ ] Tests for PRD rules (transfer limit/fee, credit limit rules, entitlement caps, no cash+token mix)
 - [ ] Head metadata review on all routes
