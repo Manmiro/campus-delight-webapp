@@ -19,6 +19,7 @@ import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_au
 import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
 import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
 import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authenticated/_customer.tokens'
+import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 
 const IndexRoute = IndexRouteImport.update({
@@ -73,6 +74,12 @@ const AuthenticatedCustomerTokensRoute =
     path: '/tokens',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerTransferTokensRoute =
+  AuthenticatedCustomerTransferTokensRouteImport.update({
+    id: '/transfer-tokens',
+    path: '/transfer-tokens',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerWalletRoute =
   AuthenticatedCustomerWalletRouteImport.update({
     id: '/wallet',
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesByTo {
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesById {
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
   '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/_authenticated/_customer/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRouteTypes {
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/order'
     | '/subscription'
     | '/tokens'
+    | '/transfer-tokens'
     | '/wallet'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/order'
     | '/subscription'
     | '/tokens'
+    | '/transfer-tokens'
     | '/wallet'
   id:
     | '__root__'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/order'
     | '/_authenticated/_customer/subscription'
     | '/_authenticated/_customer/tokens'
+    | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
   fileRoutesById: FileRoutesById
 }
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerTokensRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/transfer-tokens': {
+      id: '/_authenticated/_customer/transfer-tokens'
+      path: '/transfer-tokens'
+      fullPath: '/transfer-tokens'
+      preLoaderRoute: typeof AuthenticatedCustomerTransferTokensRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/wallet': {
       id: '/_authenticated/_customer/wallet'
       path: '/wallet'
@@ -249,6 +269,7 @@ interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
   AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
   AuthenticatedCustomerTokensRoute: typeof AuthenticatedCustomerTokensRoute
+  AuthenticatedCustomerTransferTokensRoute: typeof AuthenticatedCustomerTransferTokensRoute
   AuthenticatedCustomerWalletRoute: typeof AuthenticatedCustomerWalletRoute
 }
 
@@ -258,6 +279,8 @@ const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerSubscriptionRoute:
     AuthenticatedCustomerSubscriptionRoute,
   AuthenticatedCustomerTokensRoute: AuthenticatedCustomerTokensRoute,
+  AuthenticatedCustomerTransferTokensRoute:
+    AuthenticatedCustomerTransferTokensRoute,
   AuthenticatedCustomerWalletRoute: AuthenticatedCustomerWalletRoute,
 }
 

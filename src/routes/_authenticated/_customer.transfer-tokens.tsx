@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { tokenAccountQuery, tokenTransfersQuery } from "@/lib/queries";
+import { tokenAccountQuery, tokenTransfersQuery, profileQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/_customer/transfer-tokens"
 
 function TransferTokensPage() {
   const qc = useQueryClient();
+  const { data: me } = useSuspenseQuery(profileQuery);
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: history } = useSuspenseQuery(tokenTransfersQuery);
   const [identifier, setIdentifier] = useState("");
@@ -40,7 +41,10 @@ function TransferTokensPage() {
   });
 
   const amountNum = Number(amount) || 0;
-  const remainingToday = Math.max(0, 500 - (history?.filter((t) => t.sender_id === t.sender_id && t.status === "success" && new Date(t.created_at).toDateString() === new Date().toDateString()).reduce((a, t) => a + t.principal_tokens, 0) ?? 0));
+  const sentToday = history
+    .filter((t) => t.sender_id === me.id && t.status === "success" && new Date(t.created_at).toDateString() === new Date().toDateString())
+    .reduce((a, t) => a + t.principal_tokens, 0);
+  const remainingToday = Math.max(0, 500 - sentToday);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
@@ -85,18 +89,21 @@ function TransferTokensPage() {
                   <TableHead>Counterparty</TableHead>
                   <TableHead className="text-right">Principal</TableHead>
                   <TableHead className="text-right">Fee</TableHead>
+                  <TableHead>Reference</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.map((t) => {
-                  const outgoing = t.sender?.customer_code !== undefined && t.sender_id !== null && (t as any).sender_id;
+                  const outgoing = t.sender_id === me.id;
+                  const counterparty = outgoing ? t.recipient?.full_name : t.sender?.full_name;
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="whitespace-nowrap text-xs">{formatDateTime(t.created_at)}</TableCell>
-                      <TableCell className="text-xs">{t.sender_id === t.recipient_id ? "—" : (t as any).direction ?? ""}</TableCell>
-                      <TableCell className="text-xs">{(t.sender_id && t.recipient_id) ? "" : ""}</TableCell>
+                      <TableCell className="text-xs">{outgoing ? "Sent" : "Received"}</TableCell>
+                      <TableCell className="text-xs">{counterparty ?? "—"}</TableCell>
                       <TableCell className="text-right text-xs">{fmtTokens(t.principal_tokens)}</TableCell>
-                      <TableCell className="text-right text-xs">{fmtTokens(t.fee_tokens)}</TableCell>
+                      <TableCell className="text-right text-xs">{outgoing ? fmtTokens(t.fee_tokens) : "—"}</TableCell>
+                      <TableCell className="font-mono text-[11px]">{t.reference}</TableCell>
                     </TableRow>
                   );
                 })}
