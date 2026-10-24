@@ -127,7 +127,7 @@ function Landing() {
               <div className="rotate-2 rounded-[2rem] border border-border bg-card p-5 shadow-xl">
                 <div className="rounded-3xl bg-primary p-5 text-primary-foreground">
                   <p className="text-sm opacity-80">Good day, Ada</p>
-                  <p className="font-display text-2xl font-bold">Ebonyi University Outlet</p>
+                  <p className="font-display text-2xl font-bold">Ebonyi State University Outlet</p>
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-white/15 p-3">
                       <p className="text-xs opacity-80">Wallet</p>
