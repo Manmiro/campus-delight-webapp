@@ -3,6 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [ ] Add dashboard Eat now, pay later button and verify layouts on phones, tablets and desktops.
 - [x] Remove direct card checkout and restore original Paystack funding/subscription options; preserve verification safeguards and existing payment records. Verified signed-in pages and 22 rule tests.
 - [x] Require email confirmation after registration and restore email/password sign-in; hosted settings confirmed, rule tests and simulated unconfirmed-sign-in browser flow pass.
 - [ ] Verify actual confirmation email delivery and link-to-sign-in flow — requires access to a customer's confirmation email; no inbox available in this session.

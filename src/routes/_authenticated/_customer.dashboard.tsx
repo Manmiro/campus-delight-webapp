@@ -52,14 +52,18 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <Card className="border-0 bg-primary text-primary-foreground">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>
           <p className="font-display text-xl font-bold">{profile.outlet_id ? "Your Campus Delight outlet" : "No outlet yet"}</p>
           <p className="mt-1 font-mono text-xs opacity-80">ID: {profile.customer_code}</p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button asChild variant="secondary" className="h-auto min-h-11 whitespace-normal py-2.5">
+            <Link to="/credit"><CreditCard className="mr-2 h-4 w-4 shrink-0" /> Eat now, pay later <ArrowRight className="ml-2 h-4 w-4 shrink-0" /></Link>
+          </Button>
           <Button
             variant="secondary"
             size="sm"
-            className="mt-4"
+            className="h-auto min-h-11 whitespace-normal py-2.5"
             onClick={() => {
               void navigator.clipboard.writeText(referralLink);
               toast.success("Referral link copied");
@@ -67,6 +71,7 @@ function Dashboard() {
           >
             <Copy className="mr-2 h-4 w-4" /> Copy referral link
           </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -100,12 +105,12 @@ function Dashboard() {
             ) : (
               <ul className="divide-y divide-border">
                 {orders.slice(0, 5).map((o) => (
-                  <li key={o.id} className="flex items-center justify-between py-3 text-sm">
-                    <div>
-                      <p className="font-medium">{o.reference}</p>
+                  <li key={o.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 text-sm">
+                    <div className="min-w-0 break-words">
+                      <p className="break-all font-medium">{o.reference}</p>
                       <p className="text-xs text-muted-foreground">{formatDateTime(o.created_at)} · {o.order_items.map((i: { item_name: string; quantity: number }) => `${i.item_name} ×${i.quantity}`).join(", ")}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-right">
                       <p className="font-semibold">{o.total_kobo === 0 ? "Entitlement" : naira(o.total_kobo)}</p>
                       <StatusBadge status={o.status} />
                     </div>
