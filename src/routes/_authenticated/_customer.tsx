@@ -8,7 +8,7 @@ import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/_customer")({
   beforeLoad: async () => {
-    const role = await useServerFn(getMyRole)();
+    const role = await getMyRole();
     if (role !== "customer") {
       throw redirect({ to: role === "central_admin" ? "/admin" : "/outlet" });
     }
