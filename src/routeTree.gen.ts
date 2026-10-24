@@ -10,33 +10,247 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
+import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
+import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
+import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
+import { Route as AuthenticatedCustomerHistoryRouteImport } from './routes/_authenticated/_customer.history'
+import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
+import { Route as AuthenticatedCustomerProfileRouteImport } from './routes/_authenticated/_customer.profile'
+import { Route as AuthenticatedCustomerReferRouteImport } from './routes/_authenticated/_customer.refer'
+import { Route as AuthenticatedCustomerRepaymentsRouteImport } from './routes/_authenticated/_customer.repayments'
+import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
+import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authenticated/_customer.tokens'
+import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './routes/_authenticated/_customer.transfer-outlet'
+import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
+import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
+  id: '/_customer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PaymentCallbackRoute = PaymentCallbackRouteImport.update({
+  id: '/payment/callback',
+  path: '/payment/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCustomerCreditRoute =
+  AuthenticatedCustomerCreditRouteImport.update({
+    id: '/credit',
+    path: '/credit',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerDashboardRoute =
+  AuthenticatedCustomerDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerHistoryRoute =
+  AuthenticatedCustomerHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerOrderRoute =
+  AuthenticatedCustomerOrderRouteImport.update({
+    id: '/order',
+    path: '/order',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerProfileRoute =
+  AuthenticatedCustomerProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerReferRoute =
+  AuthenticatedCustomerReferRouteImport.update({
+    id: '/refer',
+    path: '/refer',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerRepaymentsRoute =
+  AuthenticatedCustomerRepaymentsRouteImport.update({
+    id: '/repayments',
+    path: '/repayments',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerSubscriptionRoute =
+  AuthenticatedCustomerSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerTokensRoute =
+  AuthenticatedCustomerTokensRouteImport.update({
+    id: '/tokens',
+    path: '/tokens',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerTransferOutletRoute =
+  AuthenticatedCustomerTransferOutletRouteImport.update({
+    id: '/transfer-outlet',
+    path: '/transfer-outlet',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerTransferTokensRoute =
+  AuthenticatedCustomerTransferTokensRouteImport.update({
+    id: '/transfer-tokens',
+    path: '/transfer-tokens',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerWalletRoute =
+  AuthenticatedCustomerWalletRouteImport.update({
+    id: '/wallet',
+    path: '/wallet',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/payment/callback': typeof PaymentCallbackRoute
+  '/credit': typeof AuthenticatedCustomerCreditRoute
+  '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/history': typeof AuthenticatedCustomerHistoryRoute
+  '/order': typeof AuthenticatedCustomerOrderRoute
+  '/profile': typeof AuthenticatedCustomerProfileRoute
+  '/refer': typeof AuthenticatedCustomerReferRoute
+  '/repayments': typeof AuthenticatedCustomerRepaymentsRoute
+  '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
+  '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
+  '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/payment/callback': typeof PaymentCallbackRoute
+  '/credit': typeof AuthenticatedCustomerCreditRoute
+  '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/history': typeof AuthenticatedCustomerHistoryRoute
+  '/order': typeof AuthenticatedCustomerOrderRoute
+  '/profile': typeof AuthenticatedCustomerProfileRoute
+  '/refer': typeof AuthenticatedCustomerReferRoute
+  '/repayments': typeof AuthenticatedCustomerRepaymentsRoute
+  '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
+  '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
+  '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
+  '/payment/callback': typeof PaymentCallbackRoute
+  '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
+  '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/_authenticated/_customer/history': typeof AuthenticatedCustomerHistoryRoute
+  '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
+  '/_authenticated/_customer/profile': typeof AuthenticatedCustomerProfileRoute
+  '/_authenticated/_customer/refer': typeof AuthenticatedCustomerReferRoute
+  '/_authenticated/_customer/repayments': typeof AuthenticatedCustomerRepaymentsRoute
+  '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/_authenticated/_customer/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
+  '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
+  '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/payment/callback'
+    | '/credit'
+    | '/dashboard'
+    | '/history'
+    | '/order'
+    | '/profile'
+    | '/refer'
+    | '/repayments'
+    | '/subscription'
+    | '/tokens'
+    | '/transfer-outlet'
+    | '/transfer-tokens'
+    | '/wallet'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/payment/callback'
+    | '/credit'
+    | '/dashboard'
+    | '/history'
+    | '/order'
+    | '/profile'
+    | '/refer'
+    | '/repayments'
+    | '/subscription'
+    | '/tokens'
+    | '/transfer-outlet'
+    | '/transfer-tokens'
+    | '/wallet'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/_customer'
+    | '/payment/callback'
+    | '/_authenticated/_customer/credit'
+    | '/_authenticated/_customer/dashboard'
+    | '/_authenticated/_customer/history'
+    | '/_authenticated/_customer/order'
+    | '/_authenticated/_customer/profile'
+    | '/_authenticated/_customer/refer'
+    | '/_authenticated/_customer/repayments'
+    | '/_authenticated/_customer/subscription'
+    | '/_authenticated/_customer/tokens'
+    | '/_authenticated/_customer/transfer-outlet'
+    | '/_authenticated/_customer/transfer-tokens'
+    | '/_authenticated/_customer/wallet'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  PaymentCallbackRoute: typeof PaymentCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +262,183 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_customer': {
+      id: '/_authenticated/_customer'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/payment/callback': {
+      id: '/payment/callback'
+      path: '/payment/callback'
+      fullPath: '/payment/callback'
+      preLoaderRoute: typeof PaymentCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_customer/credit': {
+      id: '/_authenticated/_customer/credit'
+      path: '/credit'
+      fullPath: '/credit'
+      preLoaderRoute: typeof AuthenticatedCustomerCreditRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/dashboard': {
+      id: '/_authenticated/_customer/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedCustomerDashboardRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/history': {
+      id: '/_authenticated/_customer/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedCustomerHistoryRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/order': {
+      id: '/_authenticated/_customer/order'
+      path: '/order'
+      fullPath: '/order'
+      preLoaderRoute: typeof AuthenticatedCustomerOrderRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/profile': {
+      id: '/_authenticated/_customer/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedCustomerProfileRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/refer': {
+      id: '/_authenticated/_customer/refer'
+      path: '/refer'
+      fullPath: '/refer'
+      preLoaderRoute: typeof AuthenticatedCustomerReferRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/repayments': {
+      id: '/_authenticated/_customer/repayments'
+      path: '/repayments'
+      fullPath: '/repayments'
+      preLoaderRoute: typeof AuthenticatedCustomerRepaymentsRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/subscription': {
+      id: '/_authenticated/_customer/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof AuthenticatedCustomerSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/tokens': {
+      id: '/_authenticated/_customer/tokens'
+      path: '/tokens'
+      fullPath: '/tokens'
+      preLoaderRoute: typeof AuthenticatedCustomerTokensRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/transfer-outlet': {
+      id: '/_authenticated/_customer/transfer-outlet'
+      path: '/transfer-outlet'
+      fullPath: '/transfer-outlet'
+      preLoaderRoute: typeof AuthenticatedCustomerTransferOutletRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/transfer-tokens': {
+      id: '/_authenticated/_customer/transfer-tokens'
+      path: '/transfer-tokens'
+      fullPath: '/transfer-tokens'
+      preLoaderRoute: typeof AuthenticatedCustomerTransferTokensRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/wallet': {
+      id: '/_authenticated/_customer/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof AuthenticatedCustomerWalletRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
   }
 }
 
+interface AuthenticatedCustomerRouteChildren {
+  AuthenticatedCustomerCreditRoute: typeof AuthenticatedCustomerCreditRoute
+  AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
+  AuthenticatedCustomerHistoryRoute: typeof AuthenticatedCustomerHistoryRoute
+  AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
+  AuthenticatedCustomerProfileRoute: typeof AuthenticatedCustomerProfileRoute
+  AuthenticatedCustomerReferRoute: typeof AuthenticatedCustomerReferRoute
+  AuthenticatedCustomerRepaymentsRoute: typeof AuthenticatedCustomerRepaymentsRoute
+  AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
+  AuthenticatedCustomerTokensRoute: typeof AuthenticatedCustomerTokensRoute
+  AuthenticatedCustomerTransferOutletRoute: typeof AuthenticatedCustomerTransferOutletRoute
+  AuthenticatedCustomerTransferTokensRoute: typeof AuthenticatedCustomerTransferTokensRoute
+  AuthenticatedCustomerWalletRoute: typeof AuthenticatedCustomerWalletRoute
+}
+
+const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
+  AuthenticatedCustomerCreditRoute: AuthenticatedCustomerCreditRoute,
+  AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
+  AuthenticatedCustomerHistoryRoute: AuthenticatedCustomerHistoryRoute,
+  AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
+  AuthenticatedCustomerProfileRoute: AuthenticatedCustomerProfileRoute,
+  AuthenticatedCustomerReferRoute: AuthenticatedCustomerReferRoute,
+  AuthenticatedCustomerRepaymentsRoute: AuthenticatedCustomerRepaymentsRoute,
+  AuthenticatedCustomerSubscriptionRoute:
+    AuthenticatedCustomerSubscriptionRoute,
+  AuthenticatedCustomerTokensRoute: AuthenticatedCustomerTokensRoute,
+  AuthenticatedCustomerTransferOutletRoute:
+    AuthenticatedCustomerTransferOutletRoute,
+  AuthenticatedCustomerTransferTokensRoute:
+    AuthenticatedCustomerTransferTokensRoute,
+  AuthenticatedCustomerWalletRoute: AuthenticatedCustomerWalletRoute,
+}
+
+const AuthenticatedCustomerRouteWithChildren =
+  AuthenticatedCustomerRoute._addFileChildren(
+    AuthenticatedCustomerRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCustomerRoute: AuthenticatedCustomerRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  PaymentCallbackRoute: PaymentCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

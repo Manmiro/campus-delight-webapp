@@ -1151,6 +1151,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      apply_wallet_refund: {
+        Args: {
+          p_amount_kobo: number
+          p_customer_id: string
+          p_order_id: string
+          p_reference: string
+        }
+        Returns: undefined
+      }
+      cancel_order: { Args: { p_order_id: string }; Returns: undefined }
+      fulfill_order: { Args: { p_order_id: string }; Returns: undefined }
       get_config: { Args: { _key: string }; Returns: Json }
       has_role: {
         Args: {
