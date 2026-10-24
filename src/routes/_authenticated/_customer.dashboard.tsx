@@ -1,5 +1,5 @@
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -83,7 +83,7 @@ function Dashboard() {
           hint={activeSub ? `${planLabel(activeSub.plan)} · ${tierLabel(activeSub.tier)}` : "No active subscription"} />
         <StatCard label="Borrowing power" value={naira((credit?.credit_limit_kobo ?? 210000) - (credit?.outstanding_kobo ?? 0))}
           icon={<CreditCard className="h-5 w-5 text-golden" />}
-          hint={openLoan ? `Outstanding ${naira(openLoan.total_due_kobo + openLoan.overdue_kobo - 0)} — repay it first` : "Limit ₦" + ((credit?.credit_limit_kobo ?? 210000) / 100).toLocaleString()} />
+          hint={openLoan ? `Repay your open loan before borrowing again` : `Limit ₦${((credit?.credit_limit_kobo ?? 210000) / 100).toLocaleString()}`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -156,5 +156,3 @@ function Dashboard() {
   );
 }
 
-export const DashboardPage = Dashboard;
-export { Dashboard };
