@@ -11,6 +11,51 @@ function lagosToday(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(new Date());
 }
 
+export const staffAssignmentQuery = queryOptions({
+  queryKey: ["staff", "assignment"],
+  queryFn: async () => {
+    const id = await getUserId();
+    const { data, error } = await supabase
+      .from("outlet_staff")
+      .select("outlet_id, staff_role, outlet:outlets(id, name, code, location, status)")
+      .eq("user_id", id)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+});
+
+export const outletOrdersQuery = (outletId: string) =>
+  queryOptions({
+    queryKey: ["outlet", outletId, "orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(*), customer:profiles(full_name, customer_code)")
+        .eq("outlet_id", outletId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+
+export const outletCustomersQuery = (outletId: string) =>
+  queryOptions({
+    queryKey: ["outlet", outletId, "customers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, customer_code, verification_status, is_active, created_at, wallets(balance_kobo), token_accounts(available_tokens, locked_tokens)")
+        .eq("outlet_id", outletId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+
 export const profileQuery = queryOptions({
   queryKey: ["me", "profile"],
   queryFn: async () => {
