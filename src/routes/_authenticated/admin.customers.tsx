@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { deliverFile } from "@/lib/download";
+import { customersCsv, customersCsvFilename } from "@/lib/customer-export";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   component: AdminCustomers,
@@ -19,6 +23,7 @@ type AdminCustomer = {
   email: string | null;
   phone: string | null;
   customer_code: string;
+  referral_code: string | null;
   verification_status: string | null;
   is_active: boolean;
   created_at: string;
@@ -29,7 +34,7 @@ function normalizeCode(raw: string) {
   return raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().replace(/^CD+/, "");
 }
 
-const CUSTOMER_FIELDS = "id, full_name, email, phone, customer_code, verification_status, is_active, created_at, outlet:outlets(name)";
+const CUSTOMER_FIELDS = "id, full_name, email, phone, customer_code, referral_code, verification_status, is_active, created_at, outlet:outlets(name)";
 
 function AdminCustomers() {
   const [search, setSearch] = useState("");
@@ -46,20 +51,45 @@ function AdminCustomers() {
       return (data ?? []) as AdminCustomer[];
     },
   });
+  const rows = customers ?? [];
+  const canExport = !isLoading && rows.length > 0;
 
+  function exportCsv() {
+    if (!canExport) return;
+    const blob = new Blob([customersCsv(rows)], { type: "text/csv;charset=utf-8" });
+    void deliverFile(blob, customersCsvFilename());
+    toast.success(`Exported ${rows.length} customer${rows.length === 1 ? "" : "s"} as CSV.`);
+  }
 
   return (
     <Card>
       <CardHeader className="gap-3">
-        <CardTitle>Customers</CardTitle>
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by customer ID, e.g. CD482901"
-          className="font-mono text-xs sm:max-w-xs"
-          inputMode="text"
-          autoCapitalize="characters"
-        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle>Customers</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={exportCsv}
+            disabled={!canExport}
+            className="w-full sm:w-auto"
+          >
+            Export CSV
+          </Button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by customer ID, e.g. CD482901"
+            className="font-mono text-xs sm:max-w-xs"
+            inputMode="text"
+            autoCapitalize="characters"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            The CSV covers the {rows.length} customer{rows.length === 1 ? "" : "s"} listed below.
+          </p>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
