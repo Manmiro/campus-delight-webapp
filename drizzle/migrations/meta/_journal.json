@@ -64,6 +64,13 @@
       "when": 1792868560076,
       "tag": "0008_profile_gender_dob",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792873326466,
+      "tag": "0009_paystack_card_checkout",
+      "breakpoints": true
     }
   ]
 }
