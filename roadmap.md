@@ -19,5 +19,5 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 - [x] Paystack: initialize + verify + webhook (idempotent)
 - [x] Build errors fixed; project builds clean (2026-10-24T18:37Z)
 - [x] Runtime smoke test: landing + auth pages render clean (no console errors)
-- [ ] Tests for PRD rules (transfer limit/fee, credit limit rules, entitlement caps, no cash+token mix)
-- [ ] Head metadata review on all routes
+- [x] Tests for PRD rules: src/test/prd-rules.test.ts (welcome tokens, transfer cap/fee, credit limit doubling/−30%, one payment method only) — entitlement caps still live in the database only
+- [x] Head metadata review: unique title/description + og & twitter meta on public routes; layout routes carry none by design

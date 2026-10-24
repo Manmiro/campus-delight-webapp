@@ -33,6 +33,13 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in or create your account — Campus Delight" },
       { name: "description", content: "Sign in to Campus Delight or create your customer account and pick your campus outlet." },
+      { property: "og:title", content: "Sign in or create your account — Campus Delight" },
+      {
+        property: "og:description",
+        content: "Sign in to Campus Delight or create your customer account and pick your campus outlet.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
@@ -79,7 +86,6 @@ function AuthPage() {
       if (mode === "signup") {
         if (!fullName.trim()) throw new Error("Enter your full name");
         if (!phone.trim()) throw new Error("Enter your phone number");
-        if (!referralCode.trim()) throw new Error("Enter your referral code");
         if (!outletId) throw new Error("Choose your Campus Delight outlet");
         if (!gender) throw new Error("Select your gender");
         if (!dob) throw new Error("Enter your date of birth");
@@ -202,8 +208,8 @@ function AuthPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="referral">Referral code</Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} required placeholder="CDRXXXXXX" />
+                  <Label htmlFor="referral">Referral code <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CDRXXXXXX" />
                 </div>
               </>
             )}

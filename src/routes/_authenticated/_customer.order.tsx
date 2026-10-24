@@ -7,6 +7,7 @@ import { Minus, Plus, ShieldCheck, Timer } from "lucide-react";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel } from "@/lib/format";
+import { orderPaymentOptions } from "@/lib/prd-rules";
 import { EmptyState, StatusBadge, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,18 +86,21 @@ function OrderPage() {
     return <EmptyState title="Menu coming soon" hint="Your outlet hasn't published its menu yet. Check back shortly." />;
   }
 
+  const payEnabled = orderPaymentOptions({
+    mealsLeftToday: mealsLeft,
+    walletBalanceKobo: wallet?.balance_kobo ?? 0,
+    tokenBalance: tk?.available_tokens ?? 0,
+    totalKobo,
+    availableCreditKobo: availableCredit,
+    isVerified: profile.verification_status === "verified",
+    accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000,
+  });
+
   const methodOptions = [
-    { value: "subscription_entitlement", label: `Subscription meal (${mealsLeft} left today)`, disabled: mealsLeft <= 0 },
-    { value: "cash_wallet", label: `Cash wallet — ${naira(wallet?.balance_kobo)}`, disabled: (wallet?.balance_kobo ?? 0) < totalKobo },
-    { value: "tokens", label: `Tokens — ${tk?.available_tokens ?? 0}`, disabled: (tk?.available_tokens ?? 0) < totalKobo },
-    {
-      value: "food_credit",
-      label: "Eat Now & Pay Later",
-      disabled:
-        profile.verification_status !== "verified" ||
-        Date.now() - new Date(profile.created_at).getTime() < 24 * 3600 * 1000 ||
-        availableCredit < totalKobo,
-    },
+    { value: "subscription_entitlement", label: `Subscription meal (${mealsLeft} left today)`, disabled: !payEnabled.subscription_entitlement },
+    { value: "cash_wallet", label: `Cash wallet — ${naira(wallet?.balance_kobo)}`, disabled: !payEnabled.cash_wallet },
+    { value: "tokens", label: `Tokens — ${tk?.available_tokens ?? 0}`, disabled: !payEnabled.tokens },
+    { value: "food_credit", label: "Eat Now & Pay Later", disabled: !payEnabled.food_credit },
   ];
 
   const categories = Array.from(new Set(menu.map((m) => m.category)));
