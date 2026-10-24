@@ -1,5 +1,3 @@
-import { matchMedia } from "@/lib/browser";
-
 /**
  * Hand a generated file to the visitor. Called synchronously from a click
  * handler: browsers drop user activation after a long await, and Safari drops
@@ -20,7 +18,7 @@ export function downloadBlob(blob: Blob, filename: string) {
 /** On touch devices prefer the share sheet (iOS offers "Save to Files"). */
 export async function deliverFile(blob: Blob, filename: string) {
   const file = new File([blob], filename, { type: blob.type });
-  const touch = matchMedia("(pointer: coarse)").matches;
+  const touch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   if (touch && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: filename });
