@@ -79,7 +79,6 @@ function AuthPage() {
       if (mode === "signup") {
         if (!fullName.trim()) throw new Error("Enter your full name");
         if (!phone.trim()) throw new Error("Enter your phone number");
-        if (!referralCode.trim()) throw new Error("Enter your referral code");
         if (!outletId) throw new Error("Choose your Campus Delight outlet");
         if (!gender) throw new Error("Select your gender");
         if (!dob) throw new Error("Enter your date of birth");
@@ -202,8 +201,8 @@ function AuthPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="referral">Referral code</Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} required placeholder="CDRXXXXXX" />
+                  <Label htmlFor="referral">Referral code <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CDRXXXXXX" />
                 </div>
               </>
             )}
