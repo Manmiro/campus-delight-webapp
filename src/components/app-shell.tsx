@@ -6,15 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.jpg";
 
 export type NavItem = { to: string; label: string; icon: ReactNode; exact?: boolean };
 
 export function Logo({ size = "sm" }: { size?: "sm" | "md" }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span className={`grid shrink-0 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}>
-        CD
-      </span>
+      <img src={logoImg} alt="Campus Delight logo" className={`shrink-0 rounded-full ${size === "sm" ? "h-8 w-8" : "h-10 w-10"}`} />
       <span className={`min-w-0 font-display font-bold ${size === "sm" ? "text-sm" : "text-lg"}`}>Campus Delight</span>
     </span>
   );
