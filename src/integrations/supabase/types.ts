@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      otp_codes: {
+        Row: {
+          code_hash: string
+          consumed: boolean
+          created_at: string
+          customer_id: string
+          expires_at: string
+          failed_attempts: number
+          id: string
+          purpose: string
+        }
+        Insert: {
+          code_hash: string
+          consumed?: boolean
+          created_at?: string
+          customer_id: string
+          expires_at: string
+          failed_attempts?: number
+          id?: string
+          purpose?: string
+        }
+        Update: {
+          code_hash?: string
+          consumed?: boolean
+          created_at?: string
+          customer_id?: string
+          expires_at?: string
+          failed_attempts?: number
+          id?: string
+          purpose?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "otp_codes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outlet_staff: {
         Row: {
           id: string
@@ -126,6 +167,72 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          locked_tokens: number
+          referred_id: string
+          referrer_id: string
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          locked_tokens?: number
+          referred_id: string
+          referrer_id: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          locked_tokens?: number
+          referred_id?: string
+          referrer_id?: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_config: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       token_accounts: {
         Row: {
           available_tokens: number
@@ -211,6 +318,54 @@ export type Database = {
           },
         ]
       }
+      token_transfers: {
+        Row: {
+          created_at: string
+          fee_tokens: number
+          id: string
+          principal_tokens: number
+          recipient_id: string
+          reference: string
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          fee_tokens?: number
+          id?: string
+          principal_tokens: number
+          recipient_id: string
+          reference: string
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          fee_tokens?: number
+          id?: string
+          principal_tokens?: number
+          recipient_id?: string
+          reference?: string
+          sender_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -228,6 +383,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wallet_ledger: {
+        Row: {
+          amount_kobo: number
+          balance_after_kobo: number
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          reference: string
+          related_loan_id: string | null
+          related_order_id: string | null
+          related_payment_id: string | null
+          tx_type: string
+        }
+        Insert: {
+          amount_kobo: number
+          balance_after_kobo: number
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          reference: string
+          related_loan_id?: string | null
+          related_order_id?: string | null
+          related_payment_id?: string | null
+          tx_type: string
+        }
+        Update: {
+          amount_kobo?: number
+          balance_after_kobo?: number
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          reference?: string
+          related_loan_id?: string | null
+          related_order_id?: string | null
+          related_payment_id?: string | null
+          tx_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallets: {
         Row: {

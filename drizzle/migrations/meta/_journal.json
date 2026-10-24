@@ -8,6 +8,13 @@
       "when": 1792864572317,
       "tag": "0000_core_outlets_profiles_roles_wallets_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792864590405,
+      "tag": "0001_ledgers_transfers_referrals_otp_config",
+      "breakpoints": true
     }
   ]
 }
