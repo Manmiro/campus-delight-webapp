@@ -56,7 +56,7 @@ function OrderPage() {
   const term = TERMS.find((t) => t.days === Number(termDays)) ?? TERMS[0];
   const creditCharge = Math.ceil((totalKobo * term.pct) / 100);
   const creditTotal = totalKobo + creditCharge;
-  const availableCredit = (credit?.credit_limit_kobo ?? 0) - (credit?.outstanding_kobo ?? 0);
+  const availableCredit = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
 
   const placeOrder = useMutation({
     mutationFn: async () => {
