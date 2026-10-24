@@ -730,8 +730,10 @@ export type Database = {
         Row: {
           created_at: string
           customer_code: string
+          date_of_birth: string | null
           email: string | null
           full_name: string
+          gender: string | null
           id: string
           is_active: boolean
           outlet_id: string | null
@@ -742,8 +744,10 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_code: string
+          date_of_birth?: string | null
           email?: string | null
           full_name: string
+          gender?: string | null
           id: string
           is_active?: boolean
           outlet_id?: string | null
@@ -754,8 +758,10 @@ export type Database = {
         Update: {
           created_at?: string
           customer_code?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string
+          gender?: string | null
           id?: string
           is_active?: boolean
           outlet_id?: string | null
