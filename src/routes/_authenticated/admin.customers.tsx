@@ -89,7 +89,10 @@ function AdminCustomers() {
                 </TableCell>
               </TableRow>
             ))}
-            {(customers ?? []).length === 0 && !isLoading && (
+            {digits && (customers ?? []).length === 0 && !isLoading && (
+              <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No customer found for “{search.trim()}”.</TableCell></TableRow>
+            )}
+            {!digits && (customers ?? []).length === 0 && !isLoading && (
               <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No customers yet.</TableCell></TableRow>
             )}
           </TableBody>
