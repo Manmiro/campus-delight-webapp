@@ -17,6 +17,7 @@ import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticat
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
 import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
+import { Route as AuthenticatedCustomerReferRouteImport } from './routes/_authenticated/_customer.refer'
 import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
 import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authenticated/_customer.tokens'
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
@@ -62,6 +63,12 @@ const AuthenticatedCustomerOrderRoute =
     path: '/order',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerReferRoute =
+  AuthenticatedCustomerReferRouteImport.update({
+    id: '/refer',
+    path: '/refer',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerSubscriptionRoute =
   AuthenticatedCustomerSubscriptionRouteImport.update({
     id: '/subscription',
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
+  '/refer': typeof AuthenticatedCustomerReferRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
+  '/refer': typeof AuthenticatedCustomerReferRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
@@ -121,6 +130,7 @@ export interface FileRoutesById {
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
+  '/_authenticated/_customer/refer': typeof AuthenticatedCustomerReferRoute
   '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/_authenticated/_customer/tokens': typeof AuthenticatedCustomerTokensRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/dashboard'
     | '/order'
+    | '/refer'
     | '/subscription'
     | '/tokens'
     | '/transfer-tokens'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/dashboard'
     | '/order'
+    | '/refer'
     | '/subscription'
     | '/tokens'
     | '/transfer-tokens'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/_authenticated/_customer/dashboard'
     | '/_authenticated/_customer/order'
+    | '/_authenticated/_customer/refer'
     | '/_authenticated/_customer/subscription'
     | '/_authenticated/_customer/tokens'
     | '/_authenticated/_customer/transfer-tokens'
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerOrderRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/refer': {
+      id: '/_authenticated/_customer/refer'
+      path: '/refer'
+      fullPath: '/refer'
+      preLoaderRoute: typeof AuthenticatedCustomerReferRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/subscription': {
       id: '/_authenticated/_customer/subscription'
       path: '/subscription'
@@ -267,6 +287,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
   AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
+  AuthenticatedCustomerReferRoute: typeof AuthenticatedCustomerReferRoute
   AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
   AuthenticatedCustomerTokensRoute: typeof AuthenticatedCustomerTokensRoute
   AuthenticatedCustomerTransferTokensRoute: typeof AuthenticatedCustomerTransferTokensRoute
@@ -276,6 +297,7 @@ interface AuthenticatedCustomerRouteChildren {
 const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
   AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
+  AuthenticatedCustomerReferRoute: AuthenticatedCustomerReferRoute,
   AuthenticatedCustomerSubscriptionRoute:
     AuthenticatedCustomerSubscriptionRoute,
   AuthenticatedCustomerTokensRoute: AuthenticatedCustomerTokensRoute,

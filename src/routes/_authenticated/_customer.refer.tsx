@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, Gift, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -19,14 +20,6 @@ function ReferPage() {
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
 
   const referralLink = `${window.location.origin}/auth?mode=signup&ref=${profile.referral_code}`;
-
-  void useMutation({
-    mutationFn: async () => {
-      await navigator.clipboard.writeText(referralLink);
-      toast.success("Referral link copied");
-    },
-    onSettled: () => void qc.invalidateQueries(),
-  });
 
   const rewarded = referrals.filter((r) => r.status === "rewarded").length;
   const pending = referrals.filter((r) => r.status === "locked").length;
