@@ -71,6 +71,13 @@
       "when": 1792873326466,
       "tag": "0009_paystack_card_checkout",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792873411766,
+      "tag": "0010_protect_payment_application",
+      "breakpoints": true
     }
   ]
 }
