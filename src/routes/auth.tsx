@@ -19,8 +19,8 @@ const outletsQuery = queryOptions({
 
 const searchSchema = {
   validateSearch: (search: Record<string, unknown>) => ({
-    mode: (search.mode as string) ?? "signin",
-    ref: (search.ref as string) ?? "",
+    mode: typeof search["mode"] === "string" ? search["mode"] : undefined,
+    ref: typeof search["ref"] === "string" ? search["ref"] : undefined,
   }),
 };
 

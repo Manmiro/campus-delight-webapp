@@ -64,8 +64,8 @@ function OrderPage() {
       const { error } = await supabase.rpc("place_order", {
         p_items: items,
         p_payment_method: method,
-        p_subscription_id: method === "subscription_entitlement" ? activeSub?.id ?? null : null,
-        p_loan_term_days: method === "food_credit" ? Number(termDays) : null,
+        p_subscription_id: method === "subscription_entitlement" ? (activeSub?.id ?? undefined) : undefined,
+        p_loan_term_days: method === "food_credit" ? Number(termDays) : undefined,
       });
       if (error) throw new Error(error.message);
     },
