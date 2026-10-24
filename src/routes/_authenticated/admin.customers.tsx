@@ -50,6 +50,17 @@ function AdminCustomers() {
 
   return (
     <Card>
+      <CardHeader className="gap-3">
+        <CardTitle>Customers</CardTitle>
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by customer ID, e.g. CD482901"
+          className="font-mono text-xs sm:max-w-xs"
+          inputMode="text"
+          autoCapitalize="characters"
+        />
+      </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader>
