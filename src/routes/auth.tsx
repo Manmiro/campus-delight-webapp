@@ -52,6 +52,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [outletId, setOutletId] = useState("");
+  const [gender, setGender] = useState("");
+  const [dob, setDob] = useState("");
   const [referralCode, setReferralCode] = useState(ref.toUpperCase());
   const [busy, setBusy] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
@@ -76,6 +78,8 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         if (!outletId) throw new Error("Choose your Campus Delight outlet");
+        if (!gender) throw new Error("Select your gender");
+        if (!dob) throw new Error("Enter your date of birth");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -84,6 +88,8 @@ function AuthPage() {
             data: {
               full_name: fullName,
               phone,
+              gender,
+              date_of_birth: dob,
               outlet_id: outletId,
               referral_code: referralCode || undefined,
             },
@@ -154,6 +160,24 @@ function AuthPage() {
                 <div>
                   <Label htmlFor="phone">Phone number</Label>
                   <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="0803 000 0000" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select value={gender} onValueChange={setGender} required>
+                      <SelectTrigger id="gender" className="w-full">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="dob">Date of birth</Label>
+                    <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required max={new Date().toISOString().slice(0, 10)} />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="outlet">Your campus outlet</Label>
