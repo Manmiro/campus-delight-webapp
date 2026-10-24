@@ -92,6 +92,13 @@
       "when": 1792876517867,
       "tag": "0012_validate_profile_code_format",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792878349882,
+      "tag": "0013_fix_place_order_credit_summary",
+      "breakpoints": true
     }
   ]
 }
