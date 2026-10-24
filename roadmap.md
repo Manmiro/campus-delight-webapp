@@ -3,6 +3,8 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Require email confirmation after registration and restore email/password sign-in; hosted settings confirmed, rule tests and simulated unconfirmed-sign-in browser flow pass.
+- [ ] Verify actual confirmation email delivery and link-to-sign-in flow — requires access to a customer's confirmation email; no inbox available in this session.
 - [x] Enable Lovable Cloud + email auth
 - [x] Paystack secrets saved (PAYSTACK_SECRET_KEY, PAYSTACK_PUBLIC_KEY)
 - [x] DB schema: outlets, profiles, roles, staff

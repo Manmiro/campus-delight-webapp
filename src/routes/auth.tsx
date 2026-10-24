@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { listOutlets } from "@/lib/catalog.functions";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -69,15 +70,44 @@ function AuthPage() {
     role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard";
 
   async function afterSignIn() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    if (!hasConfirmedEmail(data.user)) {
+      setAwaitingConfirm(true);
+      return;
+    }
     const role = await getRole();
     await navigate({ to: roleHome(role) });
   }
 
   // Already signed in? Head straight to the right dashboard.
-  void (async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) await afterSignIn();
-  })();
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!active || !hasConfirmedEmail(data.user)) return;
+      const role = await getRole();
+      if (active) await navigate({ to: roleHome(role) });
+    })().catch(() => { /* Signed-out visitors stay on the sign-in form. */ });
+    return () => { active = false; };
+  }, [getRole, navigate]);
+
+  async function resendConfirmation() {
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (error) throw error;
+      toast.success("Confirmation email sent. Please check your inbox and spam folder.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send the confirmation email");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -93,7 +123,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               full_name: fullName,
               phone,
@@ -111,7 +141,12 @@ function AuthPage() {
           setAwaitingConfirm(true); // email confirmation is on: the link creates the session
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const credentials = validateSignInCredentials(email, password);
+        const { error } = await supabase.auth.signInWithPassword(credentials);
+        if (error?.code === "email_not_confirmed") {
+          setAwaitingConfirm(true);
+          return;
+        }
         if (error) throw error;
         await afterSignIn();
       }
@@ -129,10 +164,18 @@ function AuthPage() {
         <h1 className="mt-4 font-display text-2xl font-bold">Check your email</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           We sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>.
-          Open it to activate your Campus Delight account — your wallet and 1,000 welcome tokens are waiting.
+          Confirm your email address before signing in to Campus Delight. Check your spam folder if the email is missing.
         </p>
-        <Button variant="outline" className="mt-6" onClick={() => setAwaitingConfirm(false)}>
-          Back
+        <Button className="mt-6 w-full" disabled={busy} onClick={resendConfirmation}>
+          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Resend confirmation email
+        </Button>
+        <Button variant="outline" className="mt-3 w-full" disabled={busy} onClick={() => {
+          setMode("signin");
+          setPassword("");
+          setAwaitingConfirm(false);
+        }}>
+          Back to sign in
         </Button>
       </CenterCard>
     );
@@ -148,18 +191,25 @@ function AuthPage() {
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(["signin", "signup"] as const).map((m) => (
-              <button
+              <Button
                 key={m}
                 type="button"
+                variant={mode === m ? "default" : "ghost"}
                 onClick={() => setMode(m)}
                 className={`rounded-lg py-2 text-sm font-semibold transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
               >
                 {m === "signin" ? "Sign in" : "Create account"}
-              </button>
+              </Button>
             ))}
           </div>
 
           <form onSubmit={submit} className="space-y-4">
+            {mode === "signin" && (
+              <div>
+                <Label htmlFor="email">Email address</Label>
+                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+              </div>
+            )}
             {mode === "signup" && (
               <>
                 <div>
@@ -215,7 +265,7 @@ function AuthPage() {
             )}
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
+              <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
