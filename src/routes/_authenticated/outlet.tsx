@@ -5,7 +5,7 @@ import {
 import { getMyRole } from "@/lib/roles.functions";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
-export const Route = createFileRoute("/_authenticated/_outlet")({
+export const Route = createFileRoute("/outlet")({
   beforeLoad: async () => {
     const role = await getMyRole();
     if (!role.startsWith("outlet")) {
@@ -27,7 +27,7 @@ const nav: NavItem[] = [
 
 function OutletLayout() {
   return (
-    <AppShell title="Outlet Console" subtitle="Run your Campus Delight outlet.">
+    <AppShell nav={nav} title="Outlet Console" subtitle="Run your Campus Delight outlet.">
       <Outlet />
     </AppShell>
   );

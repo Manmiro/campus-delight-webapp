@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
+import { Route as AuthenticatedOutletRouteImport } from './routes/_authenticated/outlet'
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
@@ -27,6 +28,13 @@ import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authe
 import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './routes/_authenticated/_customer.transfer-outlet'
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
+import { Route as AuthenticatedOutletIndexRouteImport } from './routes/_authenticated/outlet.index'
+import { Route as AuthenticatedOutletCustomersRouteImport } from './routes/_authenticated/outlet.customers'
+import { Route as AuthenticatedOutletMenuRouteImport } from './routes/_authenticated/outlet.menu'
+import { Route as AuthenticatedOutletOrdersRouteImport } from './routes/_authenticated/outlet.orders'
+import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authenticated/outlet.reports'
+import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
+import { Route as AuthenticatedOutletSubscriptionsRouteImport } from './routes/_authenticated/outlet.subscriptions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -49,6 +57,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 } as any)
 const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
   id: '/_customer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOutletRoute = AuthenticatedOutletRouteImport.update({
+  id: '/outlet',
+  path: '/outlet',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const PaymentCallbackRoute = PaymentCallbackRouteImport.update({
@@ -128,11 +141,53 @@ const AuthenticatedCustomerWalletRoute =
     path: '/wallet',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedOutletIndexRoute =
+  AuthenticatedOutletIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
+const AuthenticatedOutletCustomersRoute =
+  AuthenticatedOutletCustomersRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
+const AuthenticatedOutletMenuRoute = AuthenticatedOutletMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AuthenticatedOutletRoute,
+} as any)
+const AuthenticatedOutletOrdersRoute =
+  AuthenticatedOutletOrdersRouteImport.update({
+    id: '/orders',
+    path: '/orders',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
+const AuthenticatedOutletReportsRoute =
+  AuthenticatedOutletReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
+const AuthenticatedOutletStaffRoute =
+  AuthenticatedOutletStaffRouteImport.update({
+    id: '/staff',
+    path: '/staff',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
+const AuthenticatedOutletSubscriptionsRoute =
+  AuthenticatedOutletSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -146,6 +201,13 @@ export interface FileRoutesByFullPath {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
+  '/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
+  '/outlet/reports': typeof AuthenticatedOutletReportsRoute
+  '/outlet/staff': typeof AuthenticatedOutletStaffRoute
+  '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/outlet/': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -164,6 +226,13 @@ export interface FileRoutesByTo {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
+  '/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
+  '/outlet/reports': typeof AuthenticatedOutletReportsRoute
+  '/outlet/staff': typeof AuthenticatedOutletStaffRoute
+  '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/outlet': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,6 +241,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
+  '/_authenticated/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -185,6 +255,13 @@ export interface FileRoutesById {
   '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/_authenticated/outlet/customers': typeof AuthenticatedOutletCustomersRoute
+  '/_authenticated/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/_authenticated/outlet/orders': typeof AuthenticatedOutletOrdersRoute
+  '/_authenticated/outlet/reports': typeof AuthenticatedOutletReportsRoute
+  '/_authenticated/outlet/staff': typeof AuthenticatedOutletStaffRoute
+  '/_authenticated/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -192,6 +269,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/outlet'
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
@@ -205,6 +283,13 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/outlet/customers'
+    | '/outlet/menu'
+    | '/outlet/orders'
+    | '/outlet/reports'
+    | '/outlet/staff'
+    | '/outlet/subscriptions'
+    | '/outlet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -223,6 +308,13 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/outlet/customers'
+    | '/outlet/menu'
+    | '/outlet/orders'
+    | '/outlet/reports'
+    | '/outlet/staff'
+    | '/outlet/subscriptions'
+    | '/outlet'
   id:
     | '__root__'
     | '/'
@@ -230,6 +322,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/_customer'
+    | '/_authenticated/outlet'
     | '/payment/callback'
     | '/_authenticated/_customer/credit'
     | '/_authenticated/_customer/dashboard'
@@ -243,6 +336,13 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/transfer-outlet'
     | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
+    | '/_authenticated/outlet/customers'
+    | '/_authenticated/outlet/menu'
+    | '/_authenticated/outlet/orders'
+    | '/_authenticated/outlet/reports'
+    | '/_authenticated/outlet/staff'
+    | '/_authenticated/outlet/subscriptions'
+    | '/_authenticated/outlet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,6 +388,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/outlet': {
+      id: '/_authenticated/outlet'
+      path: '/outlet'
+      fullPath: '/outlet'
+      preLoaderRoute: typeof AuthenticatedOutletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/payment/callback': {
@@ -381,6 +488,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerWalletRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/outlet/': {
+      id: '/_authenticated/outlet/'
+      path: '/'
+      fullPath: '/outlet/'
+      preLoaderRoute: typeof AuthenticatedOutletIndexRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/customers': {
+      id: '/_authenticated/outlet/customers'
+      path: '/customers'
+      fullPath: '/outlet/customers'
+      preLoaderRoute: typeof AuthenticatedOutletCustomersRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/menu': {
+      id: '/_authenticated/outlet/menu'
+      path: '/menu'
+      fullPath: '/outlet/menu'
+      preLoaderRoute: typeof AuthenticatedOutletMenuRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/orders': {
+      id: '/_authenticated/outlet/orders'
+      path: '/orders'
+      fullPath: '/outlet/orders'
+      preLoaderRoute: typeof AuthenticatedOutletOrdersRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/reports': {
+      id: '/_authenticated/outlet/reports'
+      path: '/reports'
+      fullPath: '/outlet/reports'
+      preLoaderRoute: typeof AuthenticatedOutletReportsRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/staff': {
+      id: '/_authenticated/outlet/staff'
+      path: '/staff'
+      fullPath: '/outlet/staff'
+      preLoaderRoute: typeof AuthenticatedOutletStaffRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/subscriptions': {
+      id: '/_authenticated/outlet/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/outlet/subscriptions'
+      preLoaderRoute: typeof AuthenticatedOutletSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
   }
 }
 
@@ -422,12 +578,37 @@ const AuthenticatedCustomerRouteWithChildren =
     AuthenticatedCustomerRouteChildren,
   )
 
+interface AuthenticatedOutletRouteChildren {
+  AuthenticatedOutletCustomersRoute: typeof AuthenticatedOutletCustomersRoute
+  AuthenticatedOutletMenuRoute: typeof AuthenticatedOutletMenuRoute
+  AuthenticatedOutletOrdersRoute: typeof AuthenticatedOutletOrdersRoute
+  AuthenticatedOutletReportsRoute: typeof AuthenticatedOutletReportsRoute
+  AuthenticatedOutletStaffRoute: typeof AuthenticatedOutletStaffRoute
+  AuthenticatedOutletSubscriptionsRoute: typeof AuthenticatedOutletSubscriptionsRoute
+  AuthenticatedOutletIndexRoute: typeof AuthenticatedOutletIndexRoute
+}
+
+const AuthenticatedOutletRouteChildren: AuthenticatedOutletRouteChildren = {
+  AuthenticatedOutletCustomersRoute: AuthenticatedOutletCustomersRoute,
+  AuthenticatedOutletMenuRoute: AuthenticatedOutletMenuRoute,
+  AuthenticatedOutletOrdersRoute: AuthenticatedOutletOrdersRoute,
+  AuthenticatedOutletReportsRoute: AuthenticatedOutletReportsRoute,
+  AuthenticatedOutletStaffRoute: AuthenticatedOutletStaffRoute,
+  AuthenticatedOutletSubscriptionsRoute: AuthenticatedOutletSubscriptionsRoute,
+  AuthenticatedOutletIndexRoute: AuthenticatedOutletIndexRoute,
+}
+
+const AuthenticatedOutletRouteWithChildren =
+  AuthenticatedOutletRoute._addFileChildren(AuthenticatedOutletRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRouteWithChildren
+  AuthenticatedOutletRoute: typeof AuthenticatedOutletRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomerRoute: AuthenticatedCustomerRouteWithChildren,
+  AuthenticatedOutletRoute: AuthenticatedOutletRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

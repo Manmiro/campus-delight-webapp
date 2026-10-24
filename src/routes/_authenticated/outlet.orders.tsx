@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/_authenticated/_outlet/orders")({
+export const Route = createFileRoute("/_authenticated/outlet/orders")({
   component: OutletOrders,
   head: () => ({ meta: [{ title: "Orders & Fulfillment — Campus Delight" }] }),
 });

@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/_authenticated/_outlet/customers")({
+export const Route = createFileRoute("/_authenticated/outlet/customers")({
   component: OutletCustomers,
   head: () => ({ meta: [{ title: "Customers — Campus Delight" }] }),
 });
