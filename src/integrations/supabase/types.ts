@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      meal_entitlements: {
+        Row: {
+          allowance: number
+          customer_id: string
+          id: string
+          redeemed: number
+          service_date: string
+          subscription_id: string
+        }
+        Insert: {
+          allowance: number
+          customer_id: string
+          id?: string
+          redeemed?: number
+          service_date: string
+          subscription_id: string
+        }
+        Update: {
+          allowance?: number
+          customer_id?: string
+          id?: string
+          redeemed?: number
+          service_date?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_entitlements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_entitlements_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       otp_codes: {
         Row: {
           code_hash: string
@@ -51,6 +93,44 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outlet_plan_prices: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          outlet_id: string
+          plan: string
+          price_kobo: number
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          outlet_id: string
+          plan: string
+          price_kobo: number
+          tier: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          outlet_id?: string
+          plan?: string
+          price_kobo?: number
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_plan_prices_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
             referencedColumns: ["id"]
           },
         ]
@@ -208,6 +288,66 @@ export type Database = {
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          customer_id: string
+          end_date: string | null
+          id: string
+          outlet_id: string
+          payment_reference: string | null
+          plan: string
+          price_kobo: number
+          start_date: string | null
+          status: string
+          tier: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          customer_id: string
+          end_date?: string | null
+          id?: string
+          outlet_id: string
+          payment_reference?: string | null
+          plan: string
+          price_kobo: number
+          start_date?: string | null
+          status?: string
+          tier: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          customer_id?: string
+          end_date?: string | null
+          id?: string
+          outlet_id?: string
+          payment_reference?: string | null
+          plan?: string
+          price_kobo?: number
+          start_date?: string | null
+          status?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
             referencedColumns: ["id"]
           },
         ]

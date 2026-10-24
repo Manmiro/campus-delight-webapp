@@ -15,6 +15,13 @@
       "when": 1792864590405,
       "tag": "0001_ledgers_transfers_referrals_otp_config",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792864604415,
+      "tag": "0002_subscriptions_pricing_entitlements",
+      "breakpoints": true
     }
   ]
 }
