@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -7,7 +8,7 @@ import { adminUpdateConfig } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/admin/settings")({
+export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
   head: () => ({ meta: [{ title: "System Settings — Campus Delight HQ" }] }),
 });
