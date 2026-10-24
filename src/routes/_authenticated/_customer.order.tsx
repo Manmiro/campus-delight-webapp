@@ -91,7 +91,7 @@ function OrderPage() {
     walletBalanceKobo: wallet?.balance_kobo ?? 0,
     tokenBalance: tk?.available_tokens ?? 0,
     totalKobo,
-    availableCreditKobo,
+    availableCreditKobo: availableCredit,
     isVerified: profile.verification_status === "verified",
     accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000,
   });
