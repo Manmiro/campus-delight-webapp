@@ -54,7 +54,7 @@ function Dashboard() {
       <Card className="border-0 bg-primary text-primary-foreground">
         <CardContent className="p-4 sm:p-6">
           <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>
-          <p className="font-display text-xl font-bold">{profile.outlet_id ? "Your Campus Delight outlet" : "No outlet yet"}</p>
+          <p className="font-display text-xl font-bold">{profile.outlet?.name ?? "No outlet yet"}</p>
           <p className="mt-1 font-mono text-xs opacity-80">ID: {profile.customer_code}</p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button asChild variant="secondary" className="h-auto min-h-11 whitespace-normal py-2.5">

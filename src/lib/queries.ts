@@ -60,7 +60,7 @@ export const profileQuery = queryOptions({
   queryKey: ["me", "profile"],
   queryFn: async () => {
     const id = await getUserId();
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", id).single();
+    const { data, error } = await supabase.from("profiles").select("*, outlet:outlets(name)").eq("id", id).single();
     if (error) throw new Error(error.message);
     return data;
   },
