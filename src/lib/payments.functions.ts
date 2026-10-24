@@ -1,68 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { applyVerifiedPayment, paystackInitialize } from "@/lib/payments.server";
-import { createClient } from "@supabase/supabase-js";
+import { paymentInput, type PaymentInput } from "@/lib/payment-rules";
+import { z } from "zod";
 
-function adminDb() {
-  return createClient(
-    process.env["SUPABASE_URL"]!,
-    process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
-}
-
-function newReference(prefix: string) {
-  return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-}
-
-/**
- * Starts a Paystack checkout. Creates a pending payment row first so the
- * webhook/verification has something idempotent to land on.
- */
 export const initializePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: { purpose: "wallet_funding" | "subscription"; amountKobo: number; relatedId?: string }) => input,
-  )
+  .inputValidator((input: PaymentInput) => paymentInput.parse(input))
   .handler(async ({ data, context }) => {
-    if (!["wallet_funding", "subscription"].includes(data.purpose)) {
-      throw new Error("Unsupported payment purpose");
-    }
-    if (!data.amountKobo || data.amountKobo <= 0) throw new Error("Invalid amount");
-
-    const db = adminDb();
-    const { data: profile } = await db
-      .from("profiles")
-      .select("email")
-      .eq("id", context.userId)
-      .maybeSingle();
-    const email = profile?.email ?? context.userId;
-
-    const reference = newReference("CDPS");
-    const { error } = await db.from("payment_transactions").insert({
-      customer_id: context.userId,
-      purpose: data.purpose,
-      amount_kobo: data.amountKobo,
-      paystack_reference: reference,
-      status: "pending",
-      related_id: data.relatedId ?? null,
-    });
-    if (error) throw new Error(error.message);
-
-    const origin = process.env["LOVABLE_APP_ORIGIN"] ?? "http://localhost:8080";
-    const authorizationUrl = await paystackInitialize({
-      email,
-      amountKobo: data.amountKobo,
-      reference,
-      callbackUrl: `${origin}/payment/callback`,
-    });
-    return { authorizationUrl, reference };
+    const { startCardPayment } = await import("@/lib/payments.server");
+    const { data: profile, error } = await context.supabase.from("profiles").select("email, outlet_id, is_active").eq("id", context.userId).single();
+    if (error || !profile?.email || !profile.is_active || !profile.outlet_id) throw new Error("An active account with an assigned outlet is required");
+    return startCardPayment(data, context.userId, profile.email, profile.outlet_id);
   });
 
-/** Public: verifies a payment reference server-side and applies it. */
 export const verifyPayment = createServerFn({ method: "POST" })
-  .inputValidator((input: { reference: string }) => input)
-  .handler(async ({ data }) => {
-    const result = await applyVerifiedPayment(data.reference);
-    return result;
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { reference: string }) => z.object({ reference: z.string().min(1).max(100).regex(/^[A-Za-z0-9-]+$/) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: tx } = await context.supabase.from("payment_transactions").select("id").eq("customer_id", context.userId).eq("paystack_reference", data.reference).maybeSingle();
+    if (!tx) throw new Error("Payment reference not found for your account");
+    const { applyVerifiedPayment } = await import("@/lib/payments.server");
+    return applyVerifiedPayment(data.reference);
   });
