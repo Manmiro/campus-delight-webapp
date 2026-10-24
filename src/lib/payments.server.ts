@@ -45,6 +45,7 @@ export async function startCardPayment(input: PaymentInput, customerId: string, 
     return { authorizationUrl, reference };
   } catch (error) {
     await db.from("payment_transactions").update({ status: "failed" }).eq("paystack_reference", reference);
+    if (input.purpose === "order_payment" && relatedId) await db.from("orders").update({ status: "cancelled" }).eq("id", relatedId).eq("status", "pending");
     throw error;
   }
 }
@@ -56,7 +57,10 @@ export async function paystackInitialize(input: { email: string; amountKobo: num
     body: JSON.stringify({ email: input.email, amount: input.amountKobo, reference: input.reference, currency: "NGN", channels: ["card"], callback_url: input.callbackUrl }),
   });
   const json = await res.json() as { status: boolean; message: string; data?: { authorization_url: string } };
-  if (!res.ok || !json.status || !json.data) throw new Error(json.message || "Could not start card payment");
+  if (!res.ok || !json.status || !json.data) {
+    if (json.message?.includes("No active channel")) throw new Error("Card payments are temporarily unavailable. Please use another payment method or contact Campus Delight.");
+    throw new Error(json.message || "Could not start card payment");
+  }
   return json.data.authorization_url;
 }
 
