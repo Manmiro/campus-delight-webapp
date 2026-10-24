@@ -30,7 +30,10 @@ import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './route
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
+import { Route as AuthenticatedAdminFinancialRouteImport } from './routes/_authenticated/admin.financial'
 import { Route as AuthenticatedAdminOutletsRouteImport } from './routes/_authenticated/admin.outlets'
+import { Route as AuthenticatedAdminTransfersRouteImport } from './routes/_authenticated/admin.transfers'
 import { Route as AuthenticatedOutletIndexRouteImport } from './routes/_authenticated/outlet.index'
 import { Route as AuthenticatedOutletCustomersRouteImport } from './routes/_authenticated/outlet.customers'
 import { Route as AuthenticatedOutletMenuRouteImport } from './routes/_authenticated/outlet.menu'
@@ -154,10 +157,28 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminCustomersRoute =
+  AuthenticatedAdminCustomersRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminFinancialRoute =
+  AuthenticatedAdminFinancialRouteImport.update({
+    id: '/financial',
+    path: '/financial',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminOutletsRoute =
   AuthenticatedAdminOutletsRouteImport.update({
     id: '/outlets',
     path: '/outlets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTransfersRoute =
+  AuthenticatedAdminTransfersRouteImport.update({
+    id: '/transfers',
+    path: '/transfers',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedOutletIndexRoute =
@@ -221,7 +242,10 @@ export interface FileRoutesByFullPath {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
@@ -248,7 +272,10 @@ export interface FileRoutesByTo {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
@@ -280,7 +307,10 @@ export interface FileRoutesById {
   '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/_authenticated/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/_authenticated/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/_authenticated/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/_authenticated/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/_authenticated/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/_authenticated/outlet/orders': typeof AuthenticatedOutletOrdersRoute
@@ -311,7 +341,10 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/customers'
+    | '/admin/financial'
     | '/admin/outlets'
+    | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
     | '/outlet/orders'
@@ -338,7 +371,10 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/customers'
+    | '/admin/financial'
     | '/admin/outlets'
+    | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
     | '/outlet/orders'
@@ -369,7 +405,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/transfer-outlet'
     | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
+    | '/_authenticated/admin/customers'
+    | '/_authenticated/admin/financial'
     | '/_authenticated/admin/outlets'
+    | '/_authenticated/admin/transfers'
     | '/_authenticated/outlet/customers'
     | '/_authenticated/outlet/menu'
     | '/_authenticated/outlet/orders'
@@ -537,11 +576,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/customers': {
+      id: '/_authenticated/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AuthenticatedAdminCustomersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/financial': {
+      id: '/_authenticated/admin/financial'
+      path: '/financial'
+      fullPath: '/admin/financial'
+      preLoaderRoute: typeof AuthenticatedAdminFinancialRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/outlets': {
       id: '/_authenticated/admin/outlets'
       path: '/outlets'
       fullPath: '/admin/outlets'
       preLoaderRoute: typeof AuthenticatedAdminOutletsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/transfers': {
+      id: '/_authenticated/admin/transfers'
+      path: '/transfers'
+      fullPath: '/admin/transfers'
+      preLoaderRoute: typeof AuthenticatedAdminTransfersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/outlet/': {
@@ -635,12 +695,18 @@ const AuthenticatedCustomerRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
+  AuthenticatedAdminFinancialRoute: typeof AuthenticatedAdminFinancialRoute
   AuthenticatedAdminOutletsRoute: typeof AuthenticatedAdminOutletsRoute
+  AuthenticatedAdminTransfersRoute: typeof AuthenticatedAdminTransfersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
+  AuthenticatedAdminFinancialRoute: AuthenticatedAdminFinancialRoute,
   AuthenticatedAdminOutletsRoute: AuthenticatedAdminOutletsRoute,
+  AuthenticatedAdminTransfersRoute: AuthenticatedAdminTransfersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 

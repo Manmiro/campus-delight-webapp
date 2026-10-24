@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/admin/financial")({
+export const Route = createFileRoute("/_authenticated/admin/financial")({
   component: AdminFinancial,
   head: () => ({ meta: [{ title: "Financial Oversight — Campus Delight HQ" }] }),
 });

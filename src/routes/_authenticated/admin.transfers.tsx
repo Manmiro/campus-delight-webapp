@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/admin/transfers")({
+export const Route = createFileRoute("/_authenticated/admin/transfers")({
   component: AdminTransfers,
   head: () => ({ meta: [{ title: "Outlet Transfers — Campus Delight HQ" }] }),
 });
