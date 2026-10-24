@@ -110,10 +110,7 @@ describe("checkout payment rules", () => {
   });
 
   it("allows exactly one payment method per purchase", () => {
-    expect(orderPaymentOptions({ ...base, walletBalanceKobo: 0, tokenBalance: 0 }).card).toBe(true);
-    expect(orderPaymentOptions({ ...base, totalKobo: 0 }).card).toBe(false);
-    expect(resolvePaymentMethod(["card"])).toEqual({ ok: true, method: "card" });
-    expect(resolvePaymentMethod(["card", "tokens"]).ok).toBe(false);
+    expect(Object.keys(orderPaymentOptions(base)).sort()).toEqual(["cash_wallet", "food_credit", "subscription_entitlement", "tokens"]);
     expect(resolvePaymentMethod(["cash_wallet"])).toEqual({ ok: true, method: "cash_wallet" });
     expect(resolvePaymentMethod([]).ok).toBe(false);
     const mixed = resolvePaymentMethod(["cash_wallet", "tokens"] as PaymentMethod[]);

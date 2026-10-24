@@ -74,7 +74,7 @@ function Dashboard() {
         <StatCard label="Cash wallet" value={naira(wallet?.balance_kobo)} icon={<Wallet className="h-5 w-5 text-primary" />}
           hint={
             <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => fundWallet.mutate()} disabled={fundWallet.isPending}>
-              Fund ₦2,000 by card <ArrowRight className="ml-1 h-3 w-3" />
+              Fund ₦2,000 with Paystack <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           } />
         <StatCard label="Available tokens" value={fmtTokens(tk?.available_tokens)} icon={<Coins className="h-5 w-5 text-golden" />}

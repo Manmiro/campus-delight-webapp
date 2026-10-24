@@ -7,10 +7,10 @@ export const initializePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: PaymentInput) => paymentInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { startCardPayment } = await import("@/lib/payments.server");
+    const { startPayment } = await import("@/lib/payments.server");
     const { data: profile, error } = await context.supabase.from("profiles").select("email, outlet_id, is_active").eq("id", context.userId).single();
     if (error || !profile?.email || !profile.is_active || !profile.outlet_id) throw new Error("An active account with an assigned outlet is required");
-    return startCardPayment(data, context.userId, profile.email, profile.outlet_id);
+    return startPayment(data, context.userId, profile.email, profile.outlet_id);
   });
 
 export const verifyPayment = createServerFn({ method: "POST" })

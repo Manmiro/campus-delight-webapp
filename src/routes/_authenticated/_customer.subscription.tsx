@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { initializePayment } from "@/lib/payments.functions";
 import { profileQuery, subscriptionsQuery, myPlanPricesQuery } from "@/lib/queries";
 import { getUserId } from "@/lib/queries";
@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/subscription")({
   component: SubscriptionPage,
-  head: () => ({ meta: [{ title: "My Subscription — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely by card." }, { property: "og:title", content: "My Subscription — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "My Subscription — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack." }, { property: "og:title", content: "My Subscription — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 const plans = [
@@ -93,7 +93,7 @@ function SubscriptionPage() {
                     <StatusBadge status={s.status} />
                     {s.status === "awaiting_payment" && (
                       <Button size="sm" onClick={() => buy.mutate({ plan: s.plan, tier: s.tier, subscriptionId: s.id })} disabled={buy.isPending}>
-                        {buy.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />} Pay by card
+                        {buy.isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />} Pay now
                       </Button>
                     )}
                   </div>
@@ -132,7 +132,7 @@ function SubscriptionPage() {
                           disabled={price == null || buy.isPending}
                           onClick={() => buy.mutate({ plan: p.plan, tier: t })}
                         >
-                          <CreditCard className="h-3 w-3" /> Subscribe by card
+                          Subscribe
                         </Button>
                       </div>
                     </div>
