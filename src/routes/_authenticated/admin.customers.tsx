@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
@@ -11,22 +13,54 @@ export const Route = createFileRoute("/_authenticated/admin/customers")({
   head: () => ({ meta: [{"title": "Customers — Campus Delight HQ"}, {"name": "description", "content": "View and manage customers in your Campus Delight account."}, {"property": "og:title", "content": "Customers — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage customers in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
+type AdminCustomer = {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  customer_code: string;
+  verification_status: string | null;
+  is_active: boolean;
+  created_at: string;
+  outlet: { name?: string } | null;
+};
+
+function normalizeCode(raw: string) {
+  return raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().replace(/^CD+/, "");
+}
+
+const CUSTOMER_FIELDS = "id, full_name, email, phone, customer_code, verification_status, is_active, created_at, outlet:outlets(name)";
+
 function AdminCustomers() {
+  const [search, setSearch] = useState("");
+  const digits = normalizeCode(search);
+
   const { data: customers, isLoading } = useQuery({
-    queryKey: ["admin", "customers"],
+    queryKey: ["admin", "customers", digits],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, phone, customer_code, verification_status, is_active, created_at, outlet:outlets(name)")
-        .order("created_at", { ascending: false })
-        .limit(300);
+      let q = supabase.from("profiles").select(CUSTOMER_FIELDS);
+      if (digits) q = q.ilike("customer_code", `%CD${digits}%`).limit(50);
+      else q = q.order("created_at", { ascending: false }).limit(300);
+      const { data, error } = await q;
       if (error) throw new Error(error.message);
-      return data ?? [];
+      return (data ?? []) as AdminCustomer[];
     },
   });
 
+
   return (
     <Card>
+      <CardHeader className="gap-3">
+        <CardTitle>Customers</CardTitle>
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by customer ID, e.g. CD482901"
+          className="font-mono text-xs sm:max-w-xs"
+          inputMode="text"
+          autoCapitalize="characters"
+        />
+      </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader>
@@ -55,7 +89,10 @@ function AdminCustomers() {
                 </TableCell>
               </TableRow>
             ))}
-            {(customers ?? []).length === 0 && !isLoading && (
+            {digits && (customers ?? []).length === 0 && !isLoading && (
+              <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No customer found for “{search.trim()}”.</TableCell></TableRow>
+            )}
+            {!digits && (customers ?? []).length === 0 && !isLoading && (
               <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No customers yet.</TableCell></TableRow>
             )}
           </TableBody>
