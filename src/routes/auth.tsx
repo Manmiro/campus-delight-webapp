@@ -77,6 +77,9 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (!fullName.trim()) throw new Error("Enter your full name");
+        if (!phone.trim()) throw new Error("Enter your phone number");
+        if (!referralCode.trim()) throw new Error("Enter your referral code");
         if (!outletId) throw new Error("Choose your Campus Delight outlet");
         if (!gender) throw new Error("Select your gender");
         if (!dob) throw new Error("Enter your date of birth");
@@ -158,6 +161,10 @@ function AuthPage() {
                   <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Ada Obi" />
                 </div>
                 <div>
+                  <Label htmlFor="email">Email address</Label>
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+                </div>
+                <div>
                   <Label htmlFor="phone">Phone number</Label>
                   <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="0803 000 0000" />
                 </div>
@@ -195,15 +202,11 @@ function AuthPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="referral">Referral code (optional)</Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CDRXXXXXX" />
+                  <Label htmlFor="referral">Referral code</Label>
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} required placeholder="CDRXXXXXX" />
                 </div>
               </>
             )}
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
-            </div>
             <div>
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
