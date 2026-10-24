@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { staffAssignmentQuery, outletOrdersQuery, outletCustomersQuery } from "@/lib/queries";
 import { naira } from "@/lib/format";

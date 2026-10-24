@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { staffAssignmentQuery } from "@/lib/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
