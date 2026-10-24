@@ -3,6 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Update existing and new customer IDs and referral codes to CD plus six random digits; database checks, 100 simulated signups, existing-account conversion and signed-in profile verified; 28 tests pass.
 - [x] Add dashboard Eat now, pay later button; verified signed-in navigation and 12 customer pages plus homepage at 320, 390, 770, 1024 and 1440px. Shared navigation, summaries, tables and dialogs adapt to small screens; 26 existing rule tests pass. Role-specific admin/outlet screens were reviewed in source, not signed-in browser tested.
 - [x] Remove direct card checkout and restore original Paystack funding/subscription options; preserve verification safeguards and existing payment records. Verified signed-in pages and 22 rule tests.
 - [x] Require email confirmation after registration and restore email/password sign-in; hosted settings confirmed, rule tests and simulated unconfirmed-sign-in browser flow pass.

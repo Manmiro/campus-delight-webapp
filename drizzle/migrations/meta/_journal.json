@@ -78,6 +78,20 @@
       "when": 1792873411766,
       "tag": "0010_protect_payment_application",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792876488771,
+      "tag": "0011_eight_character_profile_codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792876517867,
+      "tag": "0012_validate_profile_code_format",
+      "breakpoints": true
     }
   ]
 }

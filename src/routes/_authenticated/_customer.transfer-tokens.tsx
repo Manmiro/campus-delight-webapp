@@ -64,7 +64,7 @@ function TransferTokensPage() {
           </div>
           <div>
             <Label htmlFor="recipient">Recipient customer ID or email</Label>
-            <Input id="recipient" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="CDXXXXXXXX or friend@email.com" />
+            <Input id="recipient" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="CD482901 or friend@email.com" />
           </div>
           <div>
             <Label htmlFor="amount">Amount (tokens)</Label>

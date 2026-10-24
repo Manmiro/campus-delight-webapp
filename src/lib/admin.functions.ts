@@ -1,14 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createClient } from "@supabase/supabase-js";
-
-function adminDb() {
-  return createClient(
-    process.env["SUPABASE_URL"]!,
-    process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
-}
+import type { Json } from "@/integrations/supabase/types";
 
 async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -16,7 +8,8 @@ async function assertCentralAdmin(context: { supabase: any; userId: string }) {
     _role: "central_admin",
   });
   if (!isAdmin) throw new Error("Forbidden: central administrators only");
-  return adminDb();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
 }
 
 export const adminCreateOutlet = createServerFn({ method: "POST" })
@@ -54,7 +47,7 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
   .inputValidator((input: { outletId: string; status?: string; name?: string; location?: string; address?: string }) => input)
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
-    const patch: Record<string, unknown> = {};
+    const patch: { status?: string; name?: string; location?: string; address?: string } = {};
     if (data["status"]) patch["status"] = data["status"];
     if (data["name"]) patch["name"] = data["name"];
     if (data["location"] !== undefined) patch["location"] = data["location"];
@@ -94,7 +87,8 @@ export const adminSetOutletManager = createServerFn({ method: "POST" })
         user_metadata: { full_name: data.fullName },
       });
       if (createErr) throw new Error(createErr.message);
-      userId = created.user!.id;
+      if (!created.user) throw new Error("Could not create the manager account");
+      userId = created.user.id;
     }
 
     const { error: roleErr } = await db.from("user_roles").upsert({ user_id: userId, role: "outlet_manager" });
@@ -106,15 +100,13 @@ export const adminSetOutletManager = createServerFn({ method: "POST" })
         { onConflict: "user_id,outlet_id,staff_role" },
       );
     if (staffErr) throw new Error(staffErr.message);
-    // staff account has no customer profile; create a minimal one so FKs resolve
-    await db.from("profiles").upsert({
-      id: userId,
+    // Signup already creates the profile and allocates codes; preserve them on reassignment.
+    const { error: profileErr } = await db.from("profiles").update({
       full_name: data.fullName,
       email: data.email,
-      customer_code: `STF-${userId.slice(0, 8).toUpperCase()}`,
-      referral_code: `STFR-${userId.slice(0, 6).toUpperCase()}`,
       is_active: false,
-    });
+    }).eq("id", userId);
+    if (profileErr) throw new Error(profileErr.message);
     await db.from("audit_logs").insert({
       actor_id: context.userId,
       action: "assign_outlet_manager",
@@ -173,7 +165,7 @@ export const adminDecideTransfer = createServerFn({ method: "POST" })
 
 export const adminUpdateConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { key: string; value: unknown }) => input)
+  .inputValidator((input: { key: string; value: unknown }) => ({ ...input, value: JSON.parse(JSON.stringify(input.value)) as Json }))
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const { error } = await db
