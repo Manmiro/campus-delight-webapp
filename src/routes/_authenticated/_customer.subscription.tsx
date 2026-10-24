@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -141,5 +142,3 @@ function SubscriptionPage() {
     </div>
   );
 }
-
-export { Table, TableHead, TableHeader, TableRow, TableCell, TableBody };

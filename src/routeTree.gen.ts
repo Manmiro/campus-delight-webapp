@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
+import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +52,12 @@ const AuthenticatedCustomerDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerSubscriptionRoute =
+  AuthenticatedCustomerSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -65,6 +73,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,13 +84,25 @@ export interface FileRoutesById {
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/reset-password' | '/payment/callback' | '/dashboard'
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/payment/callback'
+    | '/dashboard'
+    | '/subscription'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/payment/callback' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/payment/callback'
+    | '/dashboard'
+    | '/subscription'
   id:
     | '__root__'
     | '/'
@@ -91,6 +112,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer'
     | '/payment/callback'
     | '/_authenticated/_customer/dashboard'
+    | '/_authenticated/_customer/subscription'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,15 +174,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerDashboardRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/subscription': {
+      id: '/_authenticated/_customer/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof AuthenticatedCustomerSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
   }
 }
 
 interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
+  AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
 }
 
 const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
+  AuthenticatedCustomerSubscriptionRoute:
+    AuthenticatedCustomerSubscriptionRoute,
 }
 
 const AuthenticatedCustomerRouteWithChildren =
