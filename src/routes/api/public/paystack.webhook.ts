@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { applyVerifiedPayment, verifyWebhookSignature } from "@/lib/payments.server";
+import { z } from "zod";
 
 export const Route = createFileRoute("/api/public/paystack/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { applyVerifiedPayment, verifyWebhookSignature } = await import("@/lib/payments.server");
         const raw = await request.text();
         const signature = request.headers.get("x-paystack-signature");
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/api/public/paystack/webhook")({
         }
 
         try {
-          const event = JSON.parse(raw) as { event: string; data?: { reference?: string } };
+          const event = z.object({ event: z.string(), data: z.object({ reference: z.string().min(1).max(100) }).optional() }).parse(JSON.parse(raw));
           if (event.event === "charge.success" && event.data?.reference) {
             // Verify-then-apply: the reference is confirmed with Paystack again
             // before anything is credited, and application is idempotent.
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/api/public/paystack/webhook")({
           return new Response("OK", { status: 200 });
         } catch (error) {
           console.error("paystack webhook error", error);
-          return new Response("OK", { status: 200 }); // never leak internals; Paystack retries otherwise
+          return new Response("Payment processing failed", { status: 500 }); // non-2xx allows Paystack to retry
         }
       },
     },

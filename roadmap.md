@@ -3,6 +3,8 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Add Paystack card checkout for wallet funding, food purchases and subscriptions; secure server pricing and atomic verified settlement, 22 payment/rule tests pass.
+- [ ] Complete successful card-payment verification — Paystack merchant account returns "No active channel to process transaction" for card checkout; wallet and food flows tested signed-in but blocked before checkout.
 - [x] Require email confirmation after registration and restore email/password sign-in; hosted settings confirmed, rule tests and simulated unconfirmed-sign-in browser flow pass.
 - [ ] Verify actual confirmation email delivery and link-to-sign-in flow — requires access to a customer's confirmation email; no inbox available in this session.
 - [x] Enable Lovable Cloud + email auth

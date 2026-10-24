@@ -1193,11 +1193,24 @@ export type Database = {
         }
         Returns: Json
       }
+      prepare_card_order: {
+        Args: { p_customer_id: string; p_items: Json; p_reference: string }
+        Returns: string
+      }
       repay_loan: {
         Args: { p_amount_kobo: number; p_loan_id: string }
         Returns: Json
       }
       request_otp: { Args: { p_purpose?: string }; Returns: string }
+      settle_verified_payment: {
+        Args: {
+          p_amount_kobo: number
+          p_currency: string
+          p_payload: Json
+          p_reference: string
+        }
+        Returns: Json
+      }
       transfer_tokens: {
         Args: {
           p_principal: number

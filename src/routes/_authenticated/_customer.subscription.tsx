@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { initializePayment } from "@/lib/payments.functions";
 import { profileQuery, subscriptionsQuery, myPlanPricesQuery } from "@/lib/queries";
 import { getUserId } from "@/lib/queries";
@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/subscription")({
   component: SubscriptionPage,
-  head: () => ({ meta: [{ title: "My Subscription — Campus Delight" }] }),
+  head: () => ({ meta: [{ title: "My Subscription — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely by card." }, { property: "og:title", content: "My Subscription — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 const plans = [
@@ -37,11 +37,13 @@ function SubscriptionPage() {
     prices.find((p) => p.plan === plan && p.tier === tier && p.is_active)?.price_kobo ?? null;
 
   const buy = useMutation({
-    mutationFn: async ({ plan, tier }: { plan: string; tier: string }) => {
+    mutationFn: async ({ plan, tier, subscriptionId }: { plan: string; tier: string; subscriptionId?: string }) => {
       const priceKobo = priceOf(plan, tier);
       if (priceKobo == null) throw new Error("This plan is not available at your outlet yet");
       const customerId = await getUserId();
       if (!profile.outlet_id) throw new Error("No outlet assigned to your account");
+      let relatedId = subscriptionId;
+      if (!relatedId) {
       const { data: sub, error } = await supabase
         .from("subscriptions")
         .insert({
@@ -55,7 +57,9 @@ function SubscriptionPage() {
         .select("id")
         .single();
       if (error) throw new Error(error.message);
-      const result = await initPayment({ data: { purpose: "subscription", amountKobo: priceKobo, relatedId: sub.id } });
+      relatedId = sub.id;
+      }
+      const result = await initPayment({ data: { purpose: "subscription", relatedId, origin: window.location.origin } });
       window.location.href = result.authorizationUrl;
     },
     onSuccess: () => {
@@ -88,8 +92,8 @@ function SubscriptionPage() {
                   <div className="flex items-center gap-3">
                     <StatusBadge status={s.status} />
                     {s.status === "awaiting_payment" && (
-                      <Button size="sm" onClick={() => buy.mutate({ plan: s.plan, tier: s.tier })} disabled={buy.isPending}>
-                        {buy.isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />} Pay now
+                      <Button size="sm" onClick={() => buy.mutate({ plan: s.plan, tier: s.tier, subscriptionId: s.id })} disabled={buy.isPending}>
+                        {buy.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />} Pay by card
                       </Button>
                     )}
                   </div>
@@ -128,7 +132,7 @@ function SubscriptionPage() {
                           disabled={price == null || buy.isPending}
                           onClick={() => buy.mutate({ plan: p.plan, tier: t })}
                         >
-                          Subscribe
+                          <CreditCard className="h-3 w-3" /> Subscribe by card
                         </Button>
                       </div>
                     </div>

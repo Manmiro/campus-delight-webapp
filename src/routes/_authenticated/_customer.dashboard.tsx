@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/_customer/dashboard")({
   component: Dashboard,
-  head: () => ({ meta: [{ title: "Home — Campus Delight" }] }),
+  head: () => ({ meta: [{ title: "My Campus Delight — Meals & Wallet" }, { name: "description", content: "View your meals, wallet, rewards and recent Campus Delight orders." }, { property: "og:title", content: "My Campus Delight — Meals & Wallet" }, { property: "og:description", content: "Your campus meals, wallet and rewards in one place." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 function Dashboard() {
@@ -41,7 +41,7 @@ function Dashboard() {
 
   const fundWallet = useMutation({
     mutationFn: async () => {
-      const result = await initPayment({ data: { purpose: "wallet_funding", amountKobo: 200000 } });
+      const result = await initPayment({ data: { purpose: "wallet_funding", amountKobo: 200000, origin: window.location.origin } });
       window.location.href = result.authorizationUrl;
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not start payment"),
@@ -74,7 +74,7 @@ function Dashboard() {
         <StatCard label="Cash wallet" value={naira(wallet?.balance_kobo)} icon={<Wallet className="h-5 w-5 text-primary" />}
           hint={
             <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => fundWallet.mutate()} disabled={fundWallet.isPending}>
-              Fund ₦2,000 with Paystack <ArrowRight className="ml-1 h-3 w-3" />
+              Fund ₦2,000 by card <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           } />
         <StatCard label="Available tokens" value={fmtTokens(tk?.available_tokens)} icon={<Coins className="h-5 w-5 text-golden" />}

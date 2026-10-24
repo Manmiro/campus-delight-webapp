@@ -4,6 +4,7 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { verifyPayment } from "@/lib/payments.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/payment/callback")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/payment/callback")({
 function PaymentCallback() {
   const { reference } = Route.useSearch();
   const verify = useServerFn(verifyPayment);
+  const qc = useQueryClient();
   const [state, setState] = useState<"verifying" | "success" | "failed">("verifying");
   const [message, setMessage] = useState("");
 
@@ -37,11 +39,14 @@ function PaymentCallback() {
     void (async () => {
       try {
         const result = await verify({ data: { reference } });
-        if (result.status === "success") {
+        if (result.status === "success" && result.applied) {
+          void qc.invalidateQueries({ queryKey: ["me"] });
           setState("success");
           setMessage(
             result.purpose === "subscription"
               ? "Your subscription is now active."
+              : result.purpose === "order_payment"
+              ? "Your card payment is confirmed and your food order has been placed."
               : "Your wallet has been funded.",
           );
         } else {
@@ -53,7 +58,7 @@ function PaymentCallback() {
         setMessage("We could not confirm this payment right now. Please try again shortly.");
       }
     })();
-  }, [reference, verify]);
+  }, [reference, verify, qc]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
