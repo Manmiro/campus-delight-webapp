@@ -224,7 +224,7 @@ function AuthPage() {
                   <Label htmlFor="phone">Phone number</Label>
                   <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="0803 000 0000" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="gender">Gender</Label>
                     <Select value={gender} onValueChange={setGender} required>

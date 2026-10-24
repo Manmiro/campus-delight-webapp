@@ -49,13 +49,13 @@ function UtensilsIcon(props: { className?: string }) {
 
 function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   return (
-    <span className="flex items-center gap-2">
+    <span className="flex min-w-0 items-center gap-2">
       <span
-        className={`grid place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}
+        className={`grid shrink-0 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}
       >
         CD
       </span>
-      <span className={`font-display font-bold tracking-tight ${size === "sm" ? "text-base" : "text-xl"}`}>
+      <span className={`min-w-0 font-display font-bold ${size === "sm" ? "text-base" : "text-base sm:text-xl"}`}>
         Campus Delight
       </span>
     </span>
@@ -68,7 +68,7 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-w-6xl items-center px-4 py-3 sm:flex sm:justify-between">
           <Logo />
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
@@ -86,7 +86,7 @@ function Landing() {
         <section className="relative overflow-hidden bg-gradient-hero">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
             <div>
-              <Badge className="mb-4 bg-secondary text-secondary-foreground hover:bg-secondary">
+              <Badge className="mb-4 max-w-full whitespace-normal bg-secondary text-secondary-foreground hover:bg-secondary">
                 <Coins className="mr-1 h-3.5 w-3.5" /> 1 token = ₦1 · 1,000 free tokens on signup
               </Badge>
               <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
@@ -174,7 +174,7 @@ function Landing() {
         {/* Pay later */}
         <section className="mx-auto max-w-6xl px-4 pb-16">
           <Reveal>
-          <div className="grid items-center gap-8 rounded-3xl border border-border bg-card p-8 lg:grid-cols-2">
+          <div className="grid min-w-0 items-center gap-8 rounded-3xl border border-border bg-card p-4 sm:p-8 lg:grid-cols-2">
             <div>
               <Badge className="bg-golden text-golden-foreground hover:bg-golden">Eat Now &amp; Pay Later</Badge>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight">
@@ -207,8 +207,8 @@ function Landing() {
             <p className="mt-2 text-muted-foreground">Pick your outlet when you register — your menu, prices and services follow your outlet.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {outlets.map((o) => (
-                <div key={o.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-primary">
-                  <div>
+                <div key={o.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-primary">
+                  <div className="min-w-0 break-words">
                     <p className="font-semibold">{o.name}</p>
                     <p className="text-sm text-muted-foreground">{o.location}</p>
                   </div>

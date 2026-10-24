@@ -82,14 +82,14 @@ function SubscriptionPage() {
           <div className="mt-3 space-y-3">
             {subs.map((s) => (
               <Card key={s.id}>
-                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-                  <div>
+                <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0 break-words">
                     <p className="font-semibold">{planLabel(s.plan)} · {tierLabel(s.tier)}</p>
                     <p className="text-sm text-muted-foreground">
                       {s.start_date ? `${formatDate(s.start_date)} → ${formatDate(s.end_date)}` : "Awaiting payment"} · {naira(s.price_kobo)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3">
                     <StatusBadge status={s.status} />
                     {s.status === "awaiting_payment" && (
                       <Button size="sm" onClick={() => buy.mutate({ plan: s.plan, tier: s.tier, subscriptionId: s.id })} disabled={buy.isPending}>
@@ -107,7 +107,7 @@ function SubscriptionPage() {
       <section>
         <h2 className="font-display text-lg font-semibold">Plans at your outlet</h2>
         <p className="text-sm text-muted-foreground">Prices are set by your outlet. Weekends never include Monday–Thursday.</p>
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {plans.map((p) => (
             <Card key={p.plan}>
               <CardHeader className="pb-2">
@@ -118,8 +118,8 @@ function SubscriptionPage() {
                 {tiers.map((t) => {
                   const price = priceOf(p.plan, t);
                   return (
-                    <div key={t} className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
-                      <div>
+                    <div key={t} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border px-3 py-2">
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold">{tierLabel(t)}</p>
                         <p className="text-xs text-muted-foreground">{tierMeals[t]}</p>
                       </div>
