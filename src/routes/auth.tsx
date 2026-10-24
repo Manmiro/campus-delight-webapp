@@ -18,10 +18,12 @@ const outletsQuery = queryOptions({
 });
 
 const searchSchema = {
-  validateSearch: (search: Record<string, unknown>) => ({
-    mode: (search.mode as string) ?? "signin",
-    ref: (search.ref as string) ?? "",
-  }),
+  validateSearch: (search: Record<string, unknown>): { mode?: string; ref?: string } => {
+    const out: { mode?: string; ref?: string } = {};
+    if (typeof search["mode"] === "string") out["mode"] = search["mode"];
+    if (typeof search["ref"] === "string") out["ref"] = search["ref"];
+    return out;
+  },
 };
 
 export const Route = createFileRoute("/auth")({

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
-  CalendarDays, Coins, CreditCard, Gift, Home, ReceiptText, Send, ShoppingBag, SwapHoriz, UserRound, Wallet,
+  CalendarDays, Coins, CreditCard, Gift, Home, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { AppShell, type NavItem } from "@/components/app-shell";
@@ -26,7 +26,7 @@ const nav: NavItem[] = [
   { to: "/credit", label: "Eat Now & Pay Later", icon: <CreditCard className="h-4 w-4" /> },
   { to: "/repayments", label: "Loan Repayments", icon: <ReceiptText className="h-4 w-4" /> },
   { to: "/history", label: "Transaction History", icon: <ReceiptText className="h-4 w-4" /> },
-  { to: "/transfer-outlet", label: "Transfer Outlet", icon: <SwapHoriz className="h-4 w-4" /> },
+  { to: "/transfer-outlet", label: "Transfer Outlet", icon: <ArrowLeftRight className="h-4 w-4" /> },
   { to: "/profile", label: "Profile & Support", icon: <UserRound className="h-4 w-4" /> },
 ];
 

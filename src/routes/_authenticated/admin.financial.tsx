@@ -64,8 +64,8 @@ function AdminFinancial() {
     },
   });
 
-  const funded = (wl ?? []).filter((r) => r.tx_type === "funding").reduce((a, r) => a + r.amount_kobo, 0);
-  const feeTokens = (tl ?? []).filter((r) => r.tx_type === "transfer_fee").reduce((a, r) => a + r.amount, 0);
+  const funded = (wl ?? []).filter((r) => r["tx_type"] === "funding").reduce((a, r) => a + r["amount_kobo"], 0);
+  const feeTokens = (tl ?? []).filter((r) => r["tx_type"] === "transfer_fee").reduce((a, r) => a + r["amount"], 0);
 
   return (
     <div className="space-y-6">
@@ -153,16 +153,16 @@ function LedgerTable({ rows, kind }: { rows: Record<string, unknown>[]; kind: "w
       </TableHeader>
       <TableBody>
         {rows.map((r) => (
-          <TableRow key={String(r.id)}>
-            <TableCell className="text-xs">{formatDateTime(String(r.created_at))}</TableCell>
-            <TableCell className="text-xs">{(r.customer as { full_name?: string } | null)?.full_name ?? "—"}</TableCell>
-            <TableCell className="text-xs capitalize">{String(r.tx_type).replace("_", " ")}</TableCell>
-            <TableCell className="font-mono text-[11px]">{String(r.reference)}</TableCell>
-            <TableCell className={`text-right text-xs font-semibold ${Number(kind === "wallet" ? r.amount_kobo : r.amount) < 0 ? "text-destructive" : "text-primary"}`}>
-              {kind === "wallet" ? naira(Number(r.amount_kobo)) : fmtTokens(Number(r.amount))}
+          <TableRow key={String(r["id"])}>
+            <TableCell className="text-xs">{formatDateTime(String(r["created_at"]))}</TableCell>
+            <TableCell className="text-xs">{(r["customer"] as { full_name?: string } | null)?.full_name ?? "—"}</TableCell>
+            <TableCell className="text-xs capitalize">{String(r["tx_type"]).replace("_", " ")}</TableCell>
+            <TableCell className="font-mono text-[11px]">{String(r["reference"])}</TableCell>
+            <TableCell className={`text-right text-xs font-semibold ${Number(kind === "wallet" ? r["amount_kobo"] : r["amount"]) < 0 ? "text-destructive" : "text-primary"}`}>
+              {kind === "wallet" ? naira(Number(r["amount_kobo"])) : fmtTokens(Number(r["amount"]))}
             </TableCell>
-            {kind === "wallet" && <TableCell className="text-right text-xs">{naira(Number(r.balance_after_kobo))}</TableCell>}
-            {kind === "token" && <TableCell className="text-right text-xs">{fmtTokens(Number(r.available_after))} / {fmtTokens(Number(r.locked_after))}</TableCell>}
+            {kind === "wallet" && <TableCell className="text-right text-xs">{naira(Number(r["balance_after_kobo"]))}</TableCell>}
+            {kind === "token" && <TableCell className="text-right text-xs">{fmtTokens(Number(r["available_after"]))} / {fmtTokens(Number(r["locked_after"]))}</TableCell>}
           </TableRow>
         ))}
       </TableBody>

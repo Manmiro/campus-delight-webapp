@@ -55,10 +55,10 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const patch: Record<string, unknown> = {};
-    if (data.status) patch.status = data.status;
-    if (data.name) patch.name = data.name;
-    if (data.location !== undefined) patch.location = data.location;
-    if (data.address !== undefined) patch.address = data.address;
+    if (data["status"]) patch["status"] = data["status"];
+    if (data["name"]) patch["name"] = data["name"];
+    if (data["location"] !== undefined) patch["location"] = data["location"];
+    if (data["address"] !== undefined) patch["address"] = data["address"];
     const { data: outlet, error } = await db
       .from("outlets")
       .update(patch)

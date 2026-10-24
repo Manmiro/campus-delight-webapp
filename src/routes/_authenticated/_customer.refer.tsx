@@ -6,6 +6,7 @@ import { profileQuery, referralsQuery, tokenAccountQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { StatCard, StatusBadge } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/_customer/refer")({

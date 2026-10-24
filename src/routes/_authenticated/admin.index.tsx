@@ -40,7 +40,7 @@ const subsQuery = queryOptions({
 const loansQuery = queryOptions({
   queryKey: ["admin", "loans"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("loans").select("status, principal_kobo, charge_kobo").order("created_at", { ascending: false }).limit(500);
+    const { data, error } = await supabase.from("loans").select("status, principal_kobo, charge_kobo, total_due_kobo").order("created_at", { ascending: false }).limit(500);
     if (error) throw new Error(error.message);
     return data ?? [];
   },

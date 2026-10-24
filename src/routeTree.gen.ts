@@ -30,9 +30,12 @@ import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './route
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
+import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin.credit'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminFinancialRouteImport } from './routes/_authenticated/admin.financial'
 import { Route as AuthenticatedAdminOutletsRouteImport } from './routes/_authenticated/admin.outlets'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminTransfersRouteImport } from './routes/_authenticated/admin.transfers'
 import { Route as AuthenticatedOutletIndexRouteImport } from './routes/_authenticated/outlet.index'
 import { Route as AuthenticatedOutletCustomersRouteImport } from './routes/_authenticated/outlet.customers'
@@ -41,6 +44,7 @@ import { Route as AuthenticatedOutletOrdersRouteImport } from './routes/_authent
 import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authenticated/outlet.reports'
 import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
 import { Route as AuthenticatedOutletSubscriptionsRouteImport } from './routes/_authenticated/outlet.subscriptions'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack.webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -157,6 +161,17 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminCreditRoute =
+  AuthenticatedAdminCreditRouteImport.update({
+    id: '/credit',
+    path: '/credit',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCustomersRoute =
   AuthenticatedAdminCustomersRouteImport.update({
     id: '/customers',
@@ -173,6 +188,12 @@ const AuthenticatedAdminOutletsRoute =
   AuthenticatedAdminOutletsRouteImport.update({
     id: '/outlets',
     path: '/outlets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminTransfersRoute =
@@ -222,6 +243,12 @@ const AuthenticatedOutletSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedOutletRoute,
   } as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack/webhook',
+    path: '/api/public/paystack/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -242,9 +269,12 @@ export interface FileRoutesByFullPath {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
@@ -254,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -272,9 +303,12 @@ export interface FileRoutesByTo {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
@@ -284,6 +318,7 @@ export interface FileRoutesByTo {
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/outlet': typeof AuthenticatedOutletIndexRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -307,9 +342,12 @@ export interface FileRoutesById {
   '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/financial': typeof AuthenticatedAdminFinancialRoute
   '/_authenticated/admin/outlets': typeof AuthenticatedAdminOutletsRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/_authenticated/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/_authenticated/outlet/menu': typeof AuthenticatedOutletMenuRoute
@@ -319,6 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -341,9 +380,12 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/audit'
+    | '/admin/credit'
     | '/admin/customers'
     | '/admin/financial'
     | '/admin/outlets'
+    | '/admin/settings'
     | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
@@ -353,6 +395,7 @@ export interface FileRouteTypes {
     | '/outlet/subscriptions'
     | '/admin/'
     | '/outlet/'
+    | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -371,9 +414,12 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/audit'
+    | '/admin/credit'
     | '/admin/customers'
     | '/admin/financial'
     | '/admin/outlets'
+    | '/admin/settings'
     | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
@@ -383,6 +429,7 @@ export interface FileRouteTypes {
     | '/outlet/subscriptions'
     | '/admin'
     | '/outlet'
+    | '/api/public/paystack/webhook'
   id:
     | '__root__'
     | '/'
@@ -405,9 +452,12 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/transfer-outlet'
     | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/credit'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/financial'
     | '/_authenticated/admin/outlets'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/transfers'
     | '/_authenticated/outlet/customers'
     | '/_authenticated/outlet/menu'
@@ -417,6 +467,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outlet/subscriptions'
     | '/_authenticated/admin/'
     | '/_authenticated/outlet/'
+    | '/api/public/paystack/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -425,6 +476,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -576,6 +628,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/credit': {
+      id: '/_authenticated/admin/credit'
+      path: '/credit'
+      fullPath: '/admin/credit'
+      preLoaderRoute: typeof AuthenticatedAdminCreditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/customers': {
       id: '/_authenticated/admin/customers'
       path: '/customers'
@@ -595,6 +661,13 @@ declare module '@tanstack/react-router' {
       path: '/outlets'
       fullPath: '/admin/outlets'
       preLoaderRoute: typeof AuthenticatedAdminOutletsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/transfers': {
@@ -653,6 +726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOutletSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedOutletRoute
     }
+    '/api/public/paystack/webhook': {
+      id: '/api/public/paystack/webhook'
+      path: '/api/public/paystack/webhook'
+      fullPath: '/api/public/paystack/webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -695,17 +775,23 @@ const AuthenticatedCustomerRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminFinancialRoute: typeof AuthenticatedAdminFinancialRoute
   AuthenticatedAdminOutletsRoute: typeof AuthenticatedAdminOutletsRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminTransfersRoute: typeof AuthenticatedAdminTransfersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminFinancialRoute: AuthenticatedAdminFinancialRoute,
   AuthenticatedAdminOutletsRoute: AuthenticatedAdminOutletsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminTransfersRoute: AuthenticatedAdminTransfersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -757,6 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

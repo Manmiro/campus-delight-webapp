@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/payment/callback")({
   validateSearch: (search: Record<string, unknown>) => ({
-    reference: (search.reference as string) ?? (search.trxref as string) ?? "",
+    reference: (search["reference"] as string | undefined) ?? (search["trxref"] as string | undefined) ?? undefined,
   }),
   head: () => ({
     meta: [
