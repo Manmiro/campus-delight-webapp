@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep customer sign-in credential validation and confirmed-email checks in `src/lib/auth-rules.ts` with focused tests so the account-entry rules stay consistent.
+- Keep Paystack network and privileged settlement helpers in `*.server.ts`, dynamically loaded inside server-function handlers; card orders use server-priced pending snapshots and atomic, service-only settlement so redirects and retries cannot double-credit or fulfill unpaid purchases.
