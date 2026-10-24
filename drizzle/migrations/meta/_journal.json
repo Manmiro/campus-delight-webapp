@@ -29,6 +29,13 @@
       "when": 1792864618728,
       "tag": "0003_menus_orders_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792864638729,
+      "tag": "0004_credit_transfers_notifications_audit",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,224 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity: string
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity: string
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity?: string
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      credit_limit_history: {
+        Row: {
+          adjustment_type: string
+          created_at: string
+          customer_id: string
+          id: string
+          new_limit_kobo: number
+          notes: string | null
+          previous_limit_kobo: number
+          trigger_loan_id: string | null
+        }
+        Insert: {
+          adjustment_type: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          new_limit_kobo: number
+          notes?: string | null
+          previous_limit_kobo: number
+          trigger_loan_id?: string | null
+        }
+        Update: {
+          adjustment_type?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          new_limit_kobo?: number
+          notes?: string | null
+          previous_limit_kobo?: number
+          trigger_loan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_limit_history_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_limit_history_trigger_loan_id_fkey"
+            columns: ["trigger_loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_credit: {
+        Row: {
+          credit_limit_kobo: number
+          customer_id: string
+          outstanding_kobo: number
+          updated_at: string
+        }
+        Insert: {
+          credit_limit_kobo?: number
+          customer_id: string
+          outstanding_kobo?: number
+          updated_at?: string
+        }
+        Update: {
+          credit_limit_kobo?: number
+          customer_id?: string
+          outstanding_kobo?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_credit_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_repayments: {
+        Row: {
+          amount_kobo: number
+          created_at: string
+          customer_id: string
+          id: string
+          loan_id: string
+          method: string
+          reference: string
+          status: string
+        }
+        Insert: {
+          amount_kobo: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          loan_id: string
+          method?: string
+          reference: string
+          status?: string
+        }
+        Update: {
+          amount_kobo?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          loan_id?: string
+          method?: string
+          reference?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_repayments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_repayments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          charge_kobo: number
+          created_at: string
+          customer_id: string
+          due_at: string
+          id: string
+          item_summary: string | null
+          outlet_id: string
+          overdue_kobo: number
+          principal_kobo: number
+          settled_at: string | null
+          status: string
+          term_days: number
+          total_due_kobo: number
+        }
+        Insert: {
+          charge_kobo: number
+          created_at?: string
+          customer_id: string
+          due_at: string
+          id?: string
+          item_summary?: string | null
+          outlet_id: string
+          overdue_kobo?: number
+          principal_kobo: number
+          settled_at?: string | null
+          status?: string
+          term_days: number
+          total_due_kobo: number
+        }
+        Update: {
+          charge_kobo?: number
+          created_at?: string
+          customer_id?: string
+          due_at?: string
+          id?: string
+          item_summary?: string | null
+          outlet_id?: string
+          overdue_kobo?: number
+          principal_kobo?: number
+          settled_at?: string | null
+          status?: string
+          term_days?: number
+          total_due_kobo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_entitlements: {
         Row: {
           allowance: number
@@ -99,6 +317,41 @@ export type Database = {
             columns: ["outlet_id"]
             isOneToOne: false
             referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          customer_id: string
+          id: string
+          is_read: boolean
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_read?: boolean
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_read?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -314,6 +567,73 @@ export type Database = {
           {
             foreignKeyName: "outlet_staff_outlet_id_fkey"
             columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outlet_transfer_applications: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          decided_at: string | null
+          fee_amount: number
+          fee_method: string
+          from_outlet_id: string
+          id: string
+          reference: string
+          reviewed_by: string | null
+          status: string
+          to_outlet_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          decided_at?: string | null
+          fee_amount: number
+          fee_method: string
+          from_outlet_id: string
+          id?: string
+          reference: string
+          reviewed_by?: string | null
+          status?: string
+          to_outlet_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          decided_at?: string | null
+          fee_amount?: number
+          fee_method?: string
+          from_outlet_id?: string
+          id?: string
+          reference?: string
+          reviewed_by?: string | null
+          status?: string
+          to_outlet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_transfer_applications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outlet_transfer_applications_from_outlet_id_fkey"
+            columns: ["from_outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outlet_transfer_applications_to_outlet_id_fkey"
+            columns: ["to_outlet_id"]
             isOneToOne: false
             referencedRelation: "outlets"
             referencedColumns: ["id"]
