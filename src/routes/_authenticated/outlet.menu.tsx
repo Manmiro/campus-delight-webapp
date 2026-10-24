@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/outlet/menu")({
+export const Route = createFileRoute("/_authenticated/outlet/menu")({
   component: OutletMenu,
   head: () => ({ meta: [{ title: "Menu & Pricing — Campus Delight" }] }),
 });

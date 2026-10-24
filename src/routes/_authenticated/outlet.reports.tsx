@@ -5,7 +5,7 @@ import { naira } from "@/lib/format";
 import { StatCard } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const Route = createFileRoute("/outlet/reports")({
+export const Route = createFileRoute("/_authenticated/outlet/reports")({
   component: OutletReports,
   head: () => ({ meta: [{ title: "Reports — Campus Delight" }] }),
 });

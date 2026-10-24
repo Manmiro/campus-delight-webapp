@@ -8,7 +8,7 @@ import { StatusBadge, EmptyState } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/outlet/subscriptions")({
+export const Route = createFileRoute("/_authenticated/outlet/subscriptions")({
   component: OutletSubscriptions,
   head: () => ({ meta: [{ title: "Subscriptions — Campus Delight" }] }),
 });
