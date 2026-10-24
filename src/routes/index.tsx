@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
+import logoImg from "@/assets/logo.jpg";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -30,7 +31,9 @@ export const Route = createFileRoute("/")({
         content: "Meal subscriptions, wallets, tokens, referrals and Eat Now & Pay Later — all from your campus outlet.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://campus-delight-webapp.lovable.app/og-image.jpg" },
+      { name: "twitter:image", content: "https://campus-delight-webapp.lovable.app/og-image.jpg" },
     ],
   }),
   component: Landing,
@@ -50,11 +53,11 @@ function UtensilsIcon(props: { className?: string }) {
 function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span
-        className={`grid shrink-0 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}
-      >
-        CD
-      </span>
+      <img
+        src={logoImg}
+        alt="Campus Delight logo"
+        className={`shrink-0 rounded-full ${size === "sm" ? "h-8 w-8" : "h-11 w-11"}`}
+      />
       <span className={`min-w-0 font-display font-bold ${size === "sm" ? "text-base" : "text-base sm:text-xl"}`}>
         Campus Delight
       </span>
