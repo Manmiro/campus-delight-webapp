@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { profileQuery, notificationsQuery } from "@/lib/queries";
 import { formatDate, formatDateTime } from "@/lib/format";

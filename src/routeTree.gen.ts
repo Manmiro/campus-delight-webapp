@@ -17,10 +17,14 @@ import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticat
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
+import { Route as AuthenticatedCustomerHistoryRouteImport } from './routes/_authenticated/_customer.history'
 import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
+import { Route as AuthenticatedCustomerProfileRouteImport } from './routes/_authenticated/_customer.profile'
 import { Route as AuthenticatedCustomerReferRouteImport } from './routes/_authenticated/_customer.refer'
+import { Route as AuthenticatedCustomerRepaymentsRouteImport } from './routes/_authenticated/_customer.repayments'
 import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
 import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authenticated/_customer.tokens'
+import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './routes/_authenticated/_customer.transfer-outlet'
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 
@@ -64,16 +68,34 @@ const AuthenticatedCustomerDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerHistoryRoute =
+  AuthenticatedCustomerHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerOrderRoute =
   AuthenticatedCustomerOrderRouteImport.update({
     id: '/order',
     path: '/order',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerProfileRoute =
+  AuthenticatedCustomerProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerReferRoute =
   AuthenticatedCustomerReferRouteImport.update({
     id: '/refer',
     path: '/refer',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerRepaymentsRoute =
+  AuthenticatedCustomerRepaymentsRouteImport.update({
+    id: '/repayments',
+    path: '/repayments',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
 const AuthenticatedCustomerSubscriptionRoute =
@@ -86,6 +108,12 @@ const AuthenticatedCustomerTokensRoute =
   AuthenticatedCustomerTokensRouteImport.update({
     id: '/tokens',
     path: '/tokens',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerTransferOutletRoute =
+  AuthenticatedCustomerTransferOutletRouteImport.update({
+    id: '/transfer-outlet',
+    path: '/transfer-outlet',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
 const AuthenticatedCustomerTransferTokensRoute =
@@ -108,10 +136,14 @@ export interface FileRoutesByFullPath {
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/history': typeof AuthenticatedCustomerHistoryRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
+  '/profile': typeof AuthenticatedCustomerProfileRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
+  '/repayments': typeof AuthenticatedCustomerRepaymentsRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
@@ -122,10 +154,14 @@ export interface FileRoutesByTo {
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/history': typeof AuthenticatedCustomerHistoryRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
+  '/profile': typeof AuthenticatedCustomerProfileRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
+  '/repayments': typeof AuthenticatedCustomerRepaymentsRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
@@ -139,10 +175,14 @@ export interface FileRoutesById {
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/_authenticated/_customer/history': typeof AuthenticatedCustomerHistoryRoute
   '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
+  '/_authenticated/_customer/profile': typeof AuthenticatedCustomerProfileRoute
   '/_authenticated/_customer/refer': typeof AuthenticatedCustomerReferRoute
+  '/_authenticated/_customer/repayments': typeof AuthenticatedCustomerRepaymentsRoute
   '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
   '/_authenticated/_customer/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
 }
@@ -155,10 +195,14 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
+    | '/history'
     | '/order'
+    | '/profile'
     | '/refer'
+    | '/repayments'
     | '/subscription'
     | '/tokens'
+    | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
   fileRoutesByTo: FileRoutesByTo
@@ -169,10 +213,14 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
+    | '/history'
     | '/order'
+    | '/profile'
     | '/refer'
+    | '/repayments'
     | '/subscription'
     | '/tokens'
+    | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
   id:
@@ -185,10 +233,14 @@ export interface FileRouteTypes {
     | '/payment/callback'
     | '/_authenticated/_customer/credit'
     | '/_authenticated/_customer/dashboard'
+    | '/_authenticated/_customer/history'
     | '/_authenticated/_customer/order'
+    | '/_authenticated/_customer/profile'
     | '/_authenticated/_customer/refer'
+    | '/_authenticated/_customer/repayments'
     | '/_authenticated/_customer/subscription'
     | '/_authenticated/_customer/tokens'
+    | '/_authenticated/_customer/transfer-outlet'
     | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
   fileRoutesById: FileRoutesById
@@ -259,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerDashboardRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/history': {
+      id: '/_authenticated/_customer/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedCustomerHistoryRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/order': {
       id: '/_authenticated/_customer/order'
       path: '/order'
@@ -266,11 +325,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerOrderRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/profile': {
+      id: '/_authenticated/_customer/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedCustomerProfileRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/refer': {
       id: '/_authenticated/_customer/refer'
       path: '/refer'
       fullPath: '/refer'
       preLoaderRoute: typeof AuthenticatedCustomerReferRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/repayments': {
+      id: '/_authenticated/_customer/repayments'
+      path: '/repayments'
+      fullPath: '/repayments'
+      preLoaderRoute: typeof AuthenticatedCustomerRepaymentsRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
     '/_authenticated/_customer/subscription': {
@@ -285,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/tokens'
       fullPath: '/tokens'
       preLoaderRoute: typeof AuthenticatedCustomerTokensRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/transfer-outlet': {
+      id: '/_authenticated/_customer/transfer-outlet'
+      path: '/transfer-outlet'
+      fullPath: '/transfer-outlet'
+      preLoaderRoute: typeof AuthenticatedCustomerTransferOutletRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
     '/_authenticated/_customer/transfer-tokens': {
@@ -307,10 +387,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerCreditRoute: typeof AuthenticatedCustomerCreditRoute
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
+  AuthenticatedCustomerHistoryRoute: typeof AuthenticatedCustomerHistoryRoute
   AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
+  AuthenticatedCustomerProfileRoute: typeof AuthenticatedCustomerProfileRoute
   AuthenticatedCustomerReferRoute: typeof AuthenticatedCustomerReferRoute
+  AuthenticatedCustomerRepaymentsRoute: typeof AuthenticatedCustomerRepaymentsRoute
   AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
   AuthenticatedCustomerTokensRoute: typeof AuthenticatedCustomerTokensRoute
+  AuthenticatedCustomerTransferOutletRoute: typeof AuthenticatedCustomerTransferOutletRoute
   AuthenticatedCustomerTransferTokensRoute: typeof AuthenticatedCustomerTransferTokensRoute
   AuthenticatedCustomerWalletRoute: typeof AuthenticatedCustomerWalletRoute
 }
@@ -318,11 +402,16 @@ interface AuthenticatedCustomerRouteChildren {
 const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerCreditRoute: AuthenticatedCustomerCreditRoute,
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
+  AuthenticatedCustomerHistoryRoute: AuthenticatedCustomerHistoryRoute,
   AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
+  AuthenticatedCustomerProfileRoute: AuthenticatedCustomerProfileRoute,
   AuthenticatedCustomerReferRoute: AuthenticatedCustomerReferRoute,
+  AuthenticatedCustomerRepaymentsRoute: AuthenticatedCustomerRepaymentsRoute,
   AuthenticatedCustomerSubscriptionRoute:
     AuthenticatedCustomerSubscriptionRoute,
   AuthenticatedCustomerTokensRoute: AuthenticatedCustomerTokensRoute,
+  AuthenticatedCustomerTransferOutletRoute:
+    AuthenticatedCustomerTransferOutletRoute,
   AuthenticatedCustomerTransferTokensRoute:
     AuthenticatedCustomerTransferTokensRoute,
   AuthenticatedCustomerWalletRoute: AuthenticatedCustomerWalletRoute,
