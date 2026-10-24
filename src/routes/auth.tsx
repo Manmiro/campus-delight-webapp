@@ -39,7 +39,9 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { data: outlets } = useSuspenseQuery(outletsQuery);
-  const { mode: initialMode, ref } = Route.useSearch();
+  const search = Route.useSearch();
+  const initialMode = search["mode"];
+  const ref = search["ref"] ?? "";
   const getRole = useServerFn(getMyRole);
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode === "signup" ? "signup" : "signin");
@@ -52,7 +54,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
 
-  const roleHome = (role: string) => (role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard");
+  const roleHome = (role: string): "/admin" | "/outlet" | "/dashboard" =>
+    role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard";
 
   async function afterSignIn() {
     const role = await getRole();

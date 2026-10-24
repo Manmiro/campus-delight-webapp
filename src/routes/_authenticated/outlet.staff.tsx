@@ -4,7 +4,7 @@ import { staffAssignmentQuery } from "@/lib/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_authenticated/_outlet/staff")({
+export const Route = createFileRoute("/_authenticated/outlet/staff")({
   component: OutletStaff,
   head: () => ({ meta: [{ title: "Staff — Campus Delight" }] }),
 });

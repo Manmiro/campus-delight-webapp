@@ -32,7 +32,7 @@ const nav: NavItem[] = [
 
 function CustomerLayout() {
   return (
-    <AppShell title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
+    <AppShell nav={nav} title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
       <Outlet />
     </AppShell>
   );

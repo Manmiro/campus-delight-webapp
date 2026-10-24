@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const Route = createFileRoute("/_authenticated/_outlet/")({
+export const Route = createFileRoute("/_authenticated/outlet/")({
   component: OutletOverview,
   head: () => ({ meta: [{ title: "Outlet Overview — Campus Delight" }] }),
 });

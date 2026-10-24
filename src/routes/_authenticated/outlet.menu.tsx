@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/_authenticated/_outlet/menu")({
+export const Route = createFileRoute("/_authenticated/outlet/menu")({
   component: OutletMenu,
   head: () => ({ meta: [{ title: "Menu & Pricing — Campus Delight" }] }),
 });
@@ -59,7 +59,7 @@ function OutletMenu() {
 
   const patchItem = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
-      const { error } = await supabase.from("menu_items").update(patch).eq("id", id);
+      const { error } = await supabase.from("menu_items").update(patch as { [key: string]: never }).eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["menu", outletId] }),
