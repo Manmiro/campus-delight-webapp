@@ -6,7 +6,7 @@ import { Minus, Plus, ShieldCheck, Timer } from "lucide-react";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel } from "@/lib/format";
-import { orderPaymentOptions } from "@/lib/prd-rules";
+import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions } from "@/lib/prd-rules";
 import { EmptyState, StatusBadge, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +56,7 @@ function OrderPage() {
   const term = TERMS.find((t) => t.days === Number(termDays)) ?? TERMS[0];
   const creditCharge = Math.ceil((totalKobo * term.pct) / 100);
   const creditTotal = totalKobo + creditCharge;
-  const availableCredit = (credit?.credit_limit_kobo ?? 0) - (credit?.outstanding_kobo ?? 0);
+  const availableCredit = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
 
   const placeOrder = useMutation({
     mutationFn: async () => {
