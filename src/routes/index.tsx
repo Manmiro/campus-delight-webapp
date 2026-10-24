@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { queryOptions } from "@tanstack/react-query";
-import { ArrowRight, BadgeCheck, CalendarDays, Coins, Gift, MapPin, Users, Wallet, Zap } from "lucide-react";
+import { ArrowRight, BadgeCheck, CalendarDays, Coins, Gift, MapPin, Users, Zap } from "lucide-react";
 import { listOutlets } from "@/lib/catalog.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
+import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
+import { Reveal } from "@/components/landing/reveal";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -80,11 +83,7 @@ function Landing() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-40 -right-40 h-[480px] w-[480px] rounded-full bg-secondary blur-3xl"
-          />
+        <section className="relative overflow-hidden bg-gradient-hero">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
             <div>
               <Badge className="mb-4 bg-secondary text-secondary-foreground hover:bg-secondary">
@@ -92,14 +91,14 @@ function Landing() {
               </Badge>
               <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                 Hot, affordable meals
-                <span className="block text-primary">right on your campus.</span>
+                <span className="block bg-gradient-brand bg-clip-text text-transparent">right on your campus.</span>
               </h1>
               <p className="mt-5 max-w-xl text-lg text-muted-foreground">
                 Campus Delight connects you to your campus food outlet — subscribe to meal plans,
                 pay with your wallet or tokens, refer friends, and even eat now &amp; pay later.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button size="lg" asChild>
+                <Button size="lg" className="shadow-glow transition-transform hover:-translate-y-0.5 hover:scale-105" asChild>
                   <Link to="/auth" search={{}}>
                     Create free account <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -122,41 +121,7 @@ function Landing() {
               </dl>
             </div>
 
-            {/* Phone-style preview card */}
-            <div className="relative mx-auto w-full max-w-sm">
-              <div className="rotate-2 rounded-[2rem] border border-border bg-card p-5 shadow-xl">
-                <div className="rounded-3xl bg-primary p-5 text-primary-foreground">
-                  <p className="text-sm opacity-80">Good day, Ada</p>
-                  <p className="font-display text-2xl font-bold">Ebonyi State University Outlet</p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-white/15 p-3">
-                      <p className="text-xs opacity-80">Wallet</p>
-                      <p className="font-display text-xl font-bold">₦4,200</p>
-                    </div>
-                    <div className="rounded-2xl bg-white/15 p-3">
-                      <p className="text-xs opacity-80">Tokens</p>
-                      <p className="font-display text-xl font-bold">1,000</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {["Jollof rice & beef · ₦1,500", "Fried rice & chicken · ₦1,800", "Beans & bread · ₦800"].map(
-                    (m) => (
-                      <div key={m} className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-sm">
-                        {m}
-                        <span className="rounded-lg bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">
-                          + Add
-                        </span>
-                      </div>
-                    ),
-                  )}
-                  <div className="flex items-center justify-between rounded-xl bg-accent px-3 py-2.5 text-sm font-semibold text-accent-foreground">
-                    <span>Meals left today</span>
-                    <span>2 of 2</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DemoPhoneCard />
           </div>
         </section>
 
@@ -166,9 +131,10 @@ function Landing() {
             <h2 className="font-display text-3xl font-bold tracking-tight">How Campus Delight works</h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((s, i) => (
-                <div key={s.title} className="rounded-2xl border border-border bg-card p-5">
+                <Reveal key={s.title} delay={i * 120}>
+                <div className="h-full rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary hover:shadow-glow">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
+                    <span className="grid h-10 w-10 animate-wiggle place-items-center rounded-xl bg-primary/10 text-primary">
                       <s.icon className="h-5 w-5" />
                     </span>
                     <span className="font-display text-sm font-bold text-muted-foreground">Step {i + 1}</span>
@@ -176,6 +142,7 @@ function Landing() {
                   <h3 className="mt-4 font-display text-lg font-semibold">{s.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{s.body}</p>
                 </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -193,17 +160,20 @@ function Landing() {
               { name: "Weekly", days: "Seven days of service", icon: CalendarDays },
               { name: "Monthly", days: "A full calendar month", icon: CalendarDays },
             ].map((p, i) => (
-              <div key={p.name} className={`rounded-2xl border p-6 ${i === 1 ? "border-primary bg-secondary/30" : "border-border bg-card"}`}>
+              <Reveal key={p.name} delay={i * 120}>
+              <div className={`h-full rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-glow ${i === 1 ? "border-primary bg-secondary/30" : "border-border bg-card"}`}>
                 <p.icon className="h-6 w-6 text-primary" />
                 <h3 className="mt-3 font-display text-xl font-bold">{p.name}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{p.days}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* Pay later */}
         <section className="mx-auto max-w-6xl px-4 pb-16">
+          <Reveal>
           <div className="grid items-center gap-8 rounded-3xl border border-border bg-card p-8 lg:grid-cols-2">
             <div>
               <Badge className="bg-golden text-golden-foreground hover:bg-golden">Eat Now &amp; Pay Later</Badge>
@@ -222,18 +192,9 @@ function Landing() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl bg-secondary/50 p-6">
-              <div className="flex items-center gap-2 text-sm font-semibold text-secondary-foreground">
-                <Wallet className="h-4 w-4" /> Example
-              </div>
-              <div className="mt-3 space-y-2 text-sm">
-                <div className="flex justify-between"><span>Borrow (food)</span><span className="font-semibold">₦2,100</span></div>
-                <div className="flex justify-between"><span>7-day charge (15%)</span><span className="font-semibold">₦315</span></div>
-                <div className="flex justify-between border-t border-border pt-2"><span>Total repayable</span><span className="font-display text-lg font-bold">₦2,415</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Settle on time</span><span className="text-primary">Limit → ₦4,200</span></div>
-              </div>
-            </div>
+            <PayLaterCalculator />
           </div>
+          </Reveal>
         </section>
 
         {/* Outlets */}
@@ -246,7 +207,7 @@ function Landing() {
             <p className="mt-2 text-muted-foreground">Pick your outlet when you register — your menu, prices and services follow your outlet.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {outlets.map((o) => (
-                <div key={o.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
+                <div key={o.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-primary">
                   <div>
                     <p className="font-semibold">{o.name}</p>
                     <p className="text-sm text-muted-foreground">{o.location}</p>
@@ -260,7 +221,8 @@ function Landing() {
 
         {/* CTA */}
         <section className="mx-auto max-w-6xl px-4 py-16">
-          <div className="rounded-3xl bg-primary p-10 text-center text-primary-foreground">
+          <Reveal>
+          <div className="rounded-3xl bg-gradient-brand p-10 text-center text-primary-foreground shadow-glow">
             <Users className="mx-auto h-8 w-8 opacity-80" />
             <h2 className="mt-3 font-display text-3xl font-bold">Hungry? Your outlet is ready.</h2>
             <p className="mx-auto mt-2 max-w-lg opacity-90">
@@ -272,6 +234,7 @@ function Landing() {
               </Link>
             </Button>
           </div>
+          </Reveal>
         </section>
       </main>
 
