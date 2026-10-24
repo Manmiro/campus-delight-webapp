@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep customer sign-in credential validation and confirmed-email checks in `src/lib/auth-rules.ts` with focused tests so the account-entry rules stay consistent.
