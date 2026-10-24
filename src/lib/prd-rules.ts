@@ -28,6 +28,16 @@ export const LATE_REPAYMENT_REDUCTION = 0.3;
 /** A customer must hold an account this old before Eat Now & Pay Later opens up. */
 export const MIN_ACCOUNT_AGE_HOURS_FOR_CREDIT = 24;
 
+/** Pay Later charge by repayment term (days → percent of principal). */
+export const LOAN_TERM_CHARGE_PERCENT = { 7: 15, 14: 25, 30: 50 } as const;
+export type LoanTermDays = keyof typeof LOAN_TERM_CHARGE_PERCENT;
+
+/** Total repayable in kobo for a principal on a given term (integer math). */
+export function loanTotalDueKobo(principalKobo: number, termDays: LoanTermDays): number {
+  return principalKobo + Math.round((principalKobo * LOAN_TERM_CHARGE_PERCENT[termDays]) / 100);
+}
+
+
 export type PaymentMethod = "subscription_entitlement" | "cash_wallet" | "tokens" | "food_credit";
 
 /** What the sender actually gives up: the principal plus the flat transfer fee. */

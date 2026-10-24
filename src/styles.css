@@ -140,3 +140,32 @@
     color: var(--color-foreground);
   }
 }
+
+:root {
+  --gradient-brand: linear-gradient(135deg, var(--primary), oklch(0.55 0.15 120));
+  --gradient-hero: radial-gradient(circle at 80% 10%, color-mix(in oklab, var(--golden) 25%, transparent), transparent 45%),
+    radial-gradient(circle at 10% 80%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 50%);
+  --shadow-glow: 0 30px 60px -20px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+@utility bg-gradient-brand { background-image: var(--gradient-brand); }
+@utility bg-gradient-hero { background-image: var(--gradient-hero); }
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility animate-float { animation: cd-float 5s ease-in-out infinite; }
+@utility animate-pop-in { animation: cd-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-block; }
+@utility animate-badge-pop { animation: cd-badge-pop 1.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+@utility animate-wiggle { animation: cd-wiggle 2.5s ease-in-out infinite; }
+
+@keyframes cd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes cd-pop-in { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes cd-badge-pop {
+  0% { transform: scale(0) rotate(-12deg); opacity: 0; }
+  20% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+  30%, 80% { transform: scale(1) rotate(0); opacity: 1; }
+  100% { transform: translateY(-20px) scale(0.9); opacity: 0; }
+}
+@keyframes cd-wiggle { 0%, 90%, 100% { transform: rotate(0); } 93% { transform: rotate(-6deg); } 96% { transform: rotate(6deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-wiggle, .animate-pop-in { animation: none; }
+}

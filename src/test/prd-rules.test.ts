@@ -117,3 +117,10 @@ describe("checkout payment rules", () => {
     if (!mixed.ok) expect(mixed.error).toMatch(/one payment method/i);
   });
 });
+
+import { loanTotalDueKobo } from "@/lib/prd-rules";
+describe("Pay Later term charges", () => {
+  it("7 days adds 15%: ₦2,100 → ₦2,415", () => expect(loanTotalDueKobo(210_000, 7)).toBe(241_500));
+  it("14 days adds 25%: ₦2,100 → ₦2,625", () => expect(loanTotalDueKobo(210_000, 14)).toBe(262_500));
+  it("30 days adds 50%: ₦2,100 → ₦3,150", () => expect(loanTotalDueKobo(210_000, 30)).toBe(315_000));
+});
