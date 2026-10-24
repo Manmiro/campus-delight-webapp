@@ -1,14 +1,14 @@
 import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { StatCard } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const Route = createFileRoute("/admin/")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminOverview,
   head: () => ({ meta: [{ title: "Global Overview — Campus Delight HQ" }] }),
 });

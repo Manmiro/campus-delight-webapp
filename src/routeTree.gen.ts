@@ -29,6 +29,8 @@ import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authe
 import { Route as AuthenticatedCustomerTransferOutletRouteImport } from './routes/_authenticated/_customer.transfer-outlet'
 import { Route as AuthenticatedCustomerTransferTokensRouteImport } from './routes/_authenticated/_customer.transfer-tokens'
 import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminOutletsRouteImport } from './routes/_authenticated/admin.outlets'
 import { Route as AuthenticatedOutletIndexRouteImport } from './routes/_authenticated/outlet.index'
 import { Route as AuthenticatedOutletCustomersRouteImport } from './routes/_authenticated/outlet.customers'
 import { Route as AuthenticatedOutletMenuRouteImport } from './routes/_authenticated/outlet.menu'
@@ -147,6 +149,17 @@ const AuthenticatedCustomerWalletRoute =
     path: '/wallet',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminOutletsRoute =
+  AuthenticatedAdminOutletsRouteImport.update({
+    id: '/outlets',
+    path: '/outlets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedOutletIndexRoute =
   AuthenticatedOutletIndexRouteImport.update({
     id: '/',
@@ -193,7 +206,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
@@ -208,19 +221,20 @@ export interface FileRoutesByFullPath {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/outlet/': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -234,12 +248,14 @@ export interface FileRoutesByTo {
   '/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/outlet': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRoutesById {
@@ -249,7 +265,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
@@ -264,12 +280,14 @@ export interface FileRoutesById {
   '/_authenticated/_customer/transfer-outlet': typeof AuthenticatedCustomerTransferOutletRoute
   '/_authenticated/_customer/transfer-tokens': typeof AuthenticatedCustomerTransferTokensRoute
   '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
+  '/_authenticated/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/_authenticated/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/_authenticated/outlet/menu': typeof AuthenticatedOutletMenuRoute
   '/_authenticated/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/_authenticated/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/_authenticated/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/_authenticated/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
 }
 export interface FileRouteTypes {
@@ -293,19 +311,20 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/outlets'
     | '/outlet/customers'
     | '/outlet/menu'
     | '/outlet/orders'
     | '/outlet/reports'
     | '/outlet/staff'
     | '/outlet/subscriptions'
+    | '/admin/'
     | '/outlet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/admin'
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
@@ -319,12 +338,14 @@ export interface FileRouteTypes {
     | '/transfer-outlet'
     | '/transfer-tokens'
     | '/wallet'
+    | '/admin/outlets'
     | '/outlet/customers'
     | '/outlet/menu'
     | '/outlet/orders'
     | '/outlet/reports'
     | '/outlet/staff'
     | '/outlet/subscriptions'
+    | '/admin'
     | '/outlet'
   id:
     | '__root__'
@@ -348,12 +369,14 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/transfer-outlet'
     | '/_authenticated/_customer/transfer-tokens'
     | '/_authenticated/_customer/wallet'
+    | '/_authenticated/admin/outlets'
     | '/_authenticated/outlet/customers'
     | '/_authenticated/outlet/menu'
     | '/_authenticated/outlet/orders'
     | '/_authenticated/outlet/reports'
     | '/_authenticated/outlet/staff'
     | '/_authenticated/outlet/subscriptions'
+    | '/_authenticated/admin/'
     | '/_authenticated/outlet/'
   fileRoutesById: FileRoutesById
 }
@@ -507,6 +530,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerWalletRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/outlets': {
+      id: '/_authenticated/admin/outlets'
+      path: '/outlets'
+      fullPath: '/admin/outlets'
+      preLoaderRoute: typeof AuthenticatedAdminOutletsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/outlet/': {
       id: '/_authenticated/outlet/'
       path: '/'
@@ -597,6 +634,19 @@ const AuthenticatedCustomerRouteWithChildren =
     AuthenticatedCustomerRouteChildren,
   )
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminOutletsRoute: typeof AuthenticatedAdminOutletsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminOutletsRoute: AuthenticatedAdminOutletsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedOutletRouteChildren {
   AuthenticatedOutletCustomersRoute: typeof AuthenticatedOutletCustomersRoute
   AuthenticatedOutletMenuRoute: typeof AuthenticatedOutletMenuRoute
@@ -622,13 +672,13 @@ const AuthenticatedOutletRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRouteWithChildren
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedOutletRoute: typeof AuthenticatedOutletRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomerRoute: AuthenticatedCustomerRouteWithChildren,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedOutletRoute: AuthenticatedOutletRouteWithChildren,
 }
 
