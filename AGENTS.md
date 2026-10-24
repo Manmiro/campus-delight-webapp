@@ -10,5 +10,6 @@
 <!-- LOVABLE:END -->
 
 - Keep customer sign-in credential validation and confirmed-email checks in `src/lib/auth-rules.ts` with focused tests so the account-entry rules stay consistent.
+- Allocate profile customer/referral codes in a database trigger with serialized collision checks and format constraints; every creation path uses it and manager reassignment preserves codes.
 - Keep shared dashboard sizing and navigation in AppShell and shared summary components; constrain text tracks and scroll wide tables locally so every role works on small screens.
 - Keep Paystack network and privileged settlement helpers in `*.server.ts`, dynamically loaded inside server-function handlers; use atomic, service-only settlement so redirects and retries cannot double-credit. Preserve historical payment settlement when retiring a checkout method.

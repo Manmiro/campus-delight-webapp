@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles VALIDATE CONSTRAINT profiles_customer_code_format;
+ALTER TABLE public.profiles VALIDATE CONSTRAINT profiles_referral_code_format;

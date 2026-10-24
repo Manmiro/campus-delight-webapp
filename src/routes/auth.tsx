@@ -259,7 +259,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="referral">Referral code <span className="font-normal text-muted-foreground">(optional)</span></Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CDRXXXXXX" />
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CD482901" />
                 </div>
               </>
             )}
