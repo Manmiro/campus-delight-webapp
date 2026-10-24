@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
+import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
 import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
 import { Route as AuthenticatedCustomerReferRouteImport } from './routes/_authenticated/_customer.refer'
@@ -51,6 +52,12 @@ const PaymentCallbackRoute = PaymentCallbackRouteImport.update({
   path: '/payment/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCustomerCreditRoute =
+  AuthenticatedCustomerCreditRouteImport.update({
+    id: '/credit',
+    path: '/credit',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerDashboardRoute =
   AuthenticatedCustomerDashboardRouteImport.update({
     id: '/dashboard',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
+  '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
@@ -112,6 +120,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
+  '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
@@ -128,6 +137,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
+  '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
   '/_authenticated/_customer/refer': typeof AuthenticatedCustomerReferRoute
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/payment/callback'
+    | '/credit'
     | '/dashboard'
     | '/order'
     | '/refer'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/payment/callback'
+    | '/credit'
     | '/dashboard'
     | '/order'
     | '/refer'
@@ -171,6 +183,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/_customer'
     | '/payment/callback'
+    | '/_authenticated/_customer/credit'
     | '/_authenticated/_customer/dashboard'
     | '/_authenticated/_customer/order'
     | '/_authenticated/_customer/refer'
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_customer/credit': {
+      id: '/_authenticated/_customer/credit'
+      path: '/credit'
+      fullPath: '/credit'
+      preLoaderRoute: typeof AuthenticatedCustomerCreditRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/dashboard': {
       id: '/_authenticated/_customer/dashboard'
       path: '/dashboard'
@@ -285,6 +305,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedCustomerRouteChildren {
+  AuthenticatedCustomerCreditRoute: typeof AuthenticatedCustomerCreditRoute
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
   AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
   AuthenticatedCustomerReferRoute: typeof AuthenticatedCustomerReferRoute
@@ -295,6 +316,7 @@ interface AuthenticatedCustomerRouteChildren {
 }
 
 const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
+  AuthenticatedCustomerCreditRoute: AuthenticatedCustomerCreditRoute,
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
   AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
   AuthenticatedCustomerReferRoute: AuthenticatedCustomerReferRoute,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ShieldCheck, Timer, Loader2 } from "lucide-react";
@@ -138,10 +138,6 @@ function CreditPage() {
             </EmptyState>
           ) : (
             <div className="space-y-3">
-              {loans.slice(0, 6).map((l) => {
-                const outstanding = Math.max(0, l.total_due_kobo + l.overdue_kobo - (l.total_due_kobo + l.overdue_kobo));
-                return null;
-              })}
               {loans.slice(0, 6).map((l) => (
                 <Card key={l.id}>
                   <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
