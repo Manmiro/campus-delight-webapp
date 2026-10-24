@@ -16,7 +16,10 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
+import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
 import { Route as AuthenticatedCustomerSubscriptionRouteImport } from './routes/_authenticated/_customer.subscription'
+import { Route as AuthenticatedCustomerTokensRouteImport } from './routes/_authenticated/_customer.tokens'
+import { Route as AuthenticatedCustomerWalletRouteImport } from './routes/_authenticated/_customer.wallet'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,10 +55,28 @@ const AuthenticatedCustomerDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
+const AuthenticatedCustomerOrderRoute =
+  AuthenticatedCustomerOrderRouteImport.update({
+    id: '/order',
+    path: '/order',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
 const AuthenticatedCustomerSubscriptionRoute =
   AuthenticatedCustomerSubscriptionRouteImport.update({
     id: '/subscription',
     path: '/subscription',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerTokensRoute =
+  AuthenticatedCustomerTokensRouteImport.update({
+    id: '/tokens',
+    path: '/tokens',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerWalletRoute =
+  AuthenticatedCustomerWalletRouteImport.update({
+    id: '/wallet',
+    path: '/wallet',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
 
@@ -65,7 +86,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/order': typeof AuthenticatedCustomerOrderRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -73,7 +97,10 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/order': typeof AuthenticatedCustomerOrderRoute
   '/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,7 +111,10 @@ export interface FileRoutesById {
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
+  '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
   '/_authenticated/_customer/subscription': typeof AuthenticatedCustomerSubscriptionRoute
+  '/_authenticated/_customer/tokens': typeof AuthenticatedCustomerTokensRoute
+  '/_authenticated/_customer/wallet': typeof AuthenticatedCustomerWalletRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -94,7 +124,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/payment/callback'
     | '/dashboard'
+    | '/order'
     | '/subscription'
+    | '/tokens'
+    | '/wallet'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -102,7 +135,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/payment/callback'
     | '/dashboard'
+    | '/order'
     | '/subscription'
+    | '/tokens'
+    | '/wallet'
   id:
     | '__root__'
     | '/'
@@ -112,7 +148,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer'
     | '/payment/callback'
     | '/_authenticated/_customer/dashboard'
+    | '/_authenticated/_customer/order'
     | '/_authenticated/_customer/subscription'
+    | '/_authenticated/_customer/tokens'
+    | '/_authenticated/_customer/wallet'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -174,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerDashboardRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/order': {
+      id: '/_authenticated/_customer/order'
+      path: '/order'
+      fullPath: '/order'
+      preLoaderRoute: typeof AuthenticatedCustomerOrderRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
     '/_authenticated/_customer/subscription': {
       id: '/_authenticated/_customer/subscription'
       path: '/subscription'
@@ -181,18 +227,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomerSubscriptionRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
+    '/_authenticated/_customer/tokens': {
+      id: '/_authenticated/_customer/tokens'
+      path: '/tokens'
+      fullPath: '/tokens'
+      preLoaderRoute: typeof AuthenticatedCustomerTokensRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/wallet': {
+      id: '/_authenticated/_customer/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof AuthenticatedCustomerWalletRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
   }
 }
 
 interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
+  AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
   AuthenticatedCustomerSubscriptionRoute: typeof AuthenticatedCustomerSubscriptionRoute
+  AuthenticatedCustomerTokensRoute: typeof AuthenticatedCustomerTokensRoute
+  AuthenticatedCustomerWalletRoute: typeof AuthenticatedCustomerWalletRoute
 }
 
 const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
+  AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
   AuthenticatedCustomerSubscriptionRoute:
     AuthenticatedCustomerSubscriptionRoute,
+  AuthenticatedCustomerTokensRoute: AuthenticatedCustomerTokensRoute,
+  AuthenticatedCustomerWalletRoute: AuthenticatedCustomerWalletRoute,
 }
 
 const AuthenticatedCustomerRouteWithChildren =
