@@ -38,7 +38,7 @@ export function loanTotalDueKobo(principalKobo: number, termDays: LoanTermDays):
 }
 
 
-export type PaymentMethod = "subscription_entitlement" | "cash_wallet" | "tokens" | "food_credit";
+export type PaymentMethod = "subscription_entitlement" | "cash_wallet" | "tokens" | "food_credit" | "card";
 
 /** What the sender actually gives up: the principal plus the flat transfer fee. */
 export function transferTotalCostTokens(principalTokens: number): number {
@@ -95,6 +95,7 @@ export type OrderPaymentState = {
 /** Which payment methods a customer may use for an order of `totalKobo`. */
 export function orderPaymentOptions(state: OrderPaymentState): Record<PaymentMethod, boolean> {
   return {
+    card: state.totalKobo > 0,
     subscription_entitlement: state.mealsLeftToday > 0,
     cash_wallet: state.walletBalanceKobo >= state.totalKobo,
     tokens: state.tokenBalance >= state.totalKobo,

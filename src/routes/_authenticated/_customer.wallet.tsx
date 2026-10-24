@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { CreditCard } from "lucide-react";
 import { initializePayment } from "@/lib/payments.functions";
 import { walletQuery, walletLedgerQuery, profileQuery } from "@/lib/queries";
 import { naira, formatDateTime } from "@/lib/format";
@@ -15,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/wallet")({
   component: WalletPage,
-  head: () => ({ meta: [{ title: "Wallet — Campus Delight" }] }),
+  head: () => ({ meta: [{ title: "Wallet — Campus Delight" }, { name: "description", content: "Fund your Campus Delight wallet securely by card and view your transactions." }, { property: "og:title", content: "Wallet — Campus Delight" }, { property: "og:description", content: "Manage your campus food wallet and card top-ups." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 const PRESETS = [100000, 200000, 500000];
@@ -31,7 +32,7 @@ function WalletPage() {
   const fund = useMutation({
     mutationFn: async (kobo: number) => {
       if (!kobo || kobo <= 0) throw new Error("Enter a valid amount");
-      const result = await initPayment({ data: { purpose: "wallet_funding", amountKobo: kobo } });
+      const result = await initPayment({ data: { purpose: "wallet_funding", amountKobo: kobo, origin: window.location.origin } });
       window.location.href = result.authorizationUrl;
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not start payment"),
@@ -59,7 +60,7 @@ function WalletPage() {
               <Input id="amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <Button onClick={() => fund.mutate(Math.round(Number(amount) * 100))} disabled={fund.isPending}>
-              {fund.isPending ? "Starting…" : "Fund with Paystack"}
+              <CreditCard className="h-4 w-4" />{fund.isPending ? "Starting…" : "Fund by card"}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">Only payments verified on our backend ever increase your balance.</p>

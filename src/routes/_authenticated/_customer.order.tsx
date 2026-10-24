@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Minus, Plus, ShieldCheck, Timer } from "lucide-react";
+import { CreditCard, Minus, Plus, ShieldCheck, Timer } from "lucide-react";
+import { initializePayment } from "@/lib/payments.functions";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel } from "@/lib/format";
@@ -17,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
   component: OrderPage,
-  head: () => ({ meta: [{ title: "Order Food — Campus Delight" }] }),
+  head: () => ({ meta: [{ title: "Order Food — Campus Delight" }, { name: "description", content: "Order meals at your campus outlet and pay by card, wallet or your eligible benefits." }, { property: "og:title", content: "Order Food — Campus Delight" }, { property: "og:description", content: "Choose your campus meals and pay securely." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 type Cart = Record<string, number>;
@@ -30,6 +31,7 @@ const TERMS = [
 
 function OrderPage() {
   const qc = useQueryClient();
+  const initPayment = useServerFn(initializePayment);
   const [cart, setCart] = useState<Cart>({});
   const [method, setMethod] = useState("");
   const [termDays, setTermDays] = useState("7");
@@ -62,6 +64,11 @@ function OrderPage() {
   const placeOrder = useMutation({
     mutationFn: async () => {
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
+      if (method === "card") {
+        const result = await initPayment({ data: { purpose: "order_payment", items, origin: window.location.origin } });
+        window.location.assign(result.authorizationUrl);
+        return;
+      }
       const { error } = await supabase.rpc("place_order", {
         p_items: items,
         p_payment_method: method,
@@ -71,6 +78,7 @@ function OrderPage() {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
+      if (method === "card") return;
       toast.success("Order placed!");
       setCart({});
       setMethod("");
@@ -97,6 +105,7 @@ function OrderPage() {
   });
 
   const methodOptions = [
+    { value: "card", label: "Debit / credit card — Paystack", disabled: !payEnabled.card },
     { value: "subscription_entitlement", label: `Subscription meal (${mealsLeft} left today)`, disabled: !payEnabled.subscription_entitlement },
     { value: "cash_wallet", label: `Cash wallet — ${naira(wallet?.balance_kobo)}`, disabled: !payEnabled.cash_wallet },
     { value: "tokens", label: `Tokens — ${tk?.available_tokens ?? 0}`, disabled: !payEnabled.tokens },
@@ -150,7 +159,8 @@ function OrderPage() {
           ) : (
             <ul className="space-y-1.5 text-sm">
               {cartItems.map(([id, qty]) => {
-                const item = menu.find((m) => m.id === id)!;
+                const item = menu.find((m) => m.id === id);
+                if (!item) return null;
                 return (
                   <li key={id} className="flex justify-between">
                     <span>{item.name} ×{qty}</span>
@@ -202,6 +212,10 @@ function OrderPage() {
             </div>
           )}
 
+          {method === "card" && (
+            <p className="flex items-start gap-2 text-xs text-muted-foreground"><CreditCard className="h-4 w-4 shrink-0" />Secure card payment with Paystack. Cancelled orders are refunded to your Campus Delight wallet.</p>
+          )}
+
           {method === "subscription_entitlement" && activeSub && (
             <div className="flex items-center gap-2 rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground">
               <ShieldCheck className="h-4 w-4" />
@@ -209,8 +223,8 @@ function OrderPage() {
             </div>
           )}
 
-          <Button className="w-full" disabled={cartItems.length === 0 || !method || placeOrder.isPending} onClick={() => placeOrder.mutate()}>
-            {placeOrder.isPending && <LoaderPlaceholder />} Confirm order
+          <Button className="w-full" disabled={cartItems.length === 0 || !method || !methodOptions.some(o => o.value === method && !o.disabled) || placeOrder.isPending} onClick={() => placeOrder.mutate()}>
+            {placeOrder.isPending && <LoaderPlaceholder />}{method === "card" ? "Pay by card" : "Confirm order"}
           </Button>
         </CardContent>
       </Card>
