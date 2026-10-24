@@ -13,6 +13,10 @@ export const Route = createFileRoute("/payment/callback")({
     meta: [
       { title: "Payment status — Campus Delight" },
       { name: "description", content: "Your Campus Delight payment status." },
+      { property: "og:title", content: "Payment status — Campus Delight" },
+      { property: "og:description", content: "Your Campus Delight payment status." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PaymentCallback,

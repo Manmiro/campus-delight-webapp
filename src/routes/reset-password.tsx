@@ -12,6 +12,10 @@ export const Route = createFileRoute("/reset-password")({
     meta: [
       { title: "Reset your password — Campus Delight" },
       { name: "description", content: "Set a new password for your Campus Delight account." },
+      { property: "og:title", content: "Reset your password — Campus Delight" },
+      { property: "og:description", content: "Set a new password for your Campus Delight account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ResetPassword,

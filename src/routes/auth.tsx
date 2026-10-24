@@ -33,6 +33,13 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in or create your account — Campus Delight" },
       { name: "description", content: "Sign in to Campus Delight or create your customer account and pick your campus outlet." },
+      { property: "og:title", content: "Sign in or create your account — Campus Delight" },
+      {
+        property: "og:description",
+        content: "Sign in to Campus Delight or create your customer account and pick your campus outlet.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
