@@ -54,7 +54,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
 
-  const roleHome = (role: string) => (role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard");
+  const roleHome = (role: string): "/admin" | "/outlet" | "/dashboard" =>
+    role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard";
 
   async function afterSignIn() {
     const role = await getRole();

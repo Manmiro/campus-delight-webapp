@@ -42,8 +42,8 @@ function OutletCustomers() {
                   <p className="font-mono text-[10px] text-muted-foreground">{c.customer_code}</p>
                 </TableCell>
                 <TableCell className="text-xs">{c.phone ?? c.email ?? "—"}</TableCell>
-                <TableCell className="text-right text-xs">{naira(c.wallets?.[0]?.balance_kobo ?? 0)}</TableCell>
-                <TableCell className="text-right text-xs">{fmtTokens(c.token_accounts?.[0]?.available_tokens ?? 0)}</TableCell>
+                <TableCell className="text-right text-xs">{naira((c.wallets as { balance_kobo?: number } | null)?.balance_kobo ?? 0)}</TableCell>
+                <TableCell className="text-right text-xs">{fmtTokens((c.token_accounts as { available_tokens?: number } | null)?.available_tokens ?? 0)}</TableCell>
                 <TableCell className="text-xs">{formatDate(c.created_at)}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-[10px]">

@@ -68,7 +68,7 @@ function ResetPassword() {
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link to="/auth" className="font-semibold text-primary">
+          <Link to="/auth" search={{ mode: "signin", ref: "" }} className="font-semibold text-primary">
             Back to sign in
           </Link>
         </p>
