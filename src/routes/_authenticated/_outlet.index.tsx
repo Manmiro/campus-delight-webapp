@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { staffAssignmentQuery, outletOrdersQuery, outletCustomersQuery, myMenuQuery, subscriptionsQuery } from "@/lib/queries";
 import { naira } from "@/lib/format";
 import { StatCard, PageLoader } from "@/components/bits";
