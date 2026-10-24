@@ -36,6 +36,13 @@
       "when": 1792864638729,
       "tag": "0004_credit_transfers_notifications_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792864693817,
+      "tag": "0005_business_logic_rpcs",
+      "breakpoints": true
     }
   ]
 }

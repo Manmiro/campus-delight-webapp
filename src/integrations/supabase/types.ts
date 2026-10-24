@@ -1131,6 +1131,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_subscription: {
+        Args: { p_reference: string; p_subscription_id: string }
+        Returns: boolean
+      }
+      admin_adjust_credit_limit: {
+        Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
+        Returns: Json
+      }
+      apply_outlet_transfer: {
+        Args: { p_fee_method: string; p_to_outlet_id: string }
+        Returns: Json
+      }
+      apply_wallet_funding: {
+        Args: {
+          p_amount_kobo: number
+          p_customer_id: string
+          p_reference: string
+        }
+        Returns: boolean
+      }
+      get_config: { Args: { _key: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1141,7 +1162,38 @@ export type Database = {
       is_central_admin: { Args: never; Returns: boolean }
       is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
       is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
+      lock_referral_reward: {
+        Args: { p_referred_id: string; p_referrer_id: string }
+        Returns: undefined
+      }
       my_outlet_id: { Args: never; Returns: string }
+      place_order: {
+        Args: {
+          p_items: Json
+          p_loan_term_days?: number
+          p_payment_method: string
+          p_subscription_id?: string
+        }
+        Returns: Json
+      }
+      repay_loan: {
+        Args: { p_amount_kobo: number; p_loan_id: string }
+        Returns: Json
+      }
+      request_otp: { Args: { p_purpose?: string }; Returns: string }
+      transfer_tokens: {
+        Args: {
+          p_principal: number
+          p_recipient_identifier: string
+          p_reference?: string
+        }
+        Returns: Json
+      }
+      unlock_referral_reward: {
+        Args: { p_referred_id: string }
+        Returns: undefined
+      }
+      verify_otp: { Args: { p_code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "customer" | "outlet_manager" | "outlet_staff" | "central_admin"
