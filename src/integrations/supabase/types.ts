@@ -56,6 +56,162 @@ export type Database = {
           },
         ]
       }
+      menu_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          is_credit_eligible: boolean
+          name: string
+          outlet_id: string
+          price_kobo: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_credit_eligible?: boolean
+          name: string
+          outlet_id: string
+          price_kobo: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_credit_eligible?: boolean
+          name?: string
+          outlet_id?: string
+          price_kobo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          item_name: string
+          menu_item_id: string | null
+          order_id: string
+          quantity: number
+          unit_price_kobo: number
+        }
+        Insert: {
+          id?: string
+          item_name: string
+          menu_item_id?: string | null
+          order_id: string
+          quantity: number
+          unit_price_kobo: number
+        }
+        Update: {
+          id?: string
+          item_name?: string
+          menu_item_id?: string | null
+          order_id?: string
+          quantity?: number
+          unit_price_kobo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_id: string
+          fulfilled_at: string | null
+          id: string
+          loan_id: string | null
+          outlet_id: string
+          payment_method: string
+          reference: string
+          status: string
+          subscription_id: string | null
+          tokens_used: number | null
+          total_kobo: number
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          fulfilled_at?: string | null
+          id?: string
+          loan_id?: string | null
+          outlet_id: string
+          payment_method: string
+          reference: string
+          status?: string
+          subscription_id?: string | null
+          tokens_used?: number | null
+          total_kobo: number
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          fulfilled_at?: string | null
+          id?: string
+          loan_id?: string | null
+          outlet_id?: string
+          payment_method?: string
+          reference?: string
+          status?: string
+          subscription_id?: string | null
+          tokens_used?: number | null
+          total_kobo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       otp_codes: {
         Row: {
           code_hash: string
@@ -199,6 +355,56 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount_kobo: number
+          created_at: string
+          customer_id: string
+          id: string
+          idempotency_key: string | null
+          payload: Json | null
+          paystack_reference: string
+          purpose: string
+          related_id: string | null
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          amount_kobo: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          idempotency_key?: string | null
+          payload?: Json | null
+          paystack_reference: string
+          purpose: string
+          related_id?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          amount_kobo?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          idempotency_key?: string | null
+          payload?: Json | null
+          paystack_reference?: string
+          purpose?: string
+          related_id?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
