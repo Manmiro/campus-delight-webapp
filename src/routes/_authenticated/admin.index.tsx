@@ -32,7 +32,7 @@ const customersQuery = queryOptions({
 const subsQuery = queryOptions({
   queryKey: ["admin", "subs"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("subscriptions").select("status, price_kobo");
+    const { data, error } = await supabase.from("subscriptions").select("status, price_kobo, total_due_kobo, principal_kobo, charge_kobo");
     if (error) throw new Error(error.message);
     return data ?? [];
   },

@@ -61,7 +61,7 @@ function AdminSettings() {
                 size="sm"
                 className="mt-2"
                 disabled={drafts[c.key] === undefined || save.isPending}
-                onClick={() => save.mutate({ key: c.key, value: drafts[c.key] })}
+                onClick={() => save.mutate({ key: c.key, value: drafts[c.key] ?? "" })}
               >
                 Save {c.key}
               </Button>
