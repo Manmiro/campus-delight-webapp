@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/admin/outlets")({
   component: AdminOutlets,
-  head: () => ({ meta: [{ title: "Outlet Management — Campus Delight HQ" }] }),
+  head: () => ({ meta: [{"title": "Outlet Management — Campus Delight HQ"}, {"name": "description", "content": "View and manage outlet management in your Campus Delight account."}, {"property": "og:title", "content": "Outlet Management — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage outlet management in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 const outletsQuery = queryOptions({

@@ -138,6 +138,28 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    margin: 0;
+    min-width: 320px;
+    overflow-wrap: break-word;
+  }
+
+  :where(h1, h2, h3, p, div) {
+    min-width: 0;
+  }
+
+  .app-content :where([data-slot="card"], [role="tabpanel"]) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app-content table {
+    min-width: 36rem;
+  }
+
+  @media (max-width: 639px) {
+    input, textarea, select, [role="combobox"] {
+      font-size: 1rem;
+    }
   }
 }
 

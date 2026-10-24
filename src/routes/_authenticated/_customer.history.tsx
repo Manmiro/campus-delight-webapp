@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/history")({
   component: HistoryPage,
-  head: () => ({ meta: [{ title: "Transaction History — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Transaction History — Campus Delight"}, {"name": "description", "content": "View and manage transaction history in your Campus Delight account."}, {"property": "og:title", "content": "Transaction History — Campus Delight"}, {"property": "og:description", "content": "View and manage transaction history in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function HistoryPage() {

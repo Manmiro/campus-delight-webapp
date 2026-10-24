@@ -105,18 +105,18 @@ function OrderPage() {
   const categories = Array.from(new Set(menu.map((m) => m.category)));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-6">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="min-w-0 space-y-6">
         {categories.map((cat) => (
           <div key={cat}>
             <h2 className="mb-3 font-display text-lg font-semibold capitalize">{cat}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {menu.filter((m) => m.category === cat).map((item) => (
                 <Card key={item.id} className={item.is_available ? "" : "opacity-50"}>
-                  <CardContent className="flex items-center justify-between gap-3 p-4">
+                  <CardContent className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4">
                     <div className="min-w-0">
-                      <p className="truncate font-semibold">{item.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{item.description}</p>
+                      <p className="break-words font-semibold">{item.name}</p>
+                      <p className="break-words text-xs text-muted-foreground">{item.description}</p>
                       <p className="mt-1 text-sm font-bold text-primary">{naira(item.price_kobo)}</p>
                       {item.is_credit_eligible && (
                         <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-golden">
@@ -124,7 +124,7 @@ function OrderPage() {
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex shrink-0 items-center gap-1">
                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCart((c) => ({ ...c, [item.id]: Math.max(0, (c[item.id] ?? 0) - 1) }))}>
                         <Minus className="h-3 w-3" />
                       </Button>
@@ -141,7 +141,7 @@ function OrderPage() {
         ))}
       </div>
 
-      <Card className="sticky top-20 h-fit">
+      <Card className="min-w-0 h-fit xl:sticky xl:top-6">
         <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Your order</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {cartItems.length === 0 ? (
@@ -152,9 +152,9 @@ function OrderPage() {
                 const item = menu.find((m) => m.id === id);
                 if (!item) return null;
                 return (
-                  <li key={id} className="flex justify-between">
-                    <span>{item.name} ×{qty}</span>
-                    <span>{naira(item.price_kobo * qty)}</span>
+                  <li key={id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+                    <span className="min-w-0 break-words">{item.name} ×{qty}</span>
+                    <span className="shrink-0">{naira(item.price_kobo * qty)}</span>
                   </li>
                 );
               })}

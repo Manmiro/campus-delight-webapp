@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
   component: AdminAudit,
-  head: () => ({ meta: [{ title: "Audit Logs — Campus Delight HQ" }] }),
+  head: () => ({ meta: [{"title": "Audit Logs — Campus Delight HQ"}, {"name": "description", "content": "View and manage audit logs in your Campus Delight account."}, {"property": "og:title", "content": "Audit Logs — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage audit logs in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function AdminAudit() {

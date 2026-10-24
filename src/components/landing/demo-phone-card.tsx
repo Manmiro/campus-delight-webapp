@@ -71,11 +71,11 @@ export function DemoPhoneCard() {
                 <div
                   key={m.name}
                   className={cn(
-                    "flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition-all duration-300",
+                    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition-all duration-300",
                     isAdded ? "scale-[1.02] border-primary bg-secondary" : "border-border",
                   )}
                 >
-                  <span>{m.name} · {naira(m.price)}</span>
+                  <span className="min-w-0 break-words">{m.name} · {naira(m.price)}</span>
                   <span
                     className={cn(
                       "flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-semibold transition-colors",

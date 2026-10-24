@@ -11,11 +11,11 @@ export type NavItem = { to: string; label: string; icon: ReactNode; exact?: bool
 
 export function Logo({ size = "sm" }: { size?: "sm" | "md" }) {
   return (
-    <span className="flex items-center gap-2">
-      <span className={`grid place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}>
+    <span className="flex min-w-0 items-center gap-2">
+      <span className={`grid shrink-0 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground ${size === "sm" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`}>
         CD
       </span>
-      <span className={`font-display font-bold tracking-tight ${size === "sm" ? "text-sm" : "text-lg"}`}>Campus Delight</span>
+      <span className={`min-w-0 font-display font-bold ${size === "sm" ? "text-sm" : "text-lg"}`}>Campus Delight</span>
     </span>
   );
 }
@@ -62,7 +62,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
         <Logo />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
@@ -70,7 +70,7 @@ export function AppShell({
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-4">
+          <SheetContent side="left" className="w-72 max-w-[calc(100vw-2rem)] overflow-y-auto p-4">
             <SheetTitle>
               <Logo size="md" />
             </SheetTitle>
@@ -88,7 +88,7 @@ export function AppShell({
 
       <div className="mx-auto flex max-w-7xl">
         {/* Desktop sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-sidebar p-4 lg:flex">
+        <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-border bg-sidebar p-4 lg:flex xl:w-64">
           <div className="px-2 py-3">
             <Logo size="md" />
           </div>
@@ -101,7 +101,7 @@ export function AppShell({
           </Button>
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main className="app-content min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
             {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}

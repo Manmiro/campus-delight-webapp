@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/transfer-outlet")({
   component: TransferOutletPage,
-  head: () => ({ meta: [{ title: "Transfer Outlet — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Transfer Outlet — Campus Delight"}, {"name": "description", "content": "View and manage transfer outlet in your Campus Delight account."}, {"property": "og:title", "content": "Transfer Outlet — Campus Delight"}, {"property": "og:description", "content": "View and manage transfer outlet in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 const listAllOutlets = createServerFn({ method: "GET" }).handler(async () => {

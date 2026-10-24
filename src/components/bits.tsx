@@ -15,7 +15,7 @@ export function PageLoader({ label = "Loading…" }: { label?: string }) {
 
 export function EmptyState({ title, hint, children }: { title: string; hint?: string; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+    <div className="min-w-0 rounded-2xl border border-dashed border-border px-4 py-10 text-center sm:py-14">
       <Inbox className="mx-auto h-8 w-8 text-muted-foreground/60" />
       <p className="mt-3 font-semibold">{title}</p>
       {hint && <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{hint}</p>}
@@ -70,14 +70,14 @@ export function StatCard({
   className?: string;
 }) {
   return (
-    <Card className={className}>
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          {icon}
+    <Card className={cn("min-w-0", className)}>
+      <CardContent className="p-4 sm:p-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+          <p className="min-w-0 text-sm text-muted-foreground">{label}</p>
+          <span className="shrink-0">{icon}</span>
         </div>
-        <p className="mt-1 font-display text-2xl font-bold tracking-tight">{value}</p>
-        {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
+        <p className="mt-1 break-words font-display text-2xl font-bold">{value}</p>
+        {hint && <div className="mt-1 break-words text-xs text-muted-foreground">{hint}</div>}
       </CardContent>
     </Card>
   );

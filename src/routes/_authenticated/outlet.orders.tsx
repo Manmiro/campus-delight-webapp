@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/outlet/orders")({
   component: OutletOrders,
-  head: () => ({ meta: [{ title: "Orders & Fulfillment — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Orders & Fulfillment — Campus Delight"}, {"name": "description", "content": "View and manage orders & fulfillment in your Campus Delight account."}, {"property": "og:title", "content": "Orders & Fulfillment — Campus Delight"}, {"property": "og:description", "content": "View and manage orders & fulfillment in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function OutletOrders() {

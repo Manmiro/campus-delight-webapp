@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin/transfers")({
   component: AdminTransfers,
-  head: () => ({ meta: [{ title: "Outlet Transfers — Campus Delight HQ" }] }),
+  head: () => ({ meta: [{"title": "Outlet Transfers — Campus Delight HQ"}, {"name": "description", "content": "View and manage outlet transfers in your Campus Delight account."}, {"property": "og:title", "content": "Outlet Transfers — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage outlet transfers in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function AdminTransfers() {

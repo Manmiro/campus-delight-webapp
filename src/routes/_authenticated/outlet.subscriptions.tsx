@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/outlet/subscriptions")({
   component: OutletSubscriptions,
-  head: () => ({ meta: [{ title: "Subscriptions — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Subscriptions — Campus Delight"}, {"name": "description", "content": "View and manage subscriptions in your Campus Delight account."}, {"property": "og:title", "content": "Subscriptions — Campus Delight"}, {"property": "og:description", "content": "View and manage subscriptions in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 const outletSubsQuery = (outletId: string) =>

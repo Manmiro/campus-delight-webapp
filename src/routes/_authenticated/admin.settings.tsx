@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
-  head: () => ({ meta: [{ title: "System Settings — Campus Delight HQ" }] }),
+  head: () => ({ meta: [{"title": "System Settings — Campus Delight HQ"}, {"name": "description", "content": "View and manage system settings in your Campus Delight account."}, {"property": "og:title", "content": "System Settings — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage system settings in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function AdminSettings() {

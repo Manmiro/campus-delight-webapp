@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/outlet/menu")({
   component: OutletMenu,
-  head: () => ({ meta: [{ title: "Menu & Pricing — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Menu & Pricing — Campus Delight"}, {"name": "description", "content": "View and manage menu & pricing in your Campus Delight account."}, {"property": "og:title", "content": "Menu & Pricing — Campus Delight"}, {"property": "og:description", "content": "View and manage menu & pricing in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 const CATEGORIES = ["meals", "swallow", "drinks", "snacks", "sides"] as const;
