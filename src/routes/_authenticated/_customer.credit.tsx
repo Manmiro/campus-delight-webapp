@@ -8,6 +8,7 @@ import { ShieldCheck, Timer, Loader2 } from "lucide-react";
 import { requestOtp } from "@/lib/credit.functions";
 import { profileQuery, creditQuery, loansQuery, creditHistoryQuery } from "@/lib/queries";
 import { naira, formatDateTime, statusLabel } from "@/lib/format";
+import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatCard, EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ function CreditPage() {
   const verified = profile.verification_status === "verified";
   const eligible = hoursLeft === 0 && verified;
   const openLoan = loans.find((l) => ["active", "partially_repaid", "overdue"].includes(l.status));
-  const available = (credit?.credit_limit_kobo ?? 210000) - (credit?.outstanding_kobo ?? 0);
+  const available = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
 
   const request = useMutation({
     mutationFn: async () => {
@@ -79,7 +80,7 @@ function CreditPage() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Credit limit" value={naira(credit?.credit_limit_kobo ?? 210000)} hint="Doubles when you repay on time · −30% when late" />
+        <StatCard label="Credit limit" value={naira(credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO)} hint="Doubles when you repay on time · −30% when late" />
         <StatCard label="Available to borrow" value={naira(available)} hint="Maximum principal for your next loan" />
         <StatCard label="Outstanding" value={naira(credit?.outstanding_kobo ?? 0)} hint="Existing debt stays payable no matter what" />
       </div>

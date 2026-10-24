@@ -9,6 +9,7 @@ import {
   creditQuery, loansQuery, ordersQuery, notificationsQuery,
 } from "@/lib/queries";
 import { naira, tokens as fmtTokens, planLabel, tierLabel, formatDate, formatDateTime } from "@/lib/format";
+import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,9 +82,9 @@ function Dashboard() {
         <StatCard label="Meals today" value={`${mealsAllowed - mealsUsed} of ${mealsAllowed}`}
           icon={<CreditCard className="h-5 w-5 text-primary" />}
           hint={activeSub ? `${planLabel(activeSub.plan)} · ${tierLabel(activeSub.tier)}` : "No active subscription"} />
-        <StatCard label="Borrowing power" value={naira((credit?.credit_limit_kobo ?? 210000) - (credit?.outstanding_kobo ?? 0))}
+        <StatCard label="Borrowing power" value={naira((credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0))}
           icon={<CreditCard className="h-5 w-5 text-golden" />}
-          hint={openLoan ? `Repay your open loan before borrowing again` : `Limit ₦${((credit?.credit_limit_kobo ?? 210000) / 100).toLocaleString()}`} />
+          hint={openLoan ? `Repay your open loan before borrowing again` : `Limit ₦${((credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) / 100).toLocaleString()}`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

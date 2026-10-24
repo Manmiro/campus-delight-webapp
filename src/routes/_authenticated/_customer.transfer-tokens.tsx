@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { tokenAccountQuery, tokenTransfersQuery, profileQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
+import {
+  TOKEN_TRANSFER_DAILY_CAP_TOKENS,
+  TOKEN_TRANSFER_FEE_TOKENS,
+  remainingTransferAllowanceToday,
+  transferTotalCostTokens,
+} from "@/lib/prd-rules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +51,7 @@ function TransferTokensPage() {
   const sentToday = history
     .filter((t) => t.sender_id === me.id && t.status === "success" && new Date(t.created_at).toDateString() === new Date().toDateString())
     .reduce((a, t) => a + t.principal_tokens, 0);
-  const remainingToday = Math.max(0, 500 - sentToday);
+  const remainingToday = remainingTransferAllowanceToday(sentToday);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
@@ -54,7 +60,7 @@ function TransferTokensPage() {
         <CardContent className="space-y-4">
           <div className="rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground">
             <p className="font-semibold">Available: {fmtTokens(tk?.available_tokens)}</p>
-            <p className="mt-0.5 text-xs">Same-outlet customers only · 500-token daily principal limit · 10-token fee per transfer</p>
+            <p className="mt-0.5 text-xs">Same-outlet customers only · {TOKEN_TRANSFER_DAILY_CAP_TOKENS}-token daily principal limit · {TOKEN_TRANSFER_FEE_TOKENS}-token fee per transfer</p>
           </div>
           <div>
             <Label htmlFor="recipient">Recipient customer ID or email</Label>
@@ -65,7 +71,7 @@ function TransferTokensPage() {
             <Input id="amount" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="200" />
             {amountNum > 0 && (
               <p className="mt-1 text-xs text-muted-foreground">
-                They receive {fmtTokens(amountNum)} · you pay {fmtTokens(amountNum + 10)} (incl. 10 fee)
+                They receive {fmtTokens(amountNum)} · you pay {fmtTokens(transferTotalCostTokens(amountNum))} (incl. {TOKEN_TRANSFER_FEE_TOKENS} fee)
               </p>
             )}
           </div>
