@@ -1,5 +1,55 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792864572317,
+      "tag": "0000_core_outlets_profiles_roles_wallets_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792864590405,
+      "tag": "0001_ledgers_transfers_referrals_otp_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792864604415,
+      "tag": "0002_subscriptions_pricing_entitlements",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792864618728,
+      "tag": "0003_menus_orders_payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792864638729,
+      "tag": "0004_credit_transfers_notifications_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792864693817,
+      "tag": "0005_business_logic_rpcs",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792864705112,
+      "tag": "0006_fix_repay_loan",
+      "breakpoints": true
+    }
+  ]
 }
