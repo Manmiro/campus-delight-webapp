@@ -6,7 +6,7 @@ import { Minus, Plus, ShieldCheck, Timer } from "lucide-react";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel } from "@/lib/format";
-import { orderPaymentOptions } from "@/lib/prd-rules";
+import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions } from "@/lib/prd-rules";
 import { EmptyState, StatusBadge, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
