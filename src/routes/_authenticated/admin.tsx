@@ -1,11 +1,11 @@
-import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
   BarChart3, Building2, Landmark, LayoutDashboard, ScrollText, Settings, Users, Vote,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
     const role = await getMyRole();
     if (role !== "central_admin") {
@@ -34,4 +34,3 @@ function AdminLayout() {
   );
 }
 
-export { Link as _unusedLink };

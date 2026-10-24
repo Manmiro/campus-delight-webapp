@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOutletRouteImport } from './routes/_authenticated/outlet'
 import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
@@ -57,6 +58,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 } as any)
 const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
   id: '/_customer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOutletRoute = AuthenticatedOutletRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
   '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/admin'
     | '/outlet'
     | '/payment/callback'
     | '/credit'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/admin'
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/_customer'
+    | '/_authenticated/admin'
     | '/_authenticated/outlet'
     | '/payment/callback'
     | '/_authenticated/_customer/credit'
@@ -388,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/outlet': {
@@ -603,11 +622,13 @@ const AuthenticatedOutletRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRouteWithChildren
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedOutletRoute: typeof AuthenticatedOutletRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomerRoute: AuthenticatedCustomerRouteWithChildren,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedOutletRoute: AuthenticatedOutletRouteWithChildren,
 }
 
