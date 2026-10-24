@@ -5,7 +5,7 @@ import {
 import { getMyRole } from "@/lib/roles.functions";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
-export const Route = createFileRoute("/outlet")({
+export const Route = createFileRoute("/_authenticated/outlet")({
   beforeLoad: async () => {
     const role = await getMyRole();
     if (!role.startsWith("outlet")) {
