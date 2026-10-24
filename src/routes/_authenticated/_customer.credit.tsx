@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/credit")({
   component: CreditPage,
-  head: () => ({ meta: [{ title: "Eat Now & Pay Later — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Eat Now & Pay Later — Campus Delight"}, {"name": "description", "content": "View your Campus Delight borrowing limit, verification status, loans and repayment history."}, {"property": "og:title", "content": "Eat Now & Pay Later — Campus Delight"}, {"property": "og:description", "content": "View your Campus Delight borrowing limit, verification status, loans and repayment history."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function CreditPage() {
@@ -141,7 +141,7 @@ function CreditPage() {
             <div className="space-y-3">
               {loans.slice(0, 6).map((l) => (
                 <Card key={l.id}>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <div>
                       <p className="font-semibold">{l.item_summary ?? "Food order"}</p>
                       <p className="text-xs text-muted-foreground">

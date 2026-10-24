@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/outlet/customers")({
   component: OutletCustomers,
-  head: () => ({ meta: [{ title: "Customers — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Customers — Campus Delight"}, {"name": "description", "content": "View and manage customers in your Campus Delight account."}, {"property": "og:title", "content": "Customers — Campus Delight"}, {"property": "og:description", "content": "View and manage customers in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function OutletCustomers() {

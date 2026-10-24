@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminOverview,
-  head: () => ({ meta: [{ title: "Global Overview — Campus Delight HQ" }] }),
+  head: () => ({ meta: [{"title": "Global Overview — Campus Delight HQ"}, {"name": "description", "content": "View and manage global overview in your Campus Delight account."}, {"property": "og:title", "content": "Global Overview — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage global overview in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 const outletsQuery = queryOptions({

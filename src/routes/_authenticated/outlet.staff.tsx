@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/outlet/staff")({
   component: OutletStaff,
-  head: () => ({ meta: [{ title: "Staff — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Staff — Campus Delight"}, {"name": "description", "content": "View and manage staff in your Campus Delight account."}, {"property": "og:title", "content": "Staff — Campus Delight"}, {"property": "og:description", "content": "View and manage staff in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function OutletStaff() {

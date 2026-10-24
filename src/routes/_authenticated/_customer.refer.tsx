@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/refer")({
   component: ReferPage,
-  head: () => ({ meta: [{ title: "Refer & Earn — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Refer & Earn — Campus Delight"}, {"name": "description", "content": "Share your Campus Delight referral link and track earned and locked token rewards."}, {"property": "og:title", "content": "Refer & Earn — Campus Delight"}, {"property": "og:description", "content": "Share your Campus Delight referral link and track earned and locked token rewards."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function ReferPage() {
@@ -35,11 +35,11 @@ function ReferPage() {
 
       <Card>
         <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-muted-foreground">Your referral link</p>
             <p className="max-w-xl truncate font-mono text-sm">{referralLink}</p>
           </div>
-          <Button onClick={() => { void navigator.clipboard.writeText(referralLink); toast.success("Referral link copied"); }}>
+          <Button className="shrink-0" onClick={() => { void navigator.clipboard.writeText(referralLink); toast.success("Referral link copied"); }}>
             <Copy className="mr-2 h-4 w-4" /> Copy link
           </Button>
         </CardContent>

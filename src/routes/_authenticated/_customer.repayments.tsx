@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/repayments")({
   component: RepaymentsPage,
-  head: () => ({ meta: [{ title: "Loan Repayments — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Loan Repayments — Campus Delight"}, {"name": "description", "content": "View and manage loan repayments in your Campus Delight account."}, {"property": "og:title", "content": "Loan Repayments — Campus Delight"}, {"property": "og:description", "content": "View and manage loan repayments in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function RepaymentsPage() {

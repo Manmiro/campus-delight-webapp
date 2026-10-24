@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const Route = createFileRoute("/_authenticated/_customer/transfer-tokens")({
   component: TransferTokensPage,
-  head: () => ({ meta: [{ title: "Transfer Tokens — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Transfer Tokens — Campus Delight"}, {"name": "description", "content": "View and manage transfer tokens in your Campus Delight account."}, {"property": "og:title", "content": "Transfer Tokens — Campus Delight"}, {"property": "og:description", "content": "View and manage transfer tokens in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function TransferTokensPage() {

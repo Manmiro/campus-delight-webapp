@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/_customer/profile")({
   component: ProfilePage,
-  head: () => ({ meta: [{ title: "Profile & Support — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Profile & Support — Campus Delight"}, {"name": "description", "content": "View your Campus Delight customer details, outlet account and notifications."}, {"property": "og:title", "content": "Profile & Support — Campus Delight"}, {"property": "og:description", "content": "View your Campus Delight customer details, outlet account and notifications."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function ProfilePage() {
@@ -58,9 +58,9 @@ function ProfilePage() {
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/60 pb-2">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border-b border-border/60 pb-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={mono ? "font-mono text-xs font-semibold" : "font-medium"}>{value}</span>
+      <span className={mono ? "min-w-0 break-all text-right font-mono text-xs font-semibold" : "min-w-0 break-words text-right font-medium"}>{value}</span>
     </div>
   );
 }

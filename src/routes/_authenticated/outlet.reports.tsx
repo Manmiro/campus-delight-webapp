@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/outlet/reports")({
   component: OutletReports,
-  head: () => ({ meta: [{ title: "Reports — Campus Delight" }] }),
+  head: () => ({ meta: [{"title": "Reports — Campus Delight"}, {"name": "description", "content": "View and manage reports in your Campus Delight account."}, {"property": "og:title", "content": "Reports — Campus Delight"}, {"property": "og:description", "content": "View and manage reports in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
 function OutletReports() {
