@@ -25,10 +25,10 @@ export function DemoPhoneCard() {
     return () => window.clearInterval(id);
   }, []);
 
-  const added = Math.min(Math.max(step - 0, 0), 2); // items 0 and 1
+  const added = step === 5 ? 0 : Math.min(step, 2); // items 0 and 1; step 5 resets
   const mealsLeft = MEALS_PER_DAY - added;
   const wallet = START_WALLET - MENU.slice(0, added).reduce((a, m) => a + m.price, 0);
-  const tokens = step >= 4 ? 1100 : 1000;
+  const tokens = step === 4 ? 1100 : 1000;
 
   function onMove(e: React.MouseEvent) {
     const r = ref.current?.getBoundingClientRect();
