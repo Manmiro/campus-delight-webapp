@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 
 async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -46,7 +47,7 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
   .inputValidator((input: { outletId: string; status?: string; name?: string; location?: string; address?: string }) => input)
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
-    const patch: Record<string, unknown> = {};
+    const patch: { status?: string; name?: string; location?: string; address?: string } = {};
     if (data["status"]) patch["status"] = data["status"];
     if (data["name"]) patch["name"] = data["name"];
     if (data["location"] !== undefined) patch["location"] = data["location"];
@@ -164,7 +165,7 @@ export const adminDecideTransfer = createServerFn({ method: "POST" })
 
 export const adminUpdateConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { key: string; value: unknown }) => input)
+  .inputValidator((input: { key: string; value: unknown }) => ({ ...input, value: JSON.parse(JSON.stringify(input.value)) as Json }))
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const { error } = await db
