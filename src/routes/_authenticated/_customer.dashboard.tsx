@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { initializePayment } from "@/lib/payments.functions";
 import {
   profileQuery, walletQuery, tokenAccountQuery, subscriptionsQuery, todayEntitlementsQuery,
-  creditQuery, loansQuery, ordersQuery, notificationsQuery,
+  creditQuery, loansQuery, ordersQuery, notificationsQuery, referralsQuery,
 } from "@/lib/queries";
+import { FunZone } from "@/components/fun/fun-zone";
 import { naira, tokens as fmtTokens, planLabel, tierLabel, formatDate, formatDateTime } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits";
@@ -33,6 +34,7 @@ function Dashboard() {
   const { data: loans } = useSuspenseQuery(loansQuery);
   const { data: orders } = useSuspenseQuery(ordersQuery);
   const { data: notifs } = useSuspenseQuery(notificationsQuery);
+  const { data: referrals } = useSuspenseQuery(referralsQuery);
 
   const activeSub = subs.find((s) => s.status === "active");
   const entToday = ents.filter((e) => e.subscription_id === activeSub?.id);
@@ -93,6 +95,10 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <FunZone orders={orders} loans={loans} referrals={referrals} dob={profile.date_of_birth} firstName={profile.full_name.split(" ")[0] ?? ""} />
+
+
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Cash wallet" value={naira(wallet?.balance_kobo)} icon={<Wallet className="h-5 w-5 text-primary" />}
