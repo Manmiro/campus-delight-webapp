@@ -284,7 +284,7 @@ function OrderPage() {
 
 function emojiFor(category: string, name = ""): string {
   const s = `${name} ${category}`.toLowerCase();
-  if (s.includes("all")) return "🍽️";
+  if (category === "all" && !name) return "🍽️";
   if (s.includes("rice")) return "🍛";
   if (s.includes("bean")) return "🫘";
   if (s.includes("chicken")) return "🍗";
