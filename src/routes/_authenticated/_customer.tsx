@@ -1,15 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
-  CalendarDays, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
+  Building2, CalendarDays, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
+import { canEnterCustomerArea, customerAreaRedirect, secondaryAreaFor } from "@/lib/role-nav";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/_customer")({
   beforeLoad: async () => {
     const role = await getMyRole();
-    if (role !== "customer") {
-      throw redirect({ to: role === "central_admin" ? "/admin" : "/outlet" });
+    if (!canEnterCustomerArea(role)) {
+      throw redirect({ to: customerAreaRedirect(role) });
     }
   },
   component: CustomerLayout,
@@ -32,8 +34,15 @@ const nav: NavItem[] = [
 ];
 
 function CustomerLayout() {
+  const { data: role } = useQuery({ queryKey: ["my-role"], queryFn: () => getMyRole() });
+  const other = role ? secondaryAreaFor(role) : null;
+
+  const navList = other
+    ? [...nav, { to: other.to, label: other.label, icon: <Building2 className="h-4 w-4" /> }]
+    : nav;
+
   return (
-    <AppShell nav={nav} title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
+    <AppShell nav={navList} title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
       <Outlet />
     </AppShell>
   );
