@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LegalLinks } from "@/components/legal-page";
 
 export const Route = createFileRoute("/_authenticated/_customer/profile")({
   component: ProfilePage,
@@ -239,6 +240,7 @@ function ProfilePage() {
       <Card>
         <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Support & notifications</CardTitle></CardHeader>
         <CardContent>
+          <div className="mb-4"><LegalLinks /></div>
           <p className="text-sm text-muted-foreground">
             Need help? Reach your outlet or email <span className="font-semibold text-foreground">support@campusdelight.com</span>.
           </p>

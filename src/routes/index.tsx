@@ -9,6 +9,7 @@ import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LegalLinks } from "@/components/legal-page";
 import logoImg from "@/assets/logo.jpg";
 import heroImg from "@/assets/hero-meal.jpg";
 
@@ -268,6 +269,7 @@ function Landing() {
       <footer className="px-3 pb-6 sm:px-4">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card px-5 py-5 shadow-soft sm:flex-row">
           <Logo size="sm" />
+          <LegalLinks />
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Campus Delight Solutions Limited</p>
         </div>
       </footer>
