@@ -13,13 +13,15 @@ describe("Role areas", () => {
     expect(canEnterCustomerArea("customer")).toBe(true);
     expect(canEnterAdminArea("customer")).toBe(false);
     expect(canEnterOutletArea("customer")).toBe(false);
-    expect(secondaryAreaFor("customer")).toBeNull();
+    expect(headquartersLink("customer")).toBeNull();
+    expect(personalDashboardLink("customer")).toEqual({ to: "/dashboard", label: "My Dashboard" });
   });
 
   it("keeps the personal dashboard reachable for headquarters admins who are also customers", () => {
     expect(canEnterCustomerArea("central_admin")).toBe(true);
     expect(canEnterAdminArea("central_admin")).toBe(true);
-    expect(secondaryAreaFor("central_admin")).toEqual({ to: "/dashboard", label: "My Dashboard" });
+    expect(headquartersLink("central_admin")).toEqual({ to: "/admin", label: "Headquarters" });
+    expect(personalDashboardLink("central_admin")).toEqual({ to: "/dashboard", label: "My Dashboard" });
   });
 
   it("keeps outlet staff out of the customer dashboard and points them at their outlet", () => {
