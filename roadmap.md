@@ -3,8 +3,10 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
-- [ ] Connect Pingram SMS for phone verification; verify delivery with a real phone (requires Pingram credential and account configuration).
-- [ ] Add public sample Privacy and Terms pages and links from registration, homepage and profile; clearly identify legal review and business details still needed.
+- [x] Connect Pingram SMS for phone verification; saved key, real signed-in request accepted without exposing the code, and 12 focused SMS tests pass (59 total checks).
+- [ ] Confirm receipt of the test SMS and enter its code — awaits the account owner checking their phone; provider acceptance alone does not prove delivery.
+- [x] Add public sample Privacy and Terms pages and links from registration, homepage and profile; desktop/phone pages and profile link verified, no page errors or phone overflow.
+- [ ] Finalise policies — awaits verified operator name/address/privacy contact, retention/refund and age policies, and Nigerian legal review of privacy and food-credit terms.
 - [x] Redesign Tokens and Wallet with prominent balances, quick payment actions, easier funding, and readable activity; signed-in shortcuts, preset selection, invalid-amount feedback and Paystack checkout opening verified. Desktop, phone and tablet widths have no page overflow; 7 existing payment/token tests pass. No payment was completed or balance changed.
 - [x] CSV export on the admin Customers page covering the rows shown (customer ID, referral code, name, email, phone, outlet, joined, status, verified); browser-verified download plus 6 escaping/format tests; 35 tests pass.
 - [x] Update existing and new customer IDs and referral codes to CD plus six random digits; database checks, 100 simulated signups, existing-account conversion and signed-in profile verified; 28 tests pass.

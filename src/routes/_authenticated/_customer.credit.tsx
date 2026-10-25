@@ -30,7 +30,7 @@ function CreditPage() {
   const { data: history } = useSuspenseQuery(creditHistoryQuery);
 
   const [otp, setOtp] = useState("");
-  const [demoCode, setDemoCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   const [sending, setSending] = useState(false);
 
   const waitEnd = new Date(new Date(profile.created_at).getTime() + 24 * 3600 * 1000);
@@ -43,8 +43,9 @@ function CreditPage() {
   const request = useMutation({
     mutationFn: async () => {
       setSending(true);
-      const code = await askOtp();
-      setDemoCode(code); // Demo delivery: shown here until an SMS gateway is connected.
+      await askOtp();
+      setCodeSent(true);
+      toast.success("Verification text requested. Check your phone.");
     },
     onSettled: () => setSending(false),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not send code"),
@@ -52,13 +53,14 @@ function CreditPage() {
 
   const verify = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("verify_otp", { p_code: otp });
+      const { data, error } = await supabase.rpc("verify_otp", { p_code: otp });
       if (error) throw new Error(error.message);
+      if (!data) throw new Error("Code is incorrect, expired or no longer valid. Try again or request a new code.");
     },
     onSuccess: () => {
       toast.success("Phone verified! Eat Now & Pay Later is unlocked.");
       setOtp("");
-      setDemoCode("");
+      setCodeSent(false);
       void qc.invalidateQueries({ queryKey: ["me", "profile"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Verification failed"),
@@ -179,7 +181,7 @@ function CreditPage() {
       )}
 
 
-      {hoursLeft === 0 && !verified && demoCode && (
+      {hoursLeft === 0 && !verified && codeSent && (
         <Card>
           <CardContent className="space-y-3 p-5">
             <Label>Enter the 5-digit code sent to {profile.phone}</Label>
@@ -194,7 +196,7 @@ function CreditPage() {
               <Button variant="ghost" onClick={() => request.mutate()} disabled={sending}>Resend</Button>
             </div>
             <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
-              Demo delivery (no SMS gateway connected yet): your code is <span className="font-mono font-bold text-foreground">{demoCode}</span>. It expires in 5 minutes.
+              Your code expires in 5 minutes. Wait at least 60 seconds before requesting another text. Delivery may take a moment.
             </p>
           </CardContent>
         </Card>

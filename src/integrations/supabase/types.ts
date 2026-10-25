@@ -512,6 +512,7 @@ export type Database = {
           expires_at: string
           failed_attempts: number
           id: string
+          phone: string | null
           purpose: string
         }
         Insert: {
@@ -522,6 +523,7 @@ export type Database = {
           expires_at: string
           failed_attempts?: number
           id?: string
+          phone?: string | null
           purpose?: string
         }
         Update: {
@@ -532,6 +534,7 @@ export type Database = {
           expires_at?: string
           failed_attempts?: number
           id?: string
+          phone?: string | null
           purpose?: string
         }
         Relationships: [
@@ -1224,6 +1227,7 @@ export type Database = {
       is_central_admin: { Args: never; Returns: boolean }
       is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
       is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
+      issue_sms_otp: { Args: { p_customer: string }; Returns: Json }
       lock_referral_reward: {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined
