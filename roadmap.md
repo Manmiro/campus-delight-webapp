@@ -29,3 +29,10 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 - [x] Head metadata review: unique title/description + og & twitter meta on public routes; layout routes carry none by design
 - [x] Profile editing: customers edit their profile (name, phone, gender, date of birth) on the profile page; browser-verified save and revert.
 - [x] Profile pictures: upload/remove on the profile page in a private avatars bucket (signed links); gender-based default avatar verified for male. Female avatar in place; not visually verified with a female account.
+
+## Engagement (fun) features
+- [x] Daily spin check-in with streaks and streak bonuses (amounts provisional)
+- [x] Levels, badges, "Your usual?" shortcut, referral milestone bar, birthday banner, confetti
+- [ ] Outlet leaderboards (opt-in) — awaiting user go-ahead
+- [ ] Outlet vs outlet challenges, mystery rewards — need business-approved token budgets
+- [ ] Live order tracker and reminder notifications

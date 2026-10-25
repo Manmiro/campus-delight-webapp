@@ -153,7 +153,7 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
           </Link>
           <Link to="/refer" className="rounded-3xl border border-border/60 bg-card p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-golden">
             <p className="flex items-center gap-1.5 text-sm font-semibold"><Gift className="h-4 w-4 text-golden" />
-              {ref.target ? `${ref.remaining} more friend${ref.remaining === 1 ? "" : "s"} to reach ${ref.target}` : "Referral champion!"}
+              {ref.target === 1 ? "Bring your first friend" : ref.target ? `${ref.remaining} more friend${ref.remaining === 1 ? "" : "s"} to reach ${ref.target}` : "Referral champion!"}
             </p>
             <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted">
               <div className="h-full rounded-full bg-gradient-golden transition-all duration-700" style={{ width: `${ref.progress}%` }} />
