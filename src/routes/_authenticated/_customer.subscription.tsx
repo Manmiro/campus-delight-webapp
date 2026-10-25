@@ -148,7 +148,7 @@ function SubscriptionPage() {
                   </span>
                 </div>
                 <div className="mt-3 flex gap-1.5 text-2xl" aria-label={tierMeals[t]}>
-                  {Array.from({ length: tierCount[t] }).map((_, k) => <span key={k}>🍛</span>)}
+                  {Array.from({ length: tierCount[t] ?? 1 }).map((_, k) => <span key={k}>🍛</span>)}
                 </div>
                 <p className={`text-sm ${popular ? "opacity-90" : "text-muted-foreground"}`}>{tierMeals[t]}</p>
                 <p className="mt-4 font-display text-3xl font-extrabold">{price == null ? "—" : naira(price)}</p>
