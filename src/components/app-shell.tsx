@@ -84,6 +84,7 @@ export function AppShell({
             </Button>
           </SheetContent>
         </Sheet>
+        </div>
       </header>
 
       <div className="mx-auto flex max-w-[1440px] gap-4 lg:p-4">
