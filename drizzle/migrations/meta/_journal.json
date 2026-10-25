@@ -141,6 +141,13 @@
       "when": 1792960534126,
       "tag": "0019_avatars_owner_read",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792960691955,
+      "tag": "0020_restrict_menu_and_price_reads",
+      "breakpoints": true
     }
   ]
 }
