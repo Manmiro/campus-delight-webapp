@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LegalLinks } from "@/components/legal-page";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -275,6 +276,7 @@ function AuthPage() {
               {mode === "signin" ? "Sign in" : "Create my account"}
             </Button>
           </form>
+          <div className="mt-5"><LegalLinks /></div>
           {mode === "signin" && (
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Forgot your password?{" "}
