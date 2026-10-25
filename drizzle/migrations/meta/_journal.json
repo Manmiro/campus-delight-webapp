@@ -120,6 +120,13 @@
       "when": 1792956234210,
       "tag": "0016_weekly_leaderboard",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792957737092,
+      "tag": "0017_fix_token_order_units",
+      "breakpoints": true
     }
   ]
 }
