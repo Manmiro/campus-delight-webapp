@@ -775,6 +775,7 @@ export type Database = {
           gender: string | null
           id: string
           is_active: boolean
+          leaderboard_opt_in: boolean
           outlet_id: string | null
           phone: string | null
           referral_code: string
@@ -790,6 +791,7 @@ export type Database = {
           gender?: string | null
           id: string
           is_active?: boolean
+          leaderboard_opt_in?: boolean
           outlet_id?: string | null
           phone?: string | null
           referral_code: string
@@ -805,6 +807,7 @@ export type Database = {
           gender?: string | null
           id?: string
           is_active?: boolean
+          leaderboard_opt_in?: boolean
           outlet_id?: string | null
           phone?: string | null
           referral_code?: string
@@ -1266,6 +1269,17 @@ export type Database = {
         Returns: undefined
       }
       verify_otp: { Args: { p_code: string }; Returns: boolean }
+      weekly_leaderboard: {
+        Args: never
+        Returns: {
+          checkins: number
+          display_name: string
+          is_me: boolean
+          orders: number
+          points: number
+          rank: number
+        }[]
+      }
     }
     Enums: {
       app_role: "customer" | "outlet_manager" | "outlet_staff" | "central_admin"

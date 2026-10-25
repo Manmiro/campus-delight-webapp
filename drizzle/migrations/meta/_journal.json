@@ -113,6 +113,13 @@
       "when": 1792955589243,
       "tag": "0015_daily_checkin_rewards",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792956234210,
+      "tag": "0016_weekly_leaderboard",
+      "breakpoints": true
     }
   ]
 }
