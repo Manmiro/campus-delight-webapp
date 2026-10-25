@@ -148,6 +148,13 @@
       "when": 1792960691955,
       "tag": "0020_restrict_menu_and_price_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792968475730,
+      "tag": "0021_secure_sms_verification",
+      "breakpoints": true
     }
   ]
 }
