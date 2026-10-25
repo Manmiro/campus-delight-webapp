@@ -68,8 +68,9 @@ function ProfilePage() {
       const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("avatars").upload(path, file, { contentType: file.type });
       if (error) throw new Error(error.message);
-      if (isAvatarPath(profile.avatar_url)) {
-        await supabase.storage.from("avatars").remove([profile.avatar_url]);
+      const previous = profile.avatar_url;
+      if (isAvatarPath(previous)) {
+        await supabase.storage.from("avatars").remove([previous]);
       }
       const { error: updateError } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", profile.id);
       if (updateError) throw new Error(updateError.message);
@@ -85,8 +86,9 @@ function ProfilePage() {
   const removePhoto = async () => {
     setUploading(true);
     try {
-      if (isAvatarPath(profile.avatar_url)) {
-        await supabase.storage.from("avatars").remove([profile.avatar_url]);
+      const previous = profile.avatar_url;
+      if (isAvatarPath(previous)) {
+        await supabase.storage.from("avatars").remove([previous]);
       }
       const { error } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", profile.id);
       if (error) throw new Error(error.message);

@@ -8,7 +8,7 @@ export function defaultAvatarFor(gender?: string | null): string {
 }
 
 /** Avatar values are storage paths like `<uid>/avatar-<ts>.jpg`; anything else is already a URL. */
-export function isAvatarPath(value?: string | null): boolean {
+export function isAvatarPath(value?: string | null): value is string {
   return !!value && !value.startsWith("http");
 }
 
