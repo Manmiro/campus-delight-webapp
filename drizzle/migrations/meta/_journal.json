@@ -99,6 +99,13 @@
       "when": 1792878349882,
       "tag": "0013_fix_place_order_credit_summary",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792954783173,
+      "tag": "0014_profile_avatars",
+      "breakpoints": true
     }
   ]
 }
