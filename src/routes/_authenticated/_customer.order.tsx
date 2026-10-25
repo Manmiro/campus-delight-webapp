@@ -105,7 +105,12 @@ function OrderPage() {
 
   // "meals" is a retired category; its dishes stay in order history but are hidden from ordering.
   const shown = menu.filter((m) => m.category !== "meals");
-  const categories = Array.from(new Set(shown.map((m) => m.category)));
+  const shownCategories = Array.from(new Set(shown.map((m) => m.category)));
+  const categoryOrder = ["rice", "swallow", "drinks", "pastries"];
+  const categories = [
+    ...categoryOrder.filter((c) => shownCategories.includes(c)),
+    ...shownCategories.filter((c) => !categoryOrder.includes(c)),
+  ];
   const q = search.trim().toLowerCase();
   const visible = shown.filter((m) => (cat === "all" || m.category === cat) && (!q || m.name.toLowerCase().includes(q) || (m.description ?? "").toLowerCase().includes(q)));
   const itemCount = cartItems.reduce((a, [, n]) => a + n, 0);
