@@ -104,7 +104,7 @@ function Landing() {
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="relative min-w-0 overflow-hidden rounded-3xl bg-gradient-brand text-primary-foreground shadow-glow">
             <img src={heroImg} alt="A plate of Nigerian campus meals" className="absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover opacity-90 [mask-image:linear-gradient(to_right,transparent,black_40%)] sm:block" />
-            <div className="relative p-6 sm:max-w-[62%] sm:p-10">
+            <div className="relative p-6 sm:max-w-[68%] sm:p-10">
               <Badge className="mb-4 max-w-full whitespace-normal bg-golden text-golden-foreground hover:bg-golden">
                 <Coins className="mr-1 h-3.5 w-3.5" /> 1 token = ₦1 · 1,000 free tokens on signup
               </Badge>
@@ -128,7 +128,7 @@ function Landing() {
               </div>
             </div>
           </div>
-          <div className="min-w-0 rounded-3xl border border-border/60 bg-card p-4 shadow-soft">
+          <div className="flex min-w-0 items-center justify-center rounded-3xl border border-border/60 bg-card p-4 shadow-soft">
             <DemoPhoneCard />
           </div>
         </section>
