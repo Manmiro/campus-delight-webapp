@@ -78,7 +78,7 @@ describe("checkout payment rules", () => {
   const base = {
     mealsLeftToday: 0,
     walletBalanceKobo: 1_200,
-    tokenBalance: 1_200,
+    tokenBalance: 14, // ₦15 order needs 15 tokens
     totalKobo: 1_500,
     availableCreditKobo: 210_000,
     isVerified: true,
@@ -93,7 +93,7 @@ describe("checkout payment rules", () => {
   });
 
   it("allows a payment method once it covers the whole order", () => {
-    const options = orderPaymentOptions({ ...base, walletBalanceKobo: 1_500, tokenBalance: 1_500 });
+    const options = orderPaymentOptions({ ...base, walletBalanceKobo: 1_500, tokenBalance: 15 });
     expect(options.cash_wallet).toBe(true);
     expect(options.tokens).toBe(true);
   });
