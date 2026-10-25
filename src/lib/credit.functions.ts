@@ -15,11 +15,11 @@ export const requestOtp = createServerFn({ method: "POST" })
     const { sendVerificationSms } = await import("@/lib/sms.server");
     const { data, error } = await supabaseAdmin.rpc("issue_sms_otp", { p_customer: context.userId });
     if (error) throw new Error(error.message);
-    if (!data || typeof data !== "object" || Array.isArray(data) || typeof data.code !== "string" || typeof data.phone !== "string" || typeof data.id !== "string") throw new Error("Could not create verification code");
+    if (!data || typeof data !== "object" || Array.isArray(data) || typeof data["code"] !== "string" || typeof data["phone"] !== "string" || typeof data["id"] !== "string") throw new Error("Could not create verification code");
     try {
-      await sendVerificationSms(key, data.phone, data.code);
+      await sendVerificationSms(key, data["phone"], data["code"]);
     } catch (error) {
-      await supabaseAdmin.from("otp_codes").update({ consumed: true }).eq("id", data.id).eq("customer_id", context.userId);
+      await supabaseAdmin.from("otp_codes").update({ consumed: true }).eq("id", data["id"]).eq("customer_id", context.userId);
       throw error;
     }
     return { accepted: true };
