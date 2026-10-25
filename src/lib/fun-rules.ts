@@ -19,18 +19,18 @@ export function nextStreakMilestone(streak: number): number {
   return Math.min(nextSeven, nextThirty);
 }
 
-export const LEVELS = [
+export const LEVELS: readonly { name: string; minOrders: number; emoji: string }[] = [
   { name: "Fresher", minOrders: 0, emoji: "🌱" },
   { name: "Regular", minOrders: 5, emoji: "🍛" },
   { name: "Foodie", minOrders: 15, emoji: "🔥" },
   { name: "Campus Legend", minOrders: 40, emoji: "👑" },
-] as const;
+];
 
 export function levelFor(orderCount: number) {
   let idx = 0;
   LEVELS.forEach((l, i) => { if (orderCount >= l.minOrders) idx = i; });
   const next = LEVELS[idx + 1];
-  const cur = LEVELS[idx];
+  const cur = LEVELS[idx] ?? LEVELS[0];
   const progress = next ? Math.round(((orderCount - cur.minOrders) / (next.minOrders - cur.minOrders)) * 100) : 100;
   return { ...cur, index: idx, next, progress, ordersToNext: next ? next.minOrders - orderCount : 0 };
 }
@@ -51,7 +51,7 @@ export const BADGES = [
   { id: "paid-on-time", emoji: "✅", name: "Trusted payer", hint: "Repay a Pay Later loan on time", earned: (b: BadgeInput) => b.onTimeRepayments >= 1 },
   { id: "connector", emoji: "🤝", name: "Squad builder", hint: "Bring 5 friends who order", earned: (b: BadgeInput) => b.qualifiedReferrals >= 5 },
   { id: "streak-7", emoji: "🔥", name: "On fire", hint: "Reach a 7-day check-in streak", earned: (b: BadgeInput) => b.bestStreak >= 7 },
-] as const;
+];
 
 export function badgesFor(input: BadgeInput) {
   return BADGES.map((b) => ({ id: b.id, emoji: b.emoji, name: b.name, hint: b.hint, earned: b.earned(input) }));

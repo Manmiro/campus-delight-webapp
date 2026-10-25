@@ -11,7 +11,7 @@ export function Confetti({ fire }: { fire: number }) {
     if (reduce) return;
     setPieces(Array.from({ length: 60 }, (_, i) => ({
       id: fire * 100 + i, left: Math.random() * 100, delay: Math.random() * 0.4,
-      color: COLORS[i % COLORS.length], rot: Math.random() * 360,
+      color: COLORS[i % COLORS.length] ?? "var(--primary)", rot: Math.random() * 360,
     })));
     const t = setTimeout(() => setPieces([]), 2600);
     return () => clearTimeout(t);
