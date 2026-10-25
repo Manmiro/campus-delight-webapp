@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import logoImg from "@/assets/logo.jpg";
 
 const outletsQuery = queryOptions({
