@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.jpg";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export type NavItem = { to: string; label: string; icon: ReactNode; exact?: boolean };
 
@@ -65,7 +66,9 @@ export function AppShell({
       {/* Mobile top bar */}
       <header className="sticky top-0 z-40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border/60 bg-card/95 px-4 py-3 backdrop-blur lg:hidden">
         <Logo />
-        <Sheet open={open} onOpenChange={setOpen}>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-xl" aria-label="Open menu">
               <Menu className="h-5 w-5" />
@@ -81,13 +84,15 @@ export function AppShell({
             </Button>
           </SheetContent>
         </Sheet>
+        </div>
       </header>
 
       <div className="mx-auto flex max-w-[1440px] gap-4 lg:p-4">
         {/* Desktop sidebar */}
         <aside className="sticky top-4 hidden h-[calc(100dvh-2rem)] w-60 shrink-0 flex-col rounded-3xl bg-card p-4 shadow-soft lg:flex xl:w-64">
-          <div className="px-2 py-2">
+          <div className="flex items-center justify-between gap-2 px-2 py-2">
             <Logo size="md" />
+            <ThemeToggle />
           </div>
           <div className="mt-5 flex-1 overflow-y-auto pr-1">{navList}</div>
           {nav.some((n) => n.to === "/order") && (<div className="mt-4 rounded-2xl bg-gradient-brand p-4 text-primary-foreground">

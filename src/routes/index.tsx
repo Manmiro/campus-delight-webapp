@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import logoImg from "@/assets/logo.jpg";
 
 const outletsQuery = queryOptions({
@@ -74,6 +75,7 @@ function Landing() {
         <div className="mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-w-6xl items-center px-4 py-3 sm:flex sm:justify-between">
           <Logo />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
               <Link to="/auth" search={{}}>Sign in</Link>
             </Button>

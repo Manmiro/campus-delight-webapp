@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -160,6 +161,7 @@ function AuthPage() {
   if (awaitingConfirm) {
     return (
       <CenterCard>
+        <div className="fixed top-4 right-4 z-50"><ThemeToggle /></div>
         <MailCheck className="mx-auto h-10 w-10 text-primary" />
         <h1 className="mt-4 font-display text-2xl font-bold">Check your email</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -183,6 +185,7 @@ function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4 py-10">
+      <div className="fixed top-4 right-4 z-50"><ThemeToggle /></div>
       <div className="w-full max-w-md">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground">CD</span>
@@ -289,6 +292,7 @@ function AuthPage() {
 function CenterCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
+      <div className="fixed top-4 right-4 z-50"><ThemeToggle /></div>
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm">{children}</div>
     </div>
   );

@@ -728,6 +728,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           customer_code: string
           date_of_birth: string | null
@@ -742,6 +743,7 @@ export type Database = {
           verification_status: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           customer_code: string
           date_of_birth?: string | null
@@ -756,6 +758,7 @@ export type Database = {
           verification_status?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           customer_code?: string
           date_of_birth?: string | null
