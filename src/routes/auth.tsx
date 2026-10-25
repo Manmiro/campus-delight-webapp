@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
