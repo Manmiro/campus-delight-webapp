@@ -114,8 +114,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // suppressHydrationWarning: the inline script below may add .dark to <html> before React hydrates
   return (
-    {/* suppressHydrationWarning: the inline script below may add .dark to <html> before React hydrates */}
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
