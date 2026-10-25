@@ -27,5 +27,5 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 - [x] Runtime smoke test: landing + auth pages render clean (no console errors)
 - [x] Tests for PRD rules: src/test/prd-rules.test.ts (welcome tokens, transfer cap/fee, credit limit doubling/−30%, one payment method only) — entitlement caps still live in the database only
 - [x] Head metadata review: unique title/description + og & twitter meta on public routes; layout routes carry none by design
-- [ ] Profile editing: customers edit their profile (name, phone, gender, date of birth) on the profile page.
-- [ ] Profile pictures: upload on the profile page, stored in a public avatars bucket; gender-based default avatar (male/female) when no picture is set.
+- [x] Profile editing: customers edit their profile (name, phone, gender, date of birth) on the profile page; browser-verified save and revert.
+- [x] Profile pictures: upload/remove on the profile page in a private avatars bucket (signed links); gender-based default avatar verified for male. Female avatar in place; not visually verified with a female account.
