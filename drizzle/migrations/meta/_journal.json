@@ -134,6 +134,13 @@
       "when": 1792958372036,
       "tag": "0018_rice_pastries_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792960534126,
+      "tag": "0019_avatars_owner_read",
+      "breakpoints": true
     }
   ]
 }
