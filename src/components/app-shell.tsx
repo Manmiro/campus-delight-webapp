@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.jpg";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export type NavItem = { to: string; label: string; icon: ReactNode; exact?: boolean };
 
