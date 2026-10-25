@@ -201,21 +201,28 @@ function CreditPage() {
         </Card>
       )}
 
-      <Card>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <Card className="min-w-0 rounded-3xl">
         <CardHeader className="pb-2">
-          <CardTitle className="font-display text-lg">Your loans</CardTitle>
+          <CardTitle className="flex items-center gap-2 font-display text-lg">
+            <CalendarClock className="h-5 w-5 text-primary" /> Your loans
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loans.length === 0 ? (
             <EmptyState title="No loans yet" hint="Order eligible items with Eat Now & Pay Later — terms of 7, 14 or 30 days.">
-              <Button asChild size="sm"><Link to="/order">Order food</Link></Button>
+              <Button asChild size="sm" className="rounded-full"><Link to="/order">Order food</Link></Button>
             </EmptyState>
           ) : (
             <div className="space-y-3">
-              {loans.slice(0, 6).map((l) => (
-                <Card key={l.id}>
-                  <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                    <div>
+              {loans.slice(0, 6).map((l) => {
+                const open = ["active", "partially_repaid", "overdue"].includes(l.status);
+                return (
+                  <div key={l.id} className={`grid gap-3 rounded-2xl p-4 transition-all hover:-translate-y-0.5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center ${open ? "bg-primary/10 ring-1 ring-primary/30" : "bg-canvas"}`}>
+                    <span className="hidden h-11 w-11 place-items-center rounded-2xl bg-card text-primary shadow-soft sm:grid">
+                      <UtensilsCrossed className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
                       <p className="font-semibold">{l.item_summary ?? "Food order"}</p>
                       <p className="text-xs text-muted-foreground">
                         Borrowed {naira(l.principal_kobo)} · {l.term_days}-day term · due {formatDateTime(l.due_at)}
@@ -223,49 +230,51 @@ function CreditPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <StatusBadge status={l.status} />
-                      {["active", "partially_repaid", "overdue"].includes(l.status) && (
-                        <Button size="sm" variant="outline" asChild>
+                      {open && (
+                        <Button size="sm" className="rounded-full" asChild>
                           <Link to="/repayments">Repay</Link>
                         </Button>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Credit-limit history</CardTitle></CardHeader>
+      <Card className="min-w-0 rounded-3xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 font-display text-lg">
+            <History className="h-5 w-5 text-golden" /> Credit-limit history
+          </CardTitle>
+        </CardHeader>
         <CardContent>
           {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Your limit changes appear here — every adjustment is recorded.</p>
+            <p className="rounded-2xl bg-canvas p-4 text-sm text-muted-foreground">Your limit changes appear here — every adjustment is recorded.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>When</TableHead>
-                  <TableHead>Adjustment</TableHead>
-                  <TableHead className="text-right">Before</TableHead>
-                  <TableHead className="text-right">After</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.map((h) => (
-                  <TableRow key={h.id}>
-                    <TableCell className="text-xs">{formatDateTime(h.created_at)}</TableCell>
-                    <TableCell className="text-xs">{statusLabel(h.adjustment_type)}{h.notes ? ` — ${h.notes}` : ""}</TableCell>
-                    <TableCell className="text-right text-xs">{naira(h.previous_limit_kobo)}</TableCell>
-                    <TableCell className="text-right text-xs font-semibold">{naira(h.new_limit_kobo)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <ol className="relative space-y-4 border-l-2 border-dashed border-primary/30 pl-5">
+              {history.map((h) => {
+                const up = h.new_limit_kobo >= h.previous_limit_kobo;
+                return (
+                  <li key={h.id} className="relative">
+                    <span className={`absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-card ${up ? "bg-primary" : "bg-destructive"}`} />
+                    <p className="text-xs text-muted-foreground">{formatDateTime(h.created_at)}</p>
+                    <p className="text-sm font-medium">{statusLabel(h.adjustment_type)}{h.notes ? ` — ${h.notes}` : ""}</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">{naira(h.previous_limit_kobo)}</span>
+                      {" → "}
+                      <span className={`font-semibold ${up ? "text-primary" : "text-destructive"}`}>{naira(h.new_limit_kobo)}</span>
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
