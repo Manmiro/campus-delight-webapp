@@ -33,6 +33,6 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 ## Engagement (fun) features
 - [x] Daily spin check-in with streaks and streak bonuses (amounts provisional)
 - [x] Levels, badges, "Your usual?" shortcut, referral milestone bar, birthday banner, confetti
-- [ ] Outlet leaderboards (opt-in) — awaiting user go-ahead
+- [x] Weekly outlet leaderboards (opt-in, 10 pts/order, 2 pts/check-in)
 - [ ] Outlet vs outlet challenges, mystery rewards — need business-approved token budgets
 - [ ] Live order tracker and reminder notifications
