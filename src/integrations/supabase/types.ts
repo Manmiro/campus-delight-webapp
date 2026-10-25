@@ -121,6 +121,44 @@ export type Database = {
           },
         ]
       }
+      daily_checkins: {
+        Row: {
+          bonus_tokens: number
+          checkin_date: string
+          created_at: string
+          customer_id: string
+          id: string
+          spin_tokens: number
+          streak: number
+        }
+        Insert: {
+          bonus_tokens?: number
+          checkin_date: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          spin_tokens: number
+          streak: number
+        }
+        Update: {
+          bonus_tokens?: number
+          checkin_date?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          spin_tokens?: number
+          streak?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_checkins_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_repayments: {
         Row: {
           amount_kobo: number
@@ -1170,6 +1208,7 @@ export type Database = {
         Returns: undefined
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
+      claim_daily_checkin: { Args: never; Returns: Json }
       fulfill_order: { Args: { p_order_id: string }; Returns: undefined }
       get_config: { Args: { _key: string }; Returns: Json }
       has_role: {

@@ -106,6 +106,13 @@
       "when": 1792954783173,
       "tag": "0014_profile_avatars",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792955589243,
+      "tag": "0015_daily_checkin_rewards",
+      "breakpoints": true
     }
   ]
 }
