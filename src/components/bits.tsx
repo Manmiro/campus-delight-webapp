@@ -72,12 +72,14 @@ export function StatCard({
   return (
     <Card className={cn("min-w-0", className)}>
       <CardContent className="p-4 sm:p-5">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-          <p className="min-w-0 text-sm text-muted-foreground">{label}</p>
-          <span className="shrink-0">{icon}</span>
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+          {icon && <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary">{icon}</span>}
+          <div className="min-w-0">
+            <p className="break-words font-display text-2xl font-bold leading-tight">{value}</p>
+            <p className="min-w-0 text-xs font-medium text-muted-foreground">{label}</p>
+          </div>
         </div>
-        <p className="mt-1 break-words font-display text-2xl font-bold">{value}</p>
-        {hint && <div className="mt-1 break-words text-xs text-muted-foreground">{hint}</div>}
+        {hint && <div className="mt-3 break-words border-t border-border/60 pt-3 text-xs text-muted-foreground">{hint}</div>}
       </CardContent>
     </Card>
   );

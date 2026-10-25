@@ -164,15 +164,25 @@
 }
 
 :root {
+  --canvas: oklch(0.955 0.008 118);
   --gradient-brand: linear-gradient(135deg, var(--primary), oklch(0.55 0.15 120));
+  --gradient-golden: linear-gradient(135deg, var(--golden), oklch(0.74 0.14 85));
   --gradient-hero: radial-gradient(circle at 80% 10%, color-mix(in oklab, var(--golden) 25%, transparent), transparent 45%),
     radial-gradient(circle at 10% 80%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 50%);
   --shadow-glow: 0 30px 60px -20px color-mix(in oklab, var(--primary) 45%, transparent);
+  --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 4%, transparent), 0 12px 32px -16px color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+.dark { --canvas: oklch(0.19 0.025 126.8); }
+
+@theme inline {
+  --color-canvas: var(--canvas);
 }
 
 @utility bg-gradient-brand { background-image: var(--gradient-brand); }
+@utility bg-gradient-golden { background-image: var(--gradient-golden); }
 @utility bg-gradient-hero { background-image: var(--gradient-hero); }
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-soft { box-shadow: var(--shadow-soft); }
 @utility animate-float { animation: cd-float 5s ease-in-out infinite; }
 @utility animate-pop-in { animation: cd-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-block; }
 @utility animate-badge-pop { animation: cd-badge-pop 1.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
