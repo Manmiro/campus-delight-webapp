@@ -8,7 +8,7 @@ import heroMeal from "@/assets/hero-meal.jpg";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel } from "@/lib/format";
-import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions } from "@/lib/prd-rules";
+import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions, tokensForKobo } from "@/lib/prd-rules";
 import { EmptyState } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,7 +99,7 @@ function OrderPage() {
   const methodOptions = [
     { value: "subscription_entitlement", label: `Subscription meal (${mealsLeft} left today)`, disabled: !payEnabled.subscription_entitlement },
     { value: "cash_wallet", label: `Cash wallet — ${naira(wallet?.balance_kobo)}`, disabled: !payEnabled.cash_wallet },
-    { value: "tokens", label: `Tokens — ${tk?.available_tokens ?? 0}`, disabled: !payEnabled.tokens },
+    { value: "tokens", label: `Tokens — ${tk?.available_tokens ?? 0}${totalKobo > 0 ? ` (needs ${tokensForKobo(totalKobo)})` : ""}`, disabled: !payEnabled.tokens },
     { value: "food_credit", label: "Eat Now & Pay Later", disabled: !payEnabled.food_credit },
   ];
 

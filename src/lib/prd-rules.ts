@@ -93,11 +93,16 @@ export type OrderPaymentState = {
 };
 
 /** Which payment methods a customer may use for an order of `totalKobo`. */
+/** Tokens needed to pay a kobo amount: 1 token = ₦1 = 100 kobo, rounded up. */
+export function tokensForKobo(kobo: number): number {
+  return Math.ceil(kobo / 100);
+}
+
 export function orderPaymentOptions(state: OrderPaymentState): Record<PaymentMethod, boolean> {
   return {
     subscription_entitlement: state.mealsLeftToday > 0,
     cash_wallet: state.walletBalanceKobo >= state.totalKobo,
-    tokens: state.tokenBalance >= state.totalKobo,
+    tokens: state.tokenBalance >= tokensForKobo(state.totalKobo),
     food_credit:
       state.isVerified &&
       state.accountAgeHours >= MIN_ACCOUNT_AGE_HOURS_FOR_CREDIT &&
