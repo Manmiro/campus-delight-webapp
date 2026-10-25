@@ -1,7 +1,7 @@
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight, ShoppingBag, CalendarDays, Gift, ReceiptText } from "lucide-react";
+import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight, ShoppingBag, CalendarDays, Gift, ReceiptText, Trophy } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.jpg";
 import { toast } from "sonner";
 import { initializePayment } from "@/lib/payments.functions";
@@ -122,7 +122,7 @@ function Dashboard() {
           { to: "/subscription", label: "Meal plans", icon: <CalendarDays className="h-5 w-5" />, tone: "bg-secondary text-secondary-foreground" },
           { to: "/tokens", label: "Tokens", icon: <Coins className="h-5 w-5" />, tone: "bg-accent text-accent-foreground" },
           { to: "/refer", label: "Refer & earn", icon: <Gift className="h-5 w-5" />, tone: "bg-gradient-golden text-golden-foreground" },
-          { to: "/history", label: "History", icon: <ReceiptText className="h-5 w-5" />, tone: "bg-gradient-brand text-primary-foreground" },
+          { to: "/leaderboard", label: "Leaderboard", icon: <Trophy className="h-5 w-5" />, tone: "bg-gradient-brand text-primary-foreground" },
         ].map((t) => (
           <Link key={t.to} to={t.to} className={`flex min-h-24 flex-col justify-between rounded-3xl p-4 font-display font-bold shadow-soft transition-transform hover:-translate-y-0.5 ${t.tone}`}>
             {t.icon}<span>{t.label}</span>

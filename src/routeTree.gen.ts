@@ -20,6 +20,7 @@ import { Route as PaymentCallbackRouteImport } from './routes/payment.callback'
 import { Route as AuthenticatedCustomerCreditRouteImport } from './routes/_authenticated/_customer.credit'
 import { Route as AuthenticatedCustomerDashboardRouteImport } from './routes/_authenticated/_customer.dashboard'
 import { Route as AuthenticatedCustomerHistoryRouteImport } from './routes/_authenticated/_customer.history'
+import { Route as AuthenticatedCustomerLeaderboardRouteImport } from './routes/_authenticated/_customer.leaderboard'
 import { Route as AuthenticatedCustomerOrderRouteImport } from './routes/_authenticated/_customer.order'
 import { Route as AuthenticatedCustomerProfileRouteImport } from './routes/_authenticated/_customer.profile'
 import { Route as AuthenticatedCustomerReferRouteImport } from './routes/_authenticated/_customer.refer'
@@ -100,6 +101,12 @@ const AuthenticatedCustomerHistoryRoute =
   AuthenticatedCustomerHistoryRouteImport.update({
     id: '/history',
     path: '/history',
+    getParentRoute: () => AuthenticatedCustomerRoute,
+  } as any)
+const AuthenticatedCustomerLeaderboardRoute =
+  AuthenticatedCustomerLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
     getParentRoute: () => AuthenticatedCustomerRoute,
   } as any)
 const AuthenticatedCustomerOrderRoute =
@@ -260,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/history': typeof AuthenticatedCustomerHistoryRoute
+  '/leaderboard': typeof AuthenticatedCustomerLeaderboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/profile': typeof AuthenticatedCustomerProfileRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
@@ -294,6 +302,7 @@ export interface FileRoutesByTo {
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/history': typeof AuthenticatedCustomerHistoryRoute
+  '/leaderboard': typeof AuthenticatedCustomerLeaderboardRoute
   '/order': typeof AuthenticatedCustomerOrderRoute
   '/profile': typeof AuthenticatedCustomerProfileRoute
   '/refer': typeof AuthenticatedCustomerReferRoute
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/_customer/credit': typeof AuthenticatedCustomerCreditRoute
   '/_authenticated/_customer/dashboard': typeof AuthenticatedCustomerDashboardRoute
   '/_authenticated/_customer/history': typeof AuthenticatedCustomerHistoryRoute
+  '/_authenticated/_customer/leaderboard': typeof AuthenticatedCustomerLeaderboardRoute
   '/_authenticated/_customer/order': typeof AuthenticatedCustomerOrderRoute
   '/_authenticated/_customer/profile': typeof AuthenticatedCustomerProfileRoute
   '/_authenticated/_customer/refer': typeof AuthenticatedCustomerReferRoute
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/credit'
     | '/dashboard'
     | '/history'
+    | '/leaderboard'
     | '/order'
     | '/profile'
     | '/refer'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/credit'
     | '/dashboard'
     | '/history'
+    | '/leaderboard'
     | '/order'
     | '/profile'
     | '/refer'
@@ -443,6 +455,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_customer/credit'
     | '/_authenticated/_customer/dashboard'
     | '/_authenticated/_customer/history'
+    | '/_authenticated/_customer/leaderboard'
     | '/_authenticated/_customer/order'
     | '/_authenticated/_customer/profile'
     | '/_authenticated/_customer/refer'
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof AuthenticatedCustomerHistoryRouteImport
+      parentRoute: typeof AuthenticatedCustomerRoute
+    }
+    '/_authenticated/_customer/leaderboard': {
+      id: '/_authenticated/_customer/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AuthenticatedCustomerLeaderboardRouteImport
       parentRoute: typeof AuthenticatedCustomerRoute
     }
     '/_authenticated/_customer/order': {
@@ -740,6 +760,7 @@ interface AuthenticatedCustomerRouteChildren {
   AuthenticatedCustomerCreditRoute: typeof AuthenticatedCustomerCreditRoute
   AuthenticatedCustomerDashboardRoute: typeof AuthenticatedCustomerDashboardRoute
   AuthenticatedCustomerHistoryRoute: typeof AuthenticatedCustomerHistoryRoute
+  AuthenticatedCustomerLeaderboardRoute: typeof AuthenticatedCustomerLeaderboardRoute
   AuthenticatedCustomerOrderRoute: typeof AuthenticatedCustomerOrderRoute
   AuthenticatedCustomerProfileRoute: typeof AuthenticatedCustomerProfileRoute
   AuthenticatedCustomerReferRoute: typeof AuthenticatedCustomerReferRoute
@@ -755,6 +776,7 @@ const AuthenticatedCustomerRouteChildren: AuthenticatedCustomerRouteChildren = {
   AuthenticatedCustomerCreditRoute: AuthenticatedCustomerCreditRoute,
   AuthenticatedCustomerDashboardRoute: AuthenticatedCustomerDashboardRoute,
   AuthenticatedCustomerHistoryRoute: AuthenticatedCustomerHistoryRoute,
+  AuthenticatedCustomerLeaderboardRoute: AuthenticatedCustomerLeaderboardRoute,
   AuthenticatedCustomerOrderRoute: AuthenticatedCustomerOrderRoute,
   AuthenticatedCustomerProfileRoute: AuthenticatedCustomerProfileRoute,
   AuthenticatedCustomerReferRoute: AuthenticatedCustomerReferRoute,
