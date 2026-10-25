@@ -96,7 +96,7 @@ function Dashboard() {
         </Card>
       </div>
 
-      <FunZone orders={orders} loans={loans} referrals={referrals} dob={profile.date_of_birth} firstName={profile.full_name.split(" ")[0]} />
+      <FunZone orders={orders} loans={loans} referrals={referrals} dob={profile.date_of_birth} firstName={profile.full_name.split(" ")[0] ?? ""} />
 
 
 

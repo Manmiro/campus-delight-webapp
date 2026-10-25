@@ -30,7 +30,7 @@ export function levelFor(orderCount: number) {
   let idx = 0;
   LEVELS.forEach((l, i) => { if (orderCount >= l.minOrders) idx = i; });
   const next = LEVELS[idx + 1];
-  const cur = LEVELS[idx] ?? LEVELS[0];
+  const cur = LEVELS[idx] ?? { name: "Fresher", minOrders: 0, emoji: "🌱" };
   const progress = next ? Math.round(((orderCount - cur.minOrders) / (next.minOrders - cur.minOrders)) * 100) : 100;
   return { ...cur, index: idx, next, progress, ordersToNext: next ? next.minOrders - orderCount : 0 };
 }
