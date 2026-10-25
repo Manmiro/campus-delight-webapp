@@ -25,6 +25,7 @@ const nav: NavItem[] = [
   { to: "/admin/credit", label: "Eat Now & Pay Later", icon: <BarChart3 className="h-4 w-4" /> },
   { to: "/admin/audit", label: "Audit Logs", icon: <ScrollText className="h-4 w-4" /> },
   { to: "/admin/settings", label: "System Settings", icon: <Settings className="h-4 w-4" /> },
+  { to: "/dashboard", label: "My Dashboard", icon: <Home className="h-4 w-4" /> },
 ];
 
 function AdminLayout() {
