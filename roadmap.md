@@ -3,6 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [ ] Redesign Tokens and Wallet with prominent balances, quick payment actions, easier funding, and readable activity; verify signed-in flows and small-screen layouts.
 - [x] CSV export on the admin Customers page covering the rows shown (customer ID, referral code, name, email, phone, outlet, joined, status, verified); browser-verified download plus 6 escaping/format tests; 35 tests pass.
 - [x] Update existing and new customer IDs and referral codes to CD plus six random digits; database checks, 100 simulated signups, existing-account conversion and signed-in profile verified; 28 tests pass.
 - [x] Add dashboard Eat now, pay later button; verified signed-in navigation and 12 customer pages plus homepage at 320, 390, 770, 1024 and 1440px. Shared navigation, summaries, tables and dialogs adapt to small screens; 26 existing rule tests pass. Role-specific admin/outlet screens were reviewed in source, not signed-in browser tested.
