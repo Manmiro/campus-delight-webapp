@@ -9,13 +9,12 @@ import { requestOtp } from "@/lib/credit.functions";
 import { profileQuery, creditQuery, loansQuery, creditHistoryQuery } from "@/lib/queries";
 import { naira, formatDateTime, statusLabel } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
-import { StatCard, EmptyState, StatusBadge } from "@/components/bits";
+import { EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/_customer/credit")({
   component: CreditPage,
