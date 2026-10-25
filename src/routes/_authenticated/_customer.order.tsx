@@ -103,9 +103,11 @@ function OrderPage() {
     { value: "food_credit", label: "Eat Now & Pay Later", disabled: !payEnabled.food_credit },
   ];
 
-  const categories = Array.from(new Set(menu.map((m) => m.category)));
+  // "meals" is a retired category; its dishes stay in order history but are hidden from ordering.
+  const shown = menu.filter((m) => m.category !== "meals");
+  const categories = Array.from(new Set(shown.map((m) => m.category)));
   const q = search.trim().toLowerCase();
-  const visible = menu.filter((m) => (cat === "all" || m.category === cat) && (!q || m.name.toLowerCase().includes(q) || (m.description ?? "").toLowerCase().includes(q)));
+  const visible = shown.filter((m) => (cat === "all" || m.category === cat) && (!q || m.name.toLowerCase().includes(q) || (m.description ?? "").toLowerCase().includes(q)));
   const itemCount = cartItems.reduce((a, [, n]) => a + n, 0);
   const methodIcon: Record<string, React.ReactNode> = {
     subscription_entitlement: <CalendarDays className="h-5 w-5" />,
@@ -285,6 +287,10 @@ function OrderPage() {
 function emojiFor(category: string, name = ""): string {
   const s = `${name} ${category}`.toLowerCase();
   if (category === "all" && !name) return "🍽️";
+  if (s.includes("shawarma")) return "🌯";
+  if (s.includes("pie")) return "🥧";
+  if (s.includes("bun")) return "🍩";
+  if (s.includes("pastr")) return "🥐";
   if (s.includes("rice")) return "🍛";
   if (s.includes("bean")) return "🫘";
   if (s.includes("chicken")) return "🍗";
