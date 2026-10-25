@@ -1,14 +1,15 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
-  BarChart3, Building2, Landmark, LayoutDashboard, ScrollText, Settings, Users, Vote,
+  BarChart3, Building2, Home, Landmark, LayoutDashboard, ScrollText, Settings, Users, Vote,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
+import { canEnterAdminArea } from "@/lib/role-nav";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
     const role = await getMyRole();
-    if (role !== "central_admin") {
+    if (!canEnterAdminArea(role)) {
       throw redirect({ to: role.startsWith("outlet") ? "/outlet" : "/dashboard" });
     }
   },
@@ -24,6 +25,7 @@ const nav: NavItem[] = [
   { to: "/admin/credit", label: "Eat Now & Pay Later", icon: <BarChart3 className="h-4 w-4" /> },
   { to: "/admin/audit", label: "Audit Logs", icon: <ScrollText className="h-4 w-4" /> },
   { to: "/admin/settings", label: "System Settings", icon: <Settings className="h-4 w-4" /> },
+  { to: "/dashboard", label: "My Dashboard", icon: <Home className="h-4 w-4" /> },
 ];
 
 function AdminLayout() {
