@@ -90,13 +90,13 @@ export function AppShell({
             <Logo size="md" />
           </div>
           <div className="mt-5 flex-1 overflow-y-auto pr-1">{navList}</div>
-          <div className="mt-4 rounded-2xl bg-gradient-brand p-4 text-primary-foreground">
+          {nav.some((n) => n.to === "/order") && (<div className="mt-4 rounded-2xl bg-gradient-brand p-4 text-primary-foreground">
             <p className="font-display text-sm font-bold">Hungry?</p>
             <p className="mt-0.5 text-xs opacity-85">Fresh meals from your outlet.</p>
             <Button asChild size="sm" variant="secondary" className="mt-3 w-full rounded-xl">
               <Link to="/order">Order now</Link>
             </Button>
-          </div>
+          </div>)}
           <Button variant="ghost" className="mt-2 rounded-2xl text-muted-foreground" onClick={doSignOut}>
             <LogOut className="mr-2 h-4 w-4" /> Sign out
           </Button>

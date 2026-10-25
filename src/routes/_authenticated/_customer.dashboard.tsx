@@ -1,7 +1,8 @@
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight } from "lucide-react";
+import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight, ShoppingBag, CalendarDays, Gift, ReceiptText } from "lucide-react";
+import heroMeal from "@/assets/hero-meal.jpg";
 import { toast } from "sonner";
 import { initializePayment } from "@/lib/payments.functions";
 import {
@@ -51,29 +52,47 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 bg-primary text-primary-foreground">
-        <CardContent className="p-4 sm:p-6">
-          <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>
-          <p className="font-display text-xl font-bold">{profile.outlet?.name ?? "No outlet yet"}</p>
-          <p className="mt-1 font-mono text-xs opacity-80">ID: {profile.customer_code}</p>
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button asChild variant="secondary" className="h-auto min-h-11 whitespace-normal py-2.5">
-            <Link to="/credit"><CreditCard className="mr-2 h-4 w-4 shrink-0" /> Eat now, pay later <ArrowRight className="ml-2 h-4 w-4 shrink-0" /></Link>
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="h-auto min-h-11 whitespace-normal py-2.5"
-            onClick={() => {
-              void navigator.clipboard.writeText(referralLink);
-              toast.success("Referral link copied");
-            }}
-          >
-            <Copy className="mr-2 h-4 w-4" /> Copy referral link
-          </Button>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="relative overflow-hidden rounded-3xl bg-foreground text-background shadow-soft">
+          <img src={heroMeal} alt="Jollof rice with grilled chicken and plantain" width={1200} height={640} className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/80 to-transparent" />
+          <div className="relative max-w-md p-6 sm:p-8">
+            <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>
+            <p className="mt-1 font-display text-3xl font-extrabold leading-tight sm:text-4xl">
+              Eat well,<br /><span className="text-primary">study better.</span>
+            </p>
+            <p className="mt-2 text-sm opacity-80">{profile.outlet?.name ?? "No outlet yet"}</p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button asChild className="h-auto min-h-11 rounded-full px-5 py-2.5">
+                <Link to="/order"><ShoppingBag className="mr-2 h-4 w-4" /> Order food</Link>
+              </Button>
+              <Button asChild variant="secondary" className="h-auto min-h-11 whitespace-normal rounded-full px-5 py-2.5">
+                <Link to="/credit"><CreditCard className="mr-2 h-4 w-4 shrink-0" /> Eat now, pay later <ArrowRight className="ml-2 h-4 w-4 shrink-0" /></Link>
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <Card>
+          <CardContent className="p-5">
+            <p className="font-display font-bold">Your balance</p>
+            <div className="mt-3 rounded-2xl bg-gradient-brand p-5 text-primary-foreground shadow-glow">
+              <div className="flex items-center justify-between text-xs opacity-85"><span>Cash wallet</span><Wallet className="h-4 w-4" /></div>
+              <p className="mt-2 break-words font-display text-3xl font-extrabold">{naira(wallet?.balance_kobo)}</p>
+              <div className="mt-4 flex items-end justify-between gap-2 font-mono text-xs opacity-90">
+                <span>{profile.customer_code}</span>
+                <span className="text-right">{fmtTokens(tk?.available_tokens)} tokens</span>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button className="rounded-xl" onClick={() => fundWallet.mutate()} disabled={fundWallet.isPending}>Fund ₦2,000</Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => { void navigator.clipboard.writeText(referralLink); toast.success("Referral link copied"); }}>
+                <Copy className="mr-1.5 h-4 w-4" /> Refer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Cash wallet" value={naira(wallet?.balance_kobo)} icon={<Wallet className="h-5 w-5 text-primary" />}
@@ -90,6 +109,19 @@ function Dashboard() {
         <StatCard label="Borrowing power" value={naira((credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0))}
           icon={<CreditCard className="h-5 w-5 text-golden" />}
           hint={openLoan ? `Repay your open loan before borrowing again` : `Limit ₦${((credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) / 100).toLocaleString()}`} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { to: "/subscription", label: "Meal plans", icon: <CalendarDays className="h-5 w-5" />, tone: "bg-secondary text-secondary-foreground" },
+          { to: "/tokens", label: "Tokens", icon: <Coins className="h-5 w-5" />, tone: "bg-accent text-accent-foreground" },
+          { to: "/refer", label: "Refer & earn", icon: <Gift className="h-5 w-5" />, tone: "bg-gradient-golden text-golden-foreground" },
+          { to: "/history", label: "History", icon: <ReceiptText className="h-5 w-5" />, tone: "bg-gradient-brand text-primary-foreground" },
+        ].map((t) => (
+          <Link key={t.to} to={t.to} className={`flex min-h-24 flex-col justify-between rounded-3xl p-4 font-display font-bold shadow-soft transition-transform hover:-translate-y-0.5 ${t.tone}`}>
+            {t.icon}<span>{t.label}</span>
+          </Link>
+        ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
