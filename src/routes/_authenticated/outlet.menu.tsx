@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/outlet/menu")({
   head: () => ({ meta: [{"title": "Menu & Pricing — Campus Delight"}, {"name": "description", "content": "View and manage menu & pricing in your Campus Delight account."}, {"property": "og:title", "content": "Menu & Pricing — Campus Delight"}, {"property": "og:description", "content": "View and manage menu & pricing in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
 });
 
-const CATEGORIES = ["meals", "swallow", "drinks", "snacks", "sides"] as const;
+const CATEGORIES = ["rice", "pastries", "swallow", "drinks", "snacks", "sides"] as const;
 const PLANS = ["weekend", "weekly", "monthly"] as const;
 const TIERS = ["basic", "standard", "turbo"] as const;
 
@@ -32,7 +32,7 @@ function OutletMenu() {
   const { data: prices } = useSuspenseQuery(myPlanPricesQuery(outletId));
 
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("meals");
+  const [category, setCategory] = useState("rice");
   const [price, setPrice] = useState("");
   const [creditEligible, setCreditEligible] = useState(true);
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
