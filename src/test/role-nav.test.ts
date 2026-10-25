@@ -4,7 +4,8 @@ import {
   canEnterCustomerArea,
   canEnterOutletArea,
   customerAreaRedirect,
-  secondaryAreaFor,
+  headquartersLink,
+  personalDashboardLink,
 } from "@/lib/role-nav";
 
 describe("Role areas", () => {

@@ -15,6 +15,10 @@ export const canEnterOutletArea = (role: AppRole) => role === "outlet_manager" |
 export const customerAreaRedirect = (role: AppRole): "/admin" | "/outlet" =>
   role === "central_admin" ? "/admin" : "/outlet";
 
-/** The other console a signed-in person can hop to, or null when there is none. */
-export const secondaryAreaFor = (role: AppRole): { to: "/dashboard"; label: string } | null =>
-  role === "central_admin" ? { to: "/dashboard", label: "My Dashboard" } : null;
+/** The console a signed-in person can hop to next, or null when they have no access to it. */
+export const headquartersLink = (role: AppRole): { to: "/admin"; label: string } | null =>
+  canEnterAdminArea(role) ? { to: "/admin", label: "Headquarters" } : null;
+
+export const personalDashboardLink = (role: AppRole): { to: "/dashboard"; label: string } | null =>
+  canEnterCustomerArea(role) ? { to: "/dashboard", label: "My Dashboard" } : null;
+

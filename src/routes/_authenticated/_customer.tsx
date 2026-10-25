@@ -4,7 +4,7 @@ import {
   Building2, CalendarDays, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
-import { canEnterCustomerArea, customerAreaRedirect, secondaryAreaFor } from "@/lib/role-nav";
+import { canEnterCustomerArea, customerAreaRedirect, headquartersLink } from "@/lib/role-nav";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/_customer")({
@@ -35,7 +35,7 @@ const nav: NavItem[] = [
 
 function CustomerLayout() {
   const { data: role } = useQuery({ queryKey: ["my-role"], queryFn: () => getMyRole() });
-  const other = role ? secondaryAreaFor(role) : null;
+  const other = role ? headquartersLink(role) : null;
 
   const navList = other
     ? [...nav, { to: other.to, label: other.label, icon: <Building2 className="h-4 w-4" /> }]
