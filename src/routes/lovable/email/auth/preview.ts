@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Campus Delight Webapp"
+const SITE_NAME = "Campus Delight"
 const ROOT_DOMAIN = "campusdelight.net"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
