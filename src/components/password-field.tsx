@@ -56,7 +56,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
   if (!password) {
     return <p className="mt-1.5 text-xs text-muted-foreground">Use at least 8 characters. Mix letters, numbers and symbols.</p>;
   }
-  const style = LEVEL_STYLES[score];
+  const style = LEVEL_STYLES[score] ?? LEVEL_STYLES[0]!;
   return (
     <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-300" aria-live="polite">
       <div className="flex gap-1.5">
