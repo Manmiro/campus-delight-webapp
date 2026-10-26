@@ -160,6 +160,8 @@ export const adminDecideTransfer = createServerFn({ method: "POST" })
       entity_id: app.id,
       details: { approved: data.approve },
     });
+    const { emailOutletDecision, tryTransactionEmail } = await import('./transaction-emails.server');
+    await tryTransactionEmail(() => emailOutletDecision(app.id));
     return { ok: true };
   });
 

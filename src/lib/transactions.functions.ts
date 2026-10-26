@@ -29,7 +29,7 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
     const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx['order_id'] === 'string') await mail.emailOrder(tx['order_id']); });
     await mail.tryTransactionEmail(async () => {
       const { supabaseAdmin: db } = await import('@/integrations/supabase/client.server');
-      const { data: entry } = await db.from('token_ledger').select('id').eq('related_customer_id', context.userId).eq('tx_type', 'referral_unlock').order('created_at', { ascending: false }).limit(1).maybeSingle();
+      const { data: entry } = await db.from('token_ledger').select('id').eq('related_customer_id', context.userId).eq('tx_type', 'referral_unlock').gte('created_at', startedAt).order('created_at', { ascending: false }).limit(1).maybeSingle();
       if (entry) await mail.emailTokenEntry(entry.id);
     });
     return { ok: true, emailStatus };
@@ -79,6 +79,21 @@ export const updateFoodOrder = createServerFn({ method: 'POST' }).middleware([re
     if (error) throw new Error(error.message);
     const mail = await import('./transaction-emails.server');
     await mail.tryTransactionEmail(() => mail.emailOrder(data.orderId, data.action === 'fulfill' ? 'fulfilled' : 'cancelled'));
+    return { ok: true };
+  });
+
+export const adjustFoodCredit = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((input: { customerId: string; newLimitKobo: number; reason: string }) => z.object({ customerId: z.string().uuid(), newLimitKobo: z.number().int().nonnegative().safe(), reason: z.string().trim().min(1).max(1000) }).parse(input))
+  .handler(async ({ context, data }) => {
+    const startedAt = new Date().toISOString();
+    const { error } = await context.supabase.rpc('admin_adjust_credit_limit', { p_customer: data.customerId, p_new_limit_kobo: data.newLimitKobo, p_reason: data.reason });
+    if (error) throw new Error(error.message);
+    const mail = await import('./transaction-emails.server');
+    await mail.tryTransactionEmail(async () => {
+      const { data: entry, error: readError } = await context.supabase.from('credit_limit_history').select('id').eq('customer_id', data.customerId).gte('created_at', startedAt).order('created_at', { ascending: false }).limit(1).single();
+      if (readError) throw readError;
+      await mail.emailCreditAdjustment(entry.id);
+    });
     return { ok: true };
   });
 
