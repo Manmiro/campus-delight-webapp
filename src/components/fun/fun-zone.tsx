@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Flame, Gift, Loader2, RotateCw, Sparkles, Cake, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { claimDailyReward } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fun/confetti";
 import {
@@ -35,6 +37,7 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
   orders: OrderLite[]; loans: LoanLite[]; referrals: ReferralLite[]; dob: string | null; firstName: string;
 }) {
   const qc = useQueryClient();
+  const claimReward = useServerFn(claimDailyReward);
   const { data: checkins = [] } = useQuery(checkinsQuery);
   const [fire, setFire] = useState(0);
   const [result, setResult] = useState<{ spin: number; bonus: number; streak: number } | null>(null);
@@ -48,9 +51,7 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
 
   const claim = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc("claim_daily_checkin");
-      if (error) throw new Error(error.message);
-      return data as { spin: number; bonus: number; streak: number; total: number };
+      return claimReward();
     },
     onSuccess: (r) => {
       setTimeout(() => {

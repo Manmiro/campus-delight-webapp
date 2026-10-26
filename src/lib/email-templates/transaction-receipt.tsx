@@ -62,7 +62,7 @@ export function TransactionReceipt({ kind = 'funding', name, amount = '₦2,000'
 
 export const template = {
   component: TransactionReceipt,
-  subject: (data: Record<string, unknown>) => `${RECEIPT_TYPES[data.kind as ReceiptKind]?.[0] ?? 'Transaction confirmed'} — Campus Delight`,
+  subject: (data: Record<string, unknown>) => `${RECEIPT_TYPES[data['kind'] as ReceiptKind]?.[0] ?? 'Transaction confirmed'} — Campus Delight`,
   displayName: 'Campus Delight transaction receipt',
   previewData: { kind: 'funding', name: 'Ada Okafor', amount: '₦2,000', reference: 'CDPS-PREVIEW', date: '26 October 2026, 16:12', details: [{ label: 'Wallet balance after funding', value: '₦5,000' }] },
 } satisfies TemplateEntry;

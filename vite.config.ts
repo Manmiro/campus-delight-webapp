@@ -9,7 +9,7 @@ import path from "node:path";
 import { loadEnv } from "vite";
 
 // Load server configuration without exposing it through client definitions.
-Object.assign(process.env, loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), ""));
+Object.assign(process.env, loadEnv(process.env['NODE_ENV'] ?? "development", process.cwd(), ""));
 
 export default defineConfig({
   vite: {

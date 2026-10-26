@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { repayFoodLoan } from "@/lib/transactions.functions";
 import { toast } from "sonner";
 import { loansQuery, repaymentsQuery, walletQuery } from "@/lib/queries";
 import { naira, formatDateTime } from "@/lib/format";
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/_customer/repayments")({
 
 function RepaymentsPage() {
   const qc = useQueryClient();
+  const submitRepayment = useServerFn(repayFoodLoan);
   const { data: loans } = useSuspenseQuery(loansQuery);
   const { data: repayments } = useSuspenseQuery(repaymentsQuery);
   const { data: wallet } = useSuspenseQuery(walletQuery);
@@ -27,8 +29,7 @@ function RepaymentsPage() {
 
   const repay = useMutation({
     mutationFn: async ({ loanId, amountKobo }: { loanId: string; amountKobo: number }) => {
-      const { error } = await supabase.rpc("repay_loan", { p_loan_id: loanId, p_amount_kobo: amountKobo });
-      if (error) throw new Error(error.message);
+      await submitRepayment({ data: { loanId, amountKobo } });
     },
     onSuccess: () => {
       toast.success("Repayment applied.");

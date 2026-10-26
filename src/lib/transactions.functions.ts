@@ -14,24 +14,24 @@ export const transferTokens = createServerFn({ method: 'POST' }).middleware([req
     if (error) throw new Error(error.message);
     const tx = resultObject(result);
     const mail = await import('./transaction-emails.server');
-    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx.reference === 'string') await mail.emailTransfer(tx.reference); });
-    return { ...tx, emailStatus };
+    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx['reference'] === 'string') await mail.emailTransfer(tx['reference']); });
+    return { ok: true, emailStatus };
   });
 
 export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((input: { items: { menu_item_id: string; quantity: number }[]; method: string; subscriptionId?: string; termDays?: number }) => z.object({ items: z.array(z.object({ menu_item_id: z.string().uuid(), quantity: z.number().int().positive().max(100) })).min(1).max(100), method: z.enum(['cash_wallet', 'tokens', 'subscription_entitlement', 'food_credit']), subscriptionId: z.string().uuid().optional(), termDays: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional() }).parse(input))
   .handler(async ({ context, data }) => {
-    const { data: result, error } = await context.supabase.rpc('place_order', { p_items: data.items, p_payment_method: data.method, p_subscription_id: data.subscriptionId, p_loan_term_days: data.termDays });
+    const { data: result, error } = await context.supabase.rpc('place_order', { p_items: data.items, p_payment_method: data.method, ...(data.subscriptionId ? { p_subscription_id: data.subscriptionId } : {}), ...(data.termDays ? { p_loan_term_days: data.termDays } : {}) });
     if (error) throw new Error(error.message);
     const tx = resultObject(result);
     const mail = await import('./transaction-emails.server');
-    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx.order_id === 'string') await mail.emailOrder(tx.order_id); });
+    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx['order_id'] === 'string') await mail.emailOrder(tx['order_id']); });
     await mail.tryTransactionEmail(async () => {
       const { supabaseAdmin: db } = await import('@/integrations/supabase/client.server');
       const { data: entry } = await db.from('token_ledger').select('id').eq('related_customer_id', context.userId).eq('tx_type', 'referral_unlock').order('created_at', { ascending: false }).limit(1).maybeSingle();
       if (entry) await mail.emailTokenEntry(entry.id);
     });
-    return { ...tx, emailStatus };
+    return { ok: true, emailStatus };
   });
 
 export const repayFoodLoan = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
@@ -41,8 +41,8 @@ export const repayFoodLoan = createServerFn({ method: 'POST' }).middleware([requ
     if (error) throw new Error(error.message);
     const tx = resultObject(result);
     const mail = await import('./transaction-emails.server');
-    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx.reference === 'string' && typeof tx.outstanding_kobo === 'number') await mail.emailRepayment(tx.reference, context.userId, tx.outstanding_kobo); });
-    return { ...tx, emailStatus };
+    const emailStatus = await mail.tryTransactionEmail(async () => { if (typeof tx['reference'] === 'string' && typeof tx['outstanding_kobo'] === 'number') await mail.emailRepayment(tx['reference'], context.userId, tx['outstanding_kobo']); });
+    return { ok: true, emailStatus };
   });
 
 export const claimDailyReward = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
@@ -56,7 +56,7 @@ export const claimDailyReward = createServerFn({ method: 'POST' }).middleware([r
       if (readError) throw readError;
       await mail.emailTokenEntry(entry.id);
     });
-    return { spin: Number(tx.spin), bonus: Number(tx.bonus), streak: Number(tx.streak), total: Number(tx.total) };
+    return { spin: Number(tx['spin']), bonus: Number(tx['bonus']), streak: Number(tx['streak']), total: Number(tx['total']) };
   });
 
 export const applyOutletTransfer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
@@ -66,8 +66,8 @@ export const applyOutletTransfer = createServerFn({ method: 'POST' }).middleware
     if (error) throw new Error(error.message);
     const tx = resultObject(result);
     const mail = await import('./transaction-emails.server');
-    await mail.tryTransactionEmail(async () => { if (typeof tx.reference === 'string') await mail.emailOutletFee(tx.reference, context.userId); });
-    return tx;
+    await mail.tryTransactionEmail(async () => { if (typeof tx['reference'] === 'string') await mail.emailOutletFee(tx['reference'], context.userId); });
+    return { ok: true };
   });
 
 export const updateFoodOrder = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
