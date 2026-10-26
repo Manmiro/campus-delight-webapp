@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
+import logoImg from "@/assets/logo.jpg";
+import heroImg from "@/assets/hero-meal.jpg";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -66,6 +68,7 @@ function AuthPage() {
   const [dob, setDob] = useState("");
   const [referralCode, setReferralCode] = useState(ref.toUpperCase());
   const [busy, setBusy] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
 
   const roleHome = (role: string): "/admin" | "/outlet" | "/dashboard" =>
@@ -116,6 +119,7 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (!acceptedTerms) throw new Error("Please accept the Terms and Conditions and Privacy Policy");
         if (!fullName.trim()) throw new Error("Enter your full name");
         if (!phone.trim()) throw new Error("Enter your phone number");
         if (!outletId) throw new Error("Choose your Campus Delight outlet");
@@ -185,14 +189,37 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4 py-10">
+    <div className="min-h-screen bg-canvas px-4 py-6 sm:py-10">
       <div className="fixed top-4 right-4 z-50"><ThemeToggle /></div>
-      <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground">CD</span>
-          <span className="font-display text-xl font-bold">Campus Delight</span>
-        </Link>
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-[2rem] bg-card shadow-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <aside className="relative hidden overflow-hidden bg-gradient-brand p-8 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
+          <img src={heroImg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+          <div className="relative">
+            <Link to="/" className="inline-flex items-center gap-3">
+              <img src={logoImg} alt="Campus Delight logo" className="h-14 w-14 rounded-full ring-4 ring-primary-foreground/30" />
+              <span className="font-display text-xl font-bold">Campus Delight</span>
+            </Link>
+          </div>
+          <div className="relative">
+            <span className="inline-block rounded-full bg-golden px-3 py-1 text-xs font-bold text-primary-foreground">Eat Now & Pay Later</span>
+            <h2 className="mt-4 font-display text-4xl font-bold leading-tight">Good food.<br />Every day on campus.</h2>
+            <p className="mt-3 max-w-sm text-sm opacity-90">Join today and get 1,000 welcome tokens, meal plans and a ₦2,100 starter Pay Later limit.</p>
+            <div className="mt-6 grid grid-cols-3 gap-2 text-center">
+              {[["1,000", "Free tokens"], ["11", "Outlets"], ["₦2,100", "Starter limit"]].map(([v, l]) => (
+                <div key={l} className="rounded-2xl bg-primary-foreground/15 p-3 backdrop-blur">
+                  <p className="font-display text-lg font-bold">{v}</p><p className="text-[11px] opacity-85">{l}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+        <div className="p-6 sm:p-10">
+          <Link to="/" className="mb-6 flex flex-col items-center gap-2 lg:hidden">
+            <img src={logoImg} alt="Campus Delight logo" className="h-20 w-20 rounded-full shadow-glow" />
+            <span className="font-display text-xl font-bold">Campus Delight</span>
+          </Link>
+          <h1 className="font-display text-2xl font-bold">{mode === "signin" ? "Welcome back 👋" : "Create your account 🍛"}</h1>
+          <p className="mt-1 mb-6 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to order, top up and track your meals." : "It takes less than a minute to get started."}</p>
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(["signin", "signup"] as const).map((m) => (
               <Button
@@ -271,20 +298,26 @@ function AuthPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
             </div>
-            <Button type="submit" className="w-full" disabled={busy}>
+            {mode === "signup" && (
+              <label htmlFor="acceptTerms" className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 p-3 text-sm">
+                <input id="acceptTerms" type="checkbox" required checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-primary" />
+                <span className="text-muted-foreground">
+                  I agree to the <Link to="/terms" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Terms and Conditions</Link> and the <Link to="/privacy" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Privacy Policy</Link>.
+                </span>
+              </label>
+            )}
+            <Button type="submit" className="h-11 w-full rounded-2xl text-base shadow-glow" disabled={busy || (mode === "signup" && !acceptedTerms)}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "signin" ? "Sign in" : "Create my account"}
             </Button>
           </form>
-          <div className="mt-5"><LegalLinks /></div>
           {mode === "signin" && (
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Forgot your password?{" "}
-              <Link to="/reset-password" className="font-semibold text-primary">
-                Reset it
-              </Link>
+              <Link to="/reset-password" className="font-semibold text-primary">Reset it</Link>
             </p>
           )}
+          <div className="mt-5"><LegalLinks /></div>
         </div>
       </div>
     </div>
