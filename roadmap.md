@@ -3,6 +3,8 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Scaffold and brand all six account email templates with the main logo, meal photo and green/gold design; managed webhook and dashboard previews retained.
+- [ ] Activate branded account email delivery — waits on sender-domain DNS verification and publishing the current app.
 - [x] Configure notify.campusdelight.net and fixed foodie transaction receipts; wire successful funding, subscriptions, transfers, rewards, orders/refunds, repayments, outlet fees/decisions and credit adjustments. Receipt rendered on desktop/phone; signed-in invalid transfer rejected, pages load without runtime errors; 51 targeted tests pass. No real payment or token debit performed.
 - [ ] Verify a completed transaction reaches the inbox — blocked on notify.campusdelight.net DNS verification and then a real transaction; signup rewards send after email confirmation/sign-in, not immediately at registration. Delivery failures do not reverse completed transactions; no pre-verification sends are backfilled automatically.
 - [x] Connect Pingram SMS for phone verification; saved key, real signed-in request accepted without exposing the code, and 12 focused SMS tests pass (59 total checks).
