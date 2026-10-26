@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
+import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
 import logoImg from "@/assets/logo.jpg";
 import heroImg from "@/assets/hero-meal.jpg";
 
@@ -63,6 +64,7 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [outletId, setOutletId] = useState("");
   const [gender, setGender] = useState("");
   const [dob, setDob] = useState("");
@@ -129,7 +131,7 @@ function AuthPage() {
     // Every field is required except the referral code, which stays optional.
     const fieldErrors =
       mode === "signup"
-        ? validateSignUpForm({ fullName, email, phone, gender, dateOfBirth: dob, outletId, password, referralCode, acceptedTerms })
+        ? validateSignUpForm({ fullName, email, phone, gender, dateOfBirth: dob, outletId, password, confirmPassword, referralCode, acceptedTerms })
         : validateSignInForm(email, password);
     const messages = Object.values(fieldErrors).filter(Boolean) as string[];
     if (messages.length > 0) {
@@ -197,6 +199,7 @@ function AuthPage() {
         <Button variant="outline" className="mt-3 w-full" disabled={busy} onClick={() => {
           setMode("signin");
           setPassword("");
+          setConfirmPassword("");
           setAwaitingConfirm(false);
         }}>
           Back to sign in
@@ -320,9 +323,22 @@ function AuthPage() {
             )}
             <div>
               <Label htmlFor="password">Password <Required /></Label>
-              <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} required aria-required="true" aria-invalid={Boolean(errors.password)} minLength={6} placeholder="••••••••" />
+              <PasswordInput id="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} required aria-required="true" aria-invalid={Boolean(errors.password)} minLength={mode === "signup" ? 8 : undefined} placeholder="••••••••" />
               <FieldError message={errors.password} />
+              {mode === "signup" && <PasswordStrengthMeter password={password} />}
             </div>
+            {mode === "signup" && (
+              <div>
+                <Label htmlFor="confirmPassword">Confirm password <Required /></Label>
+                <PasswordInput id="confirmPassword" autoComplete="new-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }} required aria-required="true" aria-invalid={Boolean(errors.confirmPassword)} placeholder="••••••••" />
+                <FieldError message={errors.confirmPassword} />
+                {confirmPassword && !errors.confirmPassword && (
+                  <p className={`mt-1.5 text-xs font-semibold animate-in fade-in duration-300 ${confirmPassword === password ? "text-primary" : "text-destructive"}`}>
+                    {confirmPassword === password ? "✓ Passwords match" : "Passwords don't match yet"}
+                  </p>
+                )}
+              </div>
+            )}
             {mode === "signup" && (
               <div>
                 <label htmlFor="acceptTerms" className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 p-3 text-sm">

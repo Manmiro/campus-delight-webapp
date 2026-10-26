@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm } from "@/lib/auth-rules";
+import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, passwordStrength } from "@/lib/auth-rules";
 
 describe("Customer email verification and sign-in", () => {
   it("requires an email address to sign in", () => {
@@ -27,6 +27,7 @@ const completeSignUp = {
   dateOfBirth: "2004-05-12",
   outletId: "5b9e7af9-16ed-47b8-8d2f-e7ac8c2362b3",
   password: "sunset-garden",
+  confirmPassword: "sunset-garden",
   referralCode: "",
   acceptedTerms: true,
 };
@@ -75,10 +76,10 @@ describe("Customer sign-up form requires every field except the referral code", 
     });
   });
 
-  it("requires a password of at least six characters", () => {
-    expect(validateSignUpForm({ ...completeSignUp, password: "" })).toEqual({ password: "Enter a password" });
-    expect(validateSignUpForm({ ...completeSignUp, password: "12345" })).toEqual({
-      password: "Password must be at least 6 characters",
+  it("requires a password of at least eight characters", () => {
+    expect(validateSignUpForm({ ...completeSignUp, password: "", confirmPassword: "" })).toEqual({ password: "Enter a password", confirmPassword: "Confirm your password" });
+    expect(validateSignUpForm({ ...completeSignUp, password: "1234567", confirmPassword: "1234567" })).toEqual({
+      password: "Password must be at least 8 characters",
     });
   });
 
@@ -103,11 +104,26 @@ describe("Customer sign-up form requires every field except the referral code", 
       dateOfBirth: "",
       outletId: "",
       password: "",
+      confirmPassword: "",
       referralCode: "",
       acceptedTerms: false,
     });
     expect(Object.keys(errors).sort()).toEqual(
-      ["acceptedTerms", "dateOfBirth", "email", "fullName", "gender", "outletId", "password", "phone"].sort(),
+      ["acceptedTerms", "confirmPassword", "dateOfBirth", "email", "fullName", "gender", "outletId", "password", "phone"].sort(),
     );
+  });
+});
+
+describe("password confirmation and strength", () => {
+  it("rejects a confirmation that does not match", () => {
+    expect(validateSignUpForm({ ...completeSignUp, confirmPassword: "sunset-garde" })).toEqual({ confirmPassword: "Passwords do not match" });
+  });
+  it("accepts an 8-character password", () => {
+    expect(validateSignUpForm({ ...completeSignUp, password: "abcd1234", confirmPassword: "abcd1234" })).toEqual({});
+  });
+  it("rates strength", () => {
+    expect(passwordStrength("abc").label).toBe("Too short");
+    expect(passwordStrength("abcdefgh").score).toBe(1);
+    expect(passwordStrength("Sunset-Garden42").score).toBe(4);
   });
 });
