@@ -356,7 +356,7 @@ function Required() {
   return <span aria-hidden="true" className="text-destructive">*</span>;
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
   return <p className="mt-1 text-xs font-medium text-destructive">{message}</p>;
 }
