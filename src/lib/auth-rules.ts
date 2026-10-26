@@ -18,6 +18,7 @@ export type SignUpForm = {
   dateOfBirth: string;
   outletId: string;
   password: string;
+  confirmPassword: string;
   referralCode: string;
   acceptedTerms: boolean;
 };
@@ -63,7 +64,10 @@ export function validateSignUpForm(form: SignUpForm): FormErrors {
   if (!form.outletId) errors.outletId = "Choose your Campus Delight outlet";
 
   if (!form.password) errors.password = "Enter a password";
-  else if (form.password.length < 6) errors.password = "Password must be at least 6 characters";
+  else if (form.password.length < MIN_PASSWORD_LENGTH) errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
+
+  if (!form.confirmPassword) errors.confirmPassword = "Confirm your password";
+  else if (form.confirmPassword !== form.password) errors.confirmPassword = "Passwords do not match";
 
   if (!form.acceptedTerms) errors.acceptedTerms = "Please accept the Terms and Conditions and Privacy Policy";
 
@@ -76,4 +80,24 @@ export function validateSignInForm(email: string, password: string): { email?: s
   if (!email.trim()) errors.email = "Enter your email address";
   if (!password) errors.password = "Enter your password";
   return errors;
+}
+
+export const MIN_PASSWORD_LENGTH = 8;
+
+export type PasswordStrength = { score: 0 | 1 | 2 | 3 | 4; label: string };
+
+/** 0 = empty, 1 = too short / weak, 2 = fair, 3 = good, 4 = strong. */
+export function passwordStrength(password: string): PasswordStrength {
+  if (!password) return { score: 0, label: "" };
+  if (password.length < MIN_PASSWORD_LENGTH) return { score: 1, label: "Too short" };
+  let variety = 0;
+  if (/[a-z]/.test(password)) variety++;
+  if (/[A-Z]/.test(password)) variety++;
+  if (/[0-9]/.test(password)) variety++;
+  if (/[^A-Za-z0-9]/.test(password)) variety++;
+  let points = variety + (password.length >= 12 ? 1 : 0);
+  if (points <= 1) return { score: 1, label: "Weak" };
+  if (points === 2) return { score: 2, label: "Fair" };
+  if (points === 3) return { score: 3, label: "Good" };
+  return { score: 4, label: "Strong" };
 }
