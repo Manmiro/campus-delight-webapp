@@ -5,6 +5,7 @@ import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { listOutlets } from "@/lib/catalog.functions";
 import { getMyRole } from "@/lib/roles.functions";
+import { acknowledgeRegistrationRewards } from "@/lib/transactions.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ function AuthPage() {
   const initialMode = search["mode"];
   const ref = search["ref"] ?? "";
   const getRole = useServerFn(getMyRole);
+  const welcomeReceipt = useServerFn(acknowledgeRegistrationRewards);
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode === "signup" ? "signup" : "signin");
   const [fullName, setFullName] = useState("");
@@ -92,6 +94,7 @@ function AuthPage() {
       setAwaitingConfirm(true);
       return;
     }
+    await welcomeReceipt().catch(() => {});
     const role = await getRole();
     await navigate({ to: roleHome(role) });
   }
@@ -102,11 +105,12 @@ function AuthPage() {
     void (async () => {
       const { data } = await supabase.auth.getUser();
       if (!active || !hasConfirmedEmail(data.user)) return;
+      await welcomeReceipt().catch(() => {});
       const role = await getRole();
       if (active) await navigate({ to: roleHome(role) });
     })().catch(() => { /* Signed-out visitors stay on the sign-in form. */ });
     return () => { active = false; };
-  }, [getRole, navigate]);
+  }, [getRole, navigate, welcomeReceipt]);
 
   async function resendConfirmation() {
     setBusy(true);

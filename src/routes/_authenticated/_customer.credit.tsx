@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ShieldCheck, Timer, Loader2, Sparkles, UtensilsCrossed, TrendingUp, Wallet, Receipt, Check, CalendarClock, History } from "lucide-react";
 import { requestOtp } from "@/lib/credit.functions";
+import { repayFoodLoan } from "@/lib/transactions.functions";
 import { profileQuery, creditQuery, loansQuery, creditHistoryQuery } from "@/lib/queries";
 import { naira, formatDateTime, statusLabel } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/_customer/credit")({
 function CreditPage() {
   const qc = useQueryClient();
   const askOtp = useServerFn(requestOtp);
+  const submitRepayment = useServerFn(repayFoodLoan);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: credit } = useSuspenseQuery(creditQuery);
   const { data: loans } = useSuspenseQuery(loansQuery);
@@ -68,8 +70,7 @@ function CreditPage() {
 
   const repay = useMutation({
     mutationFn: async ({ loanId, amountKobo }: { loanId: string; amountKobo: number }) => {
-      const { error } = await supabase.rpc("repay_loan", { p_loan_id: loanId, p_amount_kobo: amountKobo });
-      if (error) throw new Error(error.message);
+      await submitRepayment({ data: { loanId, amountKobo } });
     },
     onSuccess: () => {
       toast.success("Repayment applied.");

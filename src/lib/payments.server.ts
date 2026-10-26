@@ -68,7 +68,12 @@ export async function applyVerifiedPayment(reference: string) {
   if (!verifiedPaymentMatches({ reference, amountKobo: tx.amount_kobo }, verified)) return { applied: false, status: verified.status === "success" ? "verification_mismatch" : verified.status, purpose: tx.purpose };
   const { data, error: settlementError } = await db.rpc("settle_verified_payment", { p_reference: reference, p_amount_kobo: verified.amount, p_currency: verified.currency, p_payload: verified as Json });
   if (settlementError) throw new Error(settlementError.message);
-  return data as { applied: boolean; status: string; purpose: string | null; already?: boolean };
+  const settlement = data as { applied: boolean; status: string; purpose: string | null; already?: boolean };
+  if (settlement.applied || settlement.already) {
+    const { emailPayment, tryTransactionEmail } = await import('./transaction-emails.server');
+    await tryTransactionEmail(() => emailPayment(reference));
+  }
+  return settlement;
 }
 
 export async function verifyWebhookSignature(rawBody: string, signature: string | null): Promise<boolean> {

@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { transferTokens } from "@/lib/transactions.functions";
 import { toast } from "sonner";
 import { tokenAccountQuery, tokenTransfersQuery, profileQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/_customer/transfer-tokens"
 
 function TransferTokensPage() {
   const qc = useQueryClient();
+  const transfer = useServerFn(transferTokens);
   const { data: me } = useSuspenseQuery(profileQuery);
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: history } = useSuspenseQuery(tokenTransfersQuery);
@@ -32,14 +34,10 @@ function TransferTokensPage() {
 
   const send = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("transfer_tokens", {
-        p_recipient_identifier: identifier.trim(),
-        p_principal: Number(amount),
-      });
-      if (error) throw new Error(error.message);
+      await transfer({ data: { identifier: identifier.trim(), principal: Number(amount) } });
     },
     onSuccess: () => {
-      toast.success("Transfer complete — both sides were notified.");
+      toast.success("Transfer complete.");
       setIdentifier("");
       setAmount("");
       void qc.invalidateQueries({ queryKey: ["me"] });

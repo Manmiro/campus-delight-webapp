@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adjustFoodCredit } from "@/lib/transactions.functions";
 import { toast } from "sonner";
 import { naira, formatDateTime } from "@/lib/format";
 import { StatCard, EmptyState, StatusBadge } from "@/components/bits";
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/credit")({
 
 function AdminCredit() {
   const qc = useQueryClient();
+  const submitAdjustment = useServerFn(adjustFoodCredit);
   const [adjust, setAdjust] = useState<{ customerId: string; name: string; current: number; value: string; reason: string } | null>(null);
 
   const { data: loans } = useQuery({
@@ -49,12 +52,7 @@ function AdminCredit() {
   const adjustLimit = useMutation({
     mutationFn: async () => {
       if (!adjust) throw new Error("Nothing to adjust");
-      const { error } = await supabase.rpc("admin_adjust_credit_limit", {
-        p_customer: adjust.customerId,
-        p_new_limit_kobo: Math.round(Number(adjust.value) * 100),
-        p_reason: adjust.reason,
-      });
-      if (error) throw new Error(error.message);
+      await submitAdjustment({ data: { customerId: adjust.customerId, newLimitKobo: Math.round(Number(adjust.value) * 100), reason: adjust.reason } });
     },
     onSuccess: () => {
       toast.success("Credit limit adjusted — the change is audited");

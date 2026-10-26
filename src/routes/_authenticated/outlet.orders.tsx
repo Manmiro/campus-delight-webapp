@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { updateFoodOrder } from "@/lib/transactions.functions";
 import { toast } from "sonner";
 import { staffAssignmentQuery, outletOrdersQuery } from "@/lib/queries";
 import { naira, formatDateTime } from "@/lib/format";
@@ -16,15 +17,13 @@ export const Route = createFileRoute("/_authenticated/outlet/orders")({
 
 function OutletOrders() {
   const qc = useQueryClient();
+  const submitAction = useServerFn(updateFoodOrder);
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
   const { data: orders } = useSuspenseQuery(outletOrdersQuery(assignment?.outlet_id ?? ""));
 
   const act = useMutation({
     mutationFn: async ({ orderId, action }: { orderId: string; action: "fulfill" | "cancel" }) => {
-      const { error } = await supabase.rpc(action === "fulfill" ? "fulfill_order" : "cancel_order", {
-        p_order_id: orderId,
-      });
-      if (error) throw new Error(error.message);
+      await submitAction({ data: { orderId, action } });
     },
     onSuccess: () => {
       toast.success("Done");

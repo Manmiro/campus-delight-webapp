@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
+import { createServerFn, useServerFn } from "@tanstack/react-start";
+import { applyOutletTransfer } from "@/lib/transactions.functions";
 import { toast } from "sonner";
 import { profileQuery, transferApplicationsQuery, walletQuery, tokenAccountQuery } from "@/lib/queries";
 import { naira, formatDateTime, tokens as fmtTokens } from "@/lib/format";
@@ -24,6 +24,7 @@ const listAllOutlets = createServerFn({ method: "GET" }).handler(async () => {
 
 function TransferOutletPage() {
   const qc = useQueryClient();
+  const submitTransfer = useServerFn(applyOutletTransfer);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: apps } = useSuspenseQuery(transferApplicationsQuery);
   const { data: wallet } = useSuspenseQuery(walletQuery);
@@ -36,8 +37,7 @@ function TransferOutletPage() {
   const apply = useMutation({
     mutationFn: async () => {
       if (!toOutlet || !feeMethod) throw new Error("Choose a destination outlet and a payment method");
-      const { error } = await supabase.rpc("apply_outlet_transfer", { p_to_outlet_id: toOutlet, p_fee_method: feeMethod });
-      if (error) throw new Error(error.message);
+      await submitTransfer({ data: { outletId: toOutlet, feeMethod } });
     },
     onSuccess: () => {
       toast.success("Application submitted — headquarters will review it.");

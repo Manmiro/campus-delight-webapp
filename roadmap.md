@@ -3,7 +3,8 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
-- [ ] Add fixed, foodie email notifications for wallet funding, token transfers/rewards and all valid transactions — blocked on configuring an owned sender domain.
+- [x] Configure notify.campusdelight.net and fixed foodie transaction receipts; wire successful funding, subscriptions, transfers, rewards, orders/refunds, repayments, outlet fees/decisions and credit adjustments. Receipt rendered on desktop/phone; signed-in invalid transfer rejected, pages load without runtime errors; 51 targeted tests pass. No real payment or token debit performed.
+- [ ] Verify a completed transaction reaches the inbox — blocked on notify.campusdelight.net DNS verification and then a real transaction; signup rewards send after email confirmation/sign-in, not immediately at registration. Delivery failures do not reverse completed transactions; no pre-verification sends are backfilled automatically.
 - [x] Connect Pingram SMS for phone verification; saved key, real signed-in request accepted without exposing the code, and 12 focused SMS tests pass (59 total checks).
 - [ ] Confirm receipt of the test SMS and enter its code — awaits the account owner checking their phone; provider acceptance alone does not prove delivery.
 - [x] Add public sample Privacy and Terms pages and links from registration, homepage and profile; desktop/phone pages and profile link verified, no page errors or phone overflow.

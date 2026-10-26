@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBag, Timer, Wallet } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.jpg";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { placeFoodOrder } from "@/lib/transactions.functions";
 import { naira, planLabel, tierLabel } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions, tokensForKobo } from "@/lib/prd-rules";
 import { EmptyState } from "@/components/bits";
@@ -28,6 +29,7 @@ const TERMS = [
 
 function OrderPage() {
   const qc = useQueryClient();
+  const submitOrder = useServerFn(placeFoodOrder);
   const [cart, setCart] = useState<Cart>({});
   const [method, setMethod] = useState("");
   const [termDays, setTermDays] = useState("7");
@@ -62,13 +64,12 @@ function OrderPage() {
   const placeOrder = useMutation({
     mutationFn: async () => {
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
-      const { error } = await supabase.rpc("place_order", {
-        p_items: items,
-        p_payment_method: method,
-        ...(method === "subscription_entitlement" && activeSub ? { p_subscription_id: activeSub.id } : {}),
-        ...(method === "food_credit" ? { p_loan_term_days: Number(termDays) } : {}),
-      });
-      if (error) throw new Error(error.message);
+      await submitOrder({ data: {
+        items,
+        method,
+        ...(method === "subscription_entitlement" && activeSub ? { subscriptionId: activeSub.id } : {}),
+        ...(method === "food_credit" ? { termDays: Number(termDays) } : {}),
+      } });
     },
     onSuccess: () => {
       toast.success("Order placed!");
