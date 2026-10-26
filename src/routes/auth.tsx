@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { hasConfirmedEmail, validateSignInCredentials } from "@/lib/auth-rules";
+import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import logoImg from "@/assets/logo.jpg";
@@ -70,6 +70,15 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const clearError = (field: keyof FormErrors) =>
+    setErrors((prev) => {
+      if (!(field in prev)) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const roleHome = (role: string): "/admin" | "/outlet" | "/dashboard" =>
     role === "central_admin" ? "/admin" : role.startsWith("outlet") ? "/outlet" : "/dashboard";
@@ -116,27 +125,35 @@ function AuthPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Every field is required except the referral code, which stays optional.
+    const fieldErrors =
+      mode === "signup"
+        ? validateSignUpForm({ fullName, email, phone, gender, dateOfBirth: dob, outletId, password, referralCode, acceptedTerms })
+        : validateSignInForm(email, password);
+    const messages = Object.values(fieldErrors).filter(Boolean) as string[];
+    if (messages.length > 0) {
+      setErrors(fieldErrors);
+      toast.error(messages[0]);
+      return;
+    }
+    setErrors({});
+
     setBusy(true);
     try {
       if (mode === "signup") {
-        if (!acceptedTerms) throw new Error("Please accept the Terms and Conditions and Privacy Policy");
-        if (!fullName.trim()) throw new Error("Enter your full name");
-        if (!phone.trim()) throw new Error("Enter your phone number");
-        if (!outletId) throw new Error("Choose your Campus Delight outlet");
-        if (!gender) throw new Error("Select your gender");
-        if (!dob) throw new Error("Enter your date of birth");
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth`,
             data: {
-              full_name: fullName,
-              phone,
+              full_name: fullName.trim(),
+              phone: phone.trim(),
               gender,
               date_of_birth: dob,
               outlet_id: outletId,
-              referral_code: referralCode || undefined,
+              referral_code: referralCode.trim().toUpperCase() || undefined,
             },
           },
         });
@@ -219,14 +236,14 @@ function AuthPage() {
             <span className="font-display text-xl font-bold">Campus Delight</span>
           </Link>
           <h1 className="font-display text-2xl font-bold">{mode === "signin" ? "Welcome back 👋" : "Create your account 🍛"}</h1>
-          <p className="mt-1 mb-6 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to order, top up and track your meals." : "It takes less than a minute to get started."}</p>
+          <p className="mt-1 mb-6 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to order, top up and track your meals." : "Fill in every field below — only the referral code is optional."}</p>
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(["signin", "signup"] as const).map((m) => (
               <Button
                 key={m}
                 type="button"
                 variant={mode === m ? "default" : "ghost"}
-                onClick={() => setMode(m)}
+                onClick={() => { setMode(m); setErrors({}); }}
                 className={`rounded-lg py-2 text-sm font-semibold transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
               >
                 {m === "signin" ? "Sign in" : "Create account"}
@@ -234,32 +251,36 @@ function AuthPage() {
             ))}
           </div>
 
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} noValidate className="space-y-4">
             {mode === "signin" && (
               <div>
-                <Label htmlFor="email">Email address</Label>
-                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+                <Label htmlFor="email">Email address <Required /></Label>
+                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
+                <FieldError message={errors.email} />
               </div>
             )}
             {mode === "signup" && (
               <>
                 <div>
-                  <Label htmlFor="fullName">Full name</Label>
-                  <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Ada Obi" />
+                  <Label htmlFor="fullName">Full name <Required /></Label>
+                  <Input id="fullName" value={fullName} onChange={(e) => { setFullName(e.target.value); clearError("fullName"); }} required aria-required="true" aria-invalid={Boolean(errors.fullName)} placeholder="Ada Obi" />
+                  <FieldError message={errors.fullName} />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email address</Label>
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+                  <Label htmlFor="email">Email address <Required /></Label>
+                  <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
+                  <FieldError message={errors.email} />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone number</Label>
-                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="0803 000 0000" />
+                  <Label htmlFor="phone">Phone number <Required /></Label>
+                  <Input id="phone" inputMode="tel" value={phone} onChange={(e) => { setPhone(e.target.value); clearError("phone"); }} required aria-required="true" aria-invalid={Boolean(errors.phone)} placeholder="0803 000 0000" />
+                  <FieldError message={errors.phone} />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select value={gender} onValueChange={setGender} required>
-                      <SelectTrigger id="gender" className="w-full">
+                    <Label htmlFor="gender">Gender <Required /></Label>
+                    <Select value={gender} onValueChange={(v) => { setGender(v); clearError("gender"); }} required>
+                      <SelectTrigger id="gender" className="w-full" aria-required="true" aria-invalid={Boolean(errors.gender)}>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
@@ -267,16 +288,18 @@ function AuthPage() {
                         <SelectItem value="female">Female</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FieldError message={errors.gender} />
                   </div>
                   <div>
-                    <Label htmlFor="dob">Date of birth</Label>
-                    <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required max={new Date().toISOString().slice(0, 10)} />
+                    <Label htmlFor="dob">Date of birth <Required /></Label>
+                    <Input id="dob" type="date" value={dob} onChange={(e) => { setDob(e.target.value); clearError("dateOfBirth"); }} required aria-required="true" aria-invalid={Boolean(errors.dateOfBirth)} max={new Date().toISOString().slice(0, 10)} />
+                    <FieldError message={errors.dateOfBirth} />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="outlet">Your campus outlet</Label>
-                  <Select value={outletId} onValueChange={setOutletId} required>
-                    <SelectTrigger id="outlet" className="w-full">
+                  <Label htmlFor="outlet">Your campus outlet <Required /></Label>
+                  <Select value={outletId} onValueChange={(v) => { setOutletId(v); clearError("outletId"); }} required>
+                    <SelectTrigger id="outlet" className="w-full" aria-required="true" aria-invalid={Boolean(errors.outletId)}>
                       <SelectValue placeholder="Select your outlet" />
                     </SelectTrigger>
                     <SelectContent>
@@ -287,24 +310,29 @@ function AuthPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FieldError message={errors.outletId} />
                 </div>
                 <div>
                   <Label htmlFor="referral">Referral code <span className="font-normal text-muted-foreground">(optional)</span></Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="CD482901" />
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value.toUpperCase())} placeholder="CD482901" />
                 </div>
               </>
             )}
             <div>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
+              <Label htmlFor="password">Password <Required /></Label>
+              <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} required aria-required="true" aria-invalid={Boolean(errors.password)} minLength={6} placeholder="••••••••" />
+              <FieldError message={errors.password} />
             </div>
             {mode === "signup" && (
-              <label htmlFor="acceptTerms" className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 p-3 text-sm">
-                <input id="acceptTerms" type="checkbox" required checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-primary" />
-                <span className="text-muted-foreground">
-                  I agree to the <Link to="/terms" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Terms and Conditions</Link> and the <Link to="/privacy" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Privacy Policy</Link>.
-                </span>
-              </label>
+              <div>
+                <label htmlFor="acceptTerms" className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 p-3 text-sm">
+                  <input id="acceptTerms" type="checkbox" required checked={acceptedTerms} onChange={(e) => { setAcceptedTerms(e.target.checked); clearError("acceptedTerms"); }} className="mt-0.5 h-4 w-4 shrink-0 accent-primary" />
+                  <span className="text-muted-foreground">
+                    I agree to the <Link to="/terms" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Terms and Conditions</Link> and the <Link to="/privacy" target="_blank" className="font-semibold text-primary underline-offset-2 hover:underline">Privacy Policy</Link>. <Required />
+                  </span>
+                </label>
+                <FieldError message={errors.acceptedTerms} />
+              </div>
             )}
             <Button type="submit" className="h-11 w-full rounded-2xl text-base shadow-glow" disabled={busy || (mode === "signup" && !acceptedTerms)}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -322,6 +350,15 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+function Required() {
+  return <span aria-hidden="true" className="text-destructive">*</span>;
+}
+
+function FieldError({ message }: { message?: string | undefined }) {
+  if (!message) return null;
+  return <p className="mt-1 text-xs font-medium text-destructive">{message}</p>;
 }
 
 function CenterCard({ children }: { children: React.ReactNode }) {
