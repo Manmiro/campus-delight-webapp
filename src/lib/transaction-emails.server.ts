@@ -79,6 +79,20 @@ export async function emailOutletFee(reference: string, customerId: string) {
   await receipt(customerId, app.id, { kind: 'outlet_fee', amount: app.fee_method === 'tokens' ? tokens(app.fee_amount) : money(app.fee_amount), reference, date: date(app.created_at), details: [{ label: 'Application fee', value: 'Non-refundable; approval is not guaranteed' }] });
 }
 
+export async function emailCreditAdjustment(historyId: string) {
+  const { data: entry, error } = await db.from('credit_limit_history').select('*').eq('id', historyId).single();
+  if (error) throw error;
+  if (!entry) return;
+  await receipt(entry.customer_id, entry.id, { kind: 'credit_adjustment', amount: money(entry.new_limit_kobo), reference: entry.id, date: date(entry.created_at), details: [{ label: 'Previous limit', value: money(entry.previous_limit_kobo) }] });
+}
+
+export async function emailOutletDecision(applicationId: string) {
+  const { data: app, error } = await db.from('outlet_transfer_applications').select('*').eq('id', applicationId).single();
+  if (error) throw error;
+  if (!app || !['completed', 'rejected'].includes(app.status)) return;
+  await receipt(app.customer_id, app.id, { kind: app.status === 'completed' ? 'outlet_approved' : 'outlet_rejected', amount: app.fee_method === 'tokens' ? tokens(app.fee_amount) : money(app.fee_amount), reference: app.reference, date: date(app.decided_at ?? app.created_at) });
+}
+
 /** A committed financial action must never be repeated just because email failed. */
 export async function tryTransactionEmail(action: () => Promise<unknown>): Promise<'accepted' | 'unavailable'> {
   try { await action(); return 'accepted'; }

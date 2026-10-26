@@ -16,6 +16,9 @@ export const RECEIPT_TYPES = {
   referral_unlock: ['Referral tokens unlocked', 'Your friend’s qualifying order unlocked your referral reward.'],
   repayment: ['Repayment confirmed', 'Your food-credit repayment has been applied.'],
   outlet_fee: ['Outlet transfer submitted', 'Your application fee is paid. Headquarters will review your application.'],
+  credit_adjustment: ['Your credit limit changed', 'Headquarters updated your food-credit limit. Existing debt remains payable.'],
+  outlet_approved: ['Your outlet transfer is complete', 'Your next orders will use your newly assigned outlet.'],
+  outlet_rejected: ['Outlet transfer decision', 'Your outlet-transfer application was not approved. The application fee is non-refundable.'],
 } as const;
 export type ReceiptKind = keyof typeof RECEIPT_TYPES;
 export interface ReceiptProps {
