@@ -4,6 +4,7 @@ import { Loader2, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,7 +66,8 @@ function ResetPassword() {
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
             <Label htmlFor="password">New password</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+            <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+            <PasswordStrengthMeter password={password} />
           </div>
           <Button type="submit" className="w-full" disabled={busy || !ready}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Update password
