@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type React from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBag, Timer, Wallet } from "lucide-react";
+import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBag, ShoppingBasket, Timer, Wallet } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.jpg";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { useServerFn } from "@tanstack/react-start";
@@ -35,6 +35,7 @@ function OrderPage() {
   const [termDays, setTermDays] = useState("7");
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
+  const [cartVisible, setCartVisible] = useState(false);
 
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: menu } = useSuspenseQuery(myMenuQuery(profile.outlet_id ?? ""));
@@ -43,6 +44,16 @@ function OrderPage() {
   const { data: wallet } = useSuspenseQuery(walletQuery);
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: credit } = useSuspenseQuery(creditQuery);
+
+  useEffect(() => {
+    const summary = document.getElementById("cart");
+    if (!summary) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setCartVisible(entry?.isIntersecting ?? false);
+    });
+    observer.observe(summary);
+    return () => observer.disconnect();
+  }, [profile.outlet_id, menu.length]);
 
   const activeSub = subs.find((s) => s.status === "active");
   const entToday = ents.filter((e) => e.subscription_id === activeSub?.id);
@@ -280,11 +291,20 @@ function OrderPage() {
       </aside>
 
       {/* Mobile floating cart */}
-      {itemCount > 0 && (
-        <a href="#cart" className="fixed inset-x-4 bottom-4 z-40 flex items-center justify-between rounded-full bg-primary px-5 py-3 text-primary-foreground shadow-glow xl:hidden">
-          <span className="flex items-center gap-2 font-semibold"><ShoppingBag className="h-4 w-4" /> {itemCount} item{itemCount === 1 ? "" : "s"}</span>
-          <span className="font-display font-extrabold">{naira(totalKobo)} →</span>
-        </a>
+      {itemCount > 0 && !cartVisible && (
+        <Button
+          size="icon"
+          aria-label={`View basket, ${itemCount} item${itemCount === 1 ? "" : "s"}, ${naira(totalKobo)}`}
+          title="View your basket"
+          aria-controls="cart"
+          onClick={() => document.getElementById("cart")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" })}
+          className="fixed bottom-6 right-5 z-40 h-16 w-16 rounded-full border-4 border-card bg-primary text-primary-foreground shadow-glow transition-transform hover:-translate-y-1 hover:scale-105 active:scale-95 motion-reduce:transition-none xl:hidden"
+        >
+          <ShoppingBasket className="h-8 w-8 animate-wiggle" />
+          <span key={itemCount} className="absolute -right-1 -top-1 grid h-6 min-w-6 animate-pop-in place-items-center rounded-full border-2 border-card bg-golden px-1 text-xs font-extrabold text-golden-foreground" aria-hidden="true">
+            {itemCount > 99 ? "99+" : itemCount}
+          </span>
+        </Button>
       )}
     </div>
   );
