@@ -54,7 +54,7 @@ export function BirthdayGreeting({ name, gender, age }: BirthdayProps) {
 
 export const template = {
   component: BirthdayGreeting,
-  subject: (d: Record<string, any>) => `Happy birthday, ${String(d.name ?? '').split(' ')[0] || 'friend'}! 🎂 — Campus Delight`,
+  subject: (d: Record<string, any>) => `Happy birthday, ${String(d['name'] ?? '').split(' ')[0] || 'friend'}! 🎂 — Campus Delight`,
   displayName: 'Birthday greeting',
   previewData: { name: 'Amaka Obi', gender: 'female', age: 21 },
 } satisfies TemplateEntry;
