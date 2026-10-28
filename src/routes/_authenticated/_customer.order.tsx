@@ -162,7 +162,7 @@ function OrderPage() {
       const flight = document.createElement("span");
       flight.textContent = food;
       flight.setAttribute("aria-hidden", "true");
-      flight.dataset.basketFlight = "true";
+      flight.setAttribute("data-basket-flight", "true");
       flight.className = "pointer-events-none fixed left-0 top-0 z-50 grid h-14 w-14 place-items-center rounded-full bg-card/90 text-4xl shadow-glow ring-2 ring-golden/50";
       document.body.appendChild(flight);
       const track = (element: HTMLElement, frames: Keyframe[], duration: number, remove = false) => {
