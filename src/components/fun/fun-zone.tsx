@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Flame, Gift, Loader2, RotateCw, Sparkles, Cake, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { claimDailyReward } from "@/lib/transactions.functions";
+import { claimDailyReward, sendBirthdayGreeting } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fun/confetti";
 import {
@@ -79,6 +79,8 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
   const ref = referralMilestone(qualified);
   const usual = counted[0]?.order_items[0];
   const birthday = isBirthday(dob);
+  const greet = useServerFn(sendBirthdayGreeting);
+  useEffect(() => { if (birthday) greet().catch(() => {}); }, [birthday, greet]);
 
   return (
     <>
