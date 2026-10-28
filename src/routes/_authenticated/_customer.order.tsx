@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBasket, Timer, Wallet } from "lucide-react";
+import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBasket, Timer, Trash2, Wallet } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.jpg";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { useServerFn } from "@tanstack/react-start";
@@ -36,11 +36,15 @@ function OrderPage() {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
   const [cartVisible, setCartVisible] = useState(false);
+  const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const basketAnimations = useRef(new Set<Animation>());
+  const exitTimers = useRef(new Set<number>());
 
   useEffect(() => () => {
     basketAnimations.current.forEach((animation) => animation.cancel());
     basketAnimations.current.clear();
+    exitTimers.current.forEach((timer) => window.clearTimeout(timer));
+    exitTimers.current.clear();
   }, []);
 
   const { data: profile } = useSuspenseQuery(profileQuery);
