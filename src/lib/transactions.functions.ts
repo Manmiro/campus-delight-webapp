@@ -114,3 +114,17 @@ export const acknowledgeRegistrationRewards = createServerFn({ method: 'POST' })
     });
     return { ok: true };
   });
+/** Sends one birthday greeting per year, only when the stored date of birth matches today (Lagos). */
+export const sendBirthdayGreeting = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: profile } = await context.supabase.from('profiles').select('email,full_name,gender,date_of_birth').eq('id', context.userId).single();
+    const { isBirthday } = await import('./fun-rules');
+    if (!profile?.email || !profile.date_of_birth || !isBirthday(profile.date_of_birth)) return { sent: false };
+    const year = Number(new Date().toLocaleString('en-US', { timeZone: 'Africa/Lagos', year: 'numeric' }));
+    const age = year - Number(profile.date_of_birth.slice(0, 4));
+    const { sendTemplateEmail } = await import('./email-templates/send-email');
+    try {
+      const r = await sendTemplateEmail('birthday-greeting', profile.email, { templateData: { name: profile.full_name, gender: profile.gender, age: age > 0 && age < 120 ? age : undefined }, idempotencyKey: `birthday-greeting:${year}:${context.userId}` });
+      return { sent: r.sent };
+    } catch (e) { console.error('birthday email failed', e); return { sent: false }; }
+  });
