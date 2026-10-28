@@ -249,15 +249,6 @@ function OrderPage() {
       flight.setAttribute("data-basket-flight", "true");
       flight.className = "pointer-events-none fixed left-0 top-0 z-50 grid h-14 w-14 place-items-center rounded-full bg-card/90 text-4xl shadow-glow ring-2 ring-golden/50";
       document.body.appendChild(flight);
-      const track = (element: HTMLElement, frames: Keyframe[], duration: number, remove = false) => {
-        const animation = element.animate(frames, { duration, easing: "linear" });
-        basketAnimations.current.add(animation);
-        void animation.finished.catch(() => {}).finally(() => {
-          basketAnimations.current.delete(animation);
-          if (remove) element.remove();
-        });
-        return animation;
-      };
       const arcHeight = Math.min(160, Math.max(65, fromY - 70));
       const frames = Array.from({ length: 21 }, (_, index) => {
         const t = index / 20;
