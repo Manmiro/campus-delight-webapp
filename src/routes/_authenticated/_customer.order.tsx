@@ -142,6 +142,86 @@ function OrderPage() {
     tokens: <Coins className="h-5 w-5" />,
     food_credit: <CreditCard className="h-5 w-5" />,
   };
+  const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const later = (fn: () => void, ms: number) => {
+    const timer = window.setTimeout(() => {
+      exitTimers.current.delete(timer);
+      fn();
+    }, ms);
+    exitTimers.current.add(timer);
+  };
+
+  const track = (element: HTMLElement, frames: Keyframe[], duration: number, remove = false) => {
+    const animation = element.animate(frames, { duration, easing: "linear" });
+    basketAnimations.current.add(animation);
+    void animation.finished.catch(() => {}).finally(() => {
+      basketAnimations.current.delete(animation);
+      if (remove) element.remove();
+    });
+    return animation;
+  };
+
+  // Flick a dish out of the basket: it arcs up and away before the row collapses.
+  const tossOut = (id: string, source?: HTMLElement) => {
+    const item = menu.find((m) => m.id === id);
+    if (!item || reduceMotion()) return;
+    const row = source?.closest("li") ?? document.querySelector(`[data-cart-row="${id}"]`);
+    const art = row?.querySelector("[data-cart-art]") ?? row;
+    if (!art) return;
+    const origin = art.getBoundingClientRect();
+    const flight = document.createElement("span");
+    flight.textContent = emojiFor(item.category, item.name);
+    flight.setAttribute("aria-hidden", "true");
+    flight.setAttribute("data-basket-flight", "true");
+    flight.className = "pointer-events-none fixed left-0 top-0 z-50 grid h-12 w-12 place-items-center rounded-full bg-card/90 text-3xl shadow-soft ring-2 ring-destructive/40";
+    document.body.appendChild(flight);
+    const fromX = origin.left + origin.width / 2 - 24;
+    const fromY = origin.top + origin.height / 2 - 24;
+    const toX = fromX + (window.innerWidth - origin.right > 200 ? 140 : -140);
+    const toY = Math.max(-70, origin.top - 210);
+    const frames = Array.from({ length: 16 }, (_, index) => {
+      const t = index / 15;
+      const x = fromX + (toX - fromX) * t;
+      const y = fromY + (toY - fromY) * t - 55 * Math.sin(Math.PI * t);
+      return { offset: t, transform: `translate3d(${x}px, ${y}px, 0) rotate(${-t * 420}deg) scale(${1 - t * 0.45})`, opacity: t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35 };
+    });
+    track(flight, frames, 620, true);
+  };
+
+  const dropOut = (id: string, startDelay: number) => {
+    const exit = reduceMotion() ? 0 : 340;
+    later(() => setRemoving((r) => ({ ...r, [id]: true })), startDelay);
+    later(() => {
+      setCart((c) => {
+        const next = { ...c };
+        delete next[id];
+        return next;
+      });
+      setRemoving((r) => {
+        const next = { ...r };
+        delete next[id];
+        return next;
+      });
+    }, startDelay + exit);
+  };
+
+  const removeItem = (id: string, source?: HTMLElement) => {
+    if (removing[id]) return;
+    tossOut(id, source);
+    dropOut(id, 0);
+  };
+
+  const clearOrder = () => {
+    const stagger = reduceMotion() ? 0 : 70;
+    cartItems.forEach(([id], index) => {
+      const delay = index * stagger;
+      if (delay > 0) later(() => tossOut(id), delay);
+      else tossOut(id);
+      dropOut(id, delay);
+    });
+  };
+
   const add = (id: string, d: number, source?: HTMLElement) => {
     setCart((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + d) }));
     if (d <= 0 || !source || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
