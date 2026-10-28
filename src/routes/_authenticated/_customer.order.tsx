@@ -352,9 +352,16 @@ function OrderPage() {
 
       {/* Order summary */}
       <aside id="cart" className="h-fit min-w-0 rounded-3xl border border-border/60 bg-card p-5 shadow-soft xl:sticky xl:top-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-display text-lg font-bold"><span data-basket-destination className="inline-flex"><ShoppingBasket className="h-5 w-5 text-primary" /></span> Your order</h2>
-          {itemCount > 0 && <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{itemCount} item{itemCount === 1 ? "" : "s"}</span>}
+          <div className="flex items-center gap-1">
+            {itemCount > 0 && <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{itemCount} item{itemCount === 1 ? "" : "s"}</span>}
+            {cartItems.length > 0 && (
+              <button type="button" onClick={clearOrder} className="rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-destructive hover:underline">
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {cartItems.length === 0 ? (
@@ -368,13 +375,17 @@ function OrderPage() {
               const item = menu.find((m) => m.id === id);
               if (!item) return null;
               return (
-                <li key={id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-canvas p-2.5 text-sm">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-card text-xl">{emojiFor(item.category, item.name)}</span>
+                <li key={id} data-cart-row={id} className={`grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-2xl bg-canvas p-2.5 text-sm sm:gap-3 ${removing[id] ? "animate-cart-out" : ""}`}>
+                  <span data-cart-art className="grid h-10 w-10 place-items-center rounded-xl bg-card text-xl">{emojiFor(item.category, item.name)}</span>
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{item.name}</p>
                     <p className="text-xs text-muted-foreground">×{qty} · {naira(item.price_kobo)}</p>
                   </div>
                   <span className="font-semibold">{naira(item.price_kobo * qty)}</span>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    onClick={(event) => removeItem(id, event.currentTarget)} aria-label={`Remove ${item.name} from your order`} title={`Remove ${item.name}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </li>
               );
             })}
