@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBasket, Timer, Wallet } from "lucide-react";
+import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBasket, Timer, Trash2, Wallet } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.jpg";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { useServerFn } from "@tanstack/react-start";
@@ -36,11 +36,15 @@ function OrderPage() {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
   const [cartVisible, setCartVisible] = useState(false);
+  const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const basketAnimations = useRef(new Set<Animation>());
+  const exitTimers = useRef(new Set<number>());
 
   useEffect(() => () => {
     basketAnimations.current.forEach((animation) => animation.cancel());
     basketAnimations.current.clear();
+    exitTimers.current.forEach((timer) => window.clearTimeout(timer));
+    exitTimers.current.clear();
   }, []);
 
   const { data: profile } = useSuspenseQuery(profileQuery);
@@ -138,6 +142,86 @@ function OrderPage() {
     tokens: <Coins className="h-5 w-5" />,
     food_credit: <CreditCard className="h-5 w-5" />,
   };
+  const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const later = (fn: () => void, ms: number) => {
+    const timer = window.setTimeout(() => {
+      exitTimers.current.delete(timer);
+      fn();
+    }, ms);
+    exitTimers.current.add(timer);
+  };
+
+  const track = (element: HTMLElement, frames: Keyframe[], duration: number, remove = false) => {
+    const animation = element.animate(frames, { duration, easing: "linear" });
+    basketAnimations.current.add(animation);
+    void animation.finished.catch(() => {}).finally(() => {
+      basketAnimations.current.delete(animation);
+      if (remove) element.remove();
+    });
+    return animation;
+  };
+
+  // Flick a dish out of the basket: it arcs up and away before the row collapses.
+  const tossOut = (id: string, source?: HTMLElement) => {
+    const item = menu.find((m) => m.id === id);
+    if (!item || reduceMotion()) return;
+    const row = source?.closest("li") ?? document.querySelector(`[data-cart-row="${id}"]`);
+    const art = row?.querySelector("[data-cart-art]") ?? row;
+    if (!art) return;
+    const origin = art.getBoundingClientRect();
+    const flight = document.createElement("span");
+    flight.textContent = emojiFor(item.category, item.name);
+    flight.setAttribute("aria-hidden", "true");
+    flight.setAttribute("data-basket-flight", "true");
+    flight.className = "pointer-events-none fixed left-0 top-0 z-50 grid h-12 w-12 place-items-center rounded-full bg-card/90 text-3xl shadow-soft ring-2 ring-destructive/40";
+    document.body.appendChild(flight);
+    const fromX = origin.left + origin.width / 2 - 24;
+    const fromY = origin.top + origin.height / 2 - 24;
+    const toX = fromX + (window.innerWidth - origin.right > 200 ? 140 : -140);
+    const toY = Math.max(-70, origin.top - 210);
+    const frames = Array.from({ length: 16 }, (_, index) => {
+      const t = index / 15;
+      const x = fromX + (toX - fromX) * t;
+      const y = fromY + (toY - fromY) * t - 55 * Math.sin(Math.PI * t);
+      return { offset: t, transform: `translate3d(${x}px, ${y}px, 0) rotate(${-t * 420}deg) scale(${1 - t * 0.45})`, opacity: t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35 };
+    });
+    track(flight, frames, 620, true);
+  };
+
+  const dropOut = (id: string, startDelay: number) => {
+    const exit = reduceMotion() ? 0 : 340;
+    later(() => setRemoving((r) => ({ ...r, [id]: true })), startDelay);
+    later(() => {
+      setCart((c) => {
+        const next = { ...c };
+        delete next[id];
+        return next;
+      });
+      setRemoving((r) => {
+        const next = { ...r };
+        delete next[id];
+        return next;
+      });
+    }, startDelay + exit);
+  };
+
+  const removeItem = (id: string, source?: HTMLElement) => {
+    if (removing[id]) return;
+    tossOut(id, source);
+    dropOut(id, 0);
+  };
+
+  const clearOrder = () => {
+    const stagger = reduceMotion() ? 0 : 70;
+    cartItems.forEach(([id], index) => {
+      const delay = index * stagger;
+      if (delay > 0) later(() => tossOut(id), delay);
+      else tossOut(id);
+      dropOut(id, delay);
+    });
+  };
+
   const add = (id: string, d: number, source?: HTMLElement) => {
     setCart((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + d) }));
     if (d <= 0 || !source || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -165,15 +249,6 @@ function OrderPage() {
       flight.setAttribute("data-basket-flight", "true");
       flight.className = "pointer-events-none fixed left-0 top-0 z-50 grid h-14 w-14 place-items-center rounded-full bg-card/90 text-4xl shadow-glow ring-2 ring-golden/50";
       document.body.appendChild(flight);
-      const track = (element: HTMLElement, frames: Keyframe[], duration: number, remove = false) => {
-        const animation = element.animate(frames, { duration, easing: "linear" });
-        basketAnimations.current.add(animation);
-        void animation.finished.catch(() => {}).finally(() => {
-          basketAnimations.current.delete(animation);
-          if (remove) element.remove();
-        });
-        return animation;
-      };
       const arcHeight = Math.min(160, Math.max(65, fromY - 70));
       const frames = Array.from({ length: 21 }, (_, index) => {
         const t = index / 20;
@@ -277,9 +352,16 @@ function OrderPage() {
 
       {/* Order summary */}
       <aside id="cart" className="h-fit min-w-0 rounded-3xl border border-border/60 bg-card p-5 shadow-soft xl:sticky xl:top-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-display text-lg font-bold"><span data-basket-destination className="inline-flex"><ShoppingBasket className="h-5 w-5 text-primary" /></span> Your order</h2>
-          {itemCount > 0 && <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{itemCount} item{itemCount === 1 ? "" : "s"}</span>}
+          <div className="flex items-center gap-1">
+            {itemCount > 0 && <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{itemCount} item{itemCount === 1 ? "" : "s"}</span>}
+            {cartItems.length > 0 && (
+              <button type="button" onClick={clearOrder} className="rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-destructive hover:underline">
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {cartItems.length === 0 ? (
@@ -293,13 +375,17 @@ function OrderPage() {
               const item = menu.find((m) => m.id === id);
               if (!item) return null;
               return (
-                <li key={id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-canvas p-2.5 text-sm">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-card text-xl">{emojiFor(item.category, item.name)}</span>
+                <li key={id} data-cart-row={id} className={`grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-2xl bg-canvas p-2.5 text-sm sm:gap-3 ${removing[id] ? "animate-cart-out" : ""}`}>
+                  <span data-cart-art className="grid h-10 w-10 place-items-center rounded-xl bg-card text-xl">{emojiFor(item.category, item.name)}</span>
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{item.name}</p>
                     <p className="text-xs text-muted-foreground">×{qty} · {naira(item.price_kobo)}</p>
                   </div>
                   <span className="font-semibold">{naira(item.price_kobo * qty)}</span>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    onClick={(event) => removeItem(id, event.currentTarget)} aria-label={`Remove ${item.name} from your order`} title={`Remove ${item.name}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </li>
               );
             })}
