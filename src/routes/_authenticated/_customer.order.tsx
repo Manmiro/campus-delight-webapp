@@ -148,7 +148,7 @@ function OrderPage() {
     const food = emojiFor(item.category, item.name);
     // Wait for the first addition to mount the floating basket before measuring its position.
     requestAnimationFrame(() => {
-      if (!source.isConnected) return;
+      if (!document.getElementById("cart")) return;
       const destination = Array.from(document.querySelectorAll<HTMLElement>("[data-basket-destination]")).find((element) => {
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && rect.top >= 0 && rect.bottom <= window.innerHeight;
