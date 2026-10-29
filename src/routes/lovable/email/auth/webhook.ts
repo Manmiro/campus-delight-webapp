@@ -10,9 +10,9 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
 const SITE_NAME = "Campus Delight"
-const SENDER_DOMAIN = "notify.campusdelight.net"
-const ROOT_DOMAIN = "campusdelight.net"
-const FROM_DOMAIN = "campusdelight.net"
+const SENDER_DOMAIN = "notify.compusdelight.net"
+const ROOT_DOMAIN = "compusdelight.net"
+const FROM_DOMAIN = "compusdelight.net"
 const SITE_URL = "https://campus-delight-webapp.lovable.app"
 
 // The SDK handler owns verification, dispatch, and retry semantics; this file

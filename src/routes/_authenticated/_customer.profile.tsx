@@ -242,7 +242,7 @@ function ProfilePage() {
         <CardContent>
           <div className="mb-4"><LegalLinks /></div>
           <p className="text-sm text-muted-foreground">
-            Need help? Reach your outlet or email <span className="font-semibold text-foreground">support@campusdelight.com</span>.
+            Need help? Reach your outlet or email <span className="font-semibold text-foreground">support@compusdelight.net</span>.
           </p>
           <ul className="mt-4 space-y-3">
             {notifs.length === 0 && <p className="text-sm text-muted-foreground">No notifications yet.</p>}
