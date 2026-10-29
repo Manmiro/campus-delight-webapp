@@ -13,7 +13,7 @@ type Props = {
   fulfillment: 'delivery' | 'pickup' | null; onChoose: (choice: 'delivery' | 'pickup') => void;
   address: string; onAddress: (address: string) => void;
   paymentStep: boolean; onContinue: () => void; onPay: () => void; onBack: () => void;
-  pending: boolean; canPay: boolean; subscription: boolean; creditTotal?: number;
+  pending: boolean; canPay: boolean; subscription: boolean; creditTotal?: number | undefined;
   paymentOptions: { value: string; label: string; disabled: boolean }[]; method: string; onMethod: (method: string) => void;
 };
 
