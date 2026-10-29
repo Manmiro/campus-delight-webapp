@@ -13,6 +13,9 @@ import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions, tokensForKobo } from "@
 import { EmptyState } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FulfillmentDialog } from '@/components/fulfillment-dialog';
+import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
+import { outletDeliveryQuery } from '@/lib/queries';
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
   component: OrderPage,
@@ -35,6 +38,10 @@ function OrderPage() {
   const [termDays, setTermDays] = useState("7");
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [fulfillment, setFulfillment] = useState<'delivery' | 'pickup' | null>(null);
+  const [address, setAddress] = useState('');
+  const [paymentStep, setPaymentStep] = useState(false);
   const [cartVisible, setCartVisible] = useState(false);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const basketAnimations = useRef(new Set<Animation>());
@@ -54,6 +61,7 @@ function OrderPage() {
   const { data: wallet } = useSuspenseQuery(walletQuery);
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: credit } = useSuspenseQuery(creditQuery);
+  const { data: delivery } = useSuspenseQuery(outletDeliveryQuery(profile.outlet_id ?? ''));
 
   useEffect(() => {
     const summary = document.getElementById("cart");
@@ -78,16 +86,22 @@ function OrderPage() {
   }, 0);
 
   const term = TERMS.find((t) => t.days === Number(termDays)) ?? TERMS[0];
-  const creditCharge = Math.ceil((totalKobo * term.pct) / 100);
-  const creditTotal = totalKobo + creditCharge;
+  const feeKobo = delivery?.delivery_fee_kobo ?? 0;
+  const payableKobo = deliveryTotal(totalKobo, feeKobo, fulfillment ?? 'pickup');
+  const deliveryFee = fulfillment === 'delivery' ? feeKobo : 0;
+  const checkoutTotal = method === 'subscription_entitlement' ? deliveryFee : payableKobo;
+  const creditCharge = Math.ceil((payableKobo * term.pct) / 100);
+  const creditTotal = payableKobo + creditCharge;
   const availableCredit = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
 
   const placeOrder = useMutation({
     mutationFn: async () => {
+      const choice = deliveryChoiceSchema.parse({ fulfillment, address, expectedFeeKobo: feeKobo });
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
       await submitOrder({ data: {
         items,
         method,
+        ...choice,
         ...(method === "subscription_entitlement" && activeSub ? { subscriptionId: activeSub.id } : {}),
         ...(method === "food_credit" ? { termDays: Number(termDays) } : {}),
       } });
@@ -96,6 +110,10 @@ function OrderPage() {
       toast.success("Order placed!");
       setCart({});
       setMethod("");
+      setCheckoutOpen(false);
+      setFulfillment(null);
+      setPaymentStep(false);
+      setAddress('');
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Order failed"),
@@ -117,6 +135,14 @@ function OrderPage() {
     isVerified: profile.verification_status === "verified",
     accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000,
   });
+  const checkoutEnabled = orderPaymentOptions({ mealsLeftToday: mealsLeft, walletBalanceKobo: wallet?.balance_kobo ?? 0, tokenBalance: tk?.available_tokens ?? 0, totalKobo: payableKobo, availableCreditKobo: availableCredit, isVerified: profile.verification_status === 'verified', accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000 });
+  checkoutEnabled.subscription_entitlement = mealsLeft > 0 && (wallet?.balance_kobo ?? 0) >= deliveryFee;
+  const checkoutOptions = [
+    { value: 'cash_wallet', label: `Cash wallet · ${naira(wallet?.balance_kobo)}`, disabled: !checkoutEnabled.cash_wallet },
+    { value: 'tokens', label: `Tokens · needs ${tokensForKobo(payableKobo)}`, disabled: !checkoutEnabled.tokens },
+    { value: 'subscription_entitlement', label: `Meal plan · ${mealsLeft} left${deliveryFee ? ' + wallet delivery fee' : ''}`, disabled: !checkoutEnabled.subscription_entitlement },
+    { value: 'food_credit', label: `Eat Now & Pay Later · ${termDays} days`, disabled: !checkoutEnabled.food_credit },
+  ];
 
   const methodOptions = [
     { value: "subscription_entitlement", label: `Subscription meal (${mealsLeft} left today)`, disabled: !payEnabled.subscription_entitlement },
@@ -441,10 +467,11 @@ function OrderPage() {
           </div>
         )}
 
-        <Button size="lg" className="mt-5 w-full rounded-full" disabled={cartItems.length === 0 || !method || !methodOptions.some(o => o.value === method && !o.disabled) || placeOrder.isPending} onClick={() => placeOrder.mutate()}>
+        <Button size="lg" className="mt-5 w-full rounded-full" disabled={cartItems.length === 0 || placeOrder.isPending} onClick={() => { setPaymentStep(false); setCheckoutOpen(true); void qc.invalidateQueries({ queryKey: ['delivery-fee', profile.outlet_id] }); }}>
           {placeOrder.isPending && <LoaderPlaceholder />} Confirm order <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </aside>
+      <FulfillmentDialog open={checkoutOpen} onOpenChange={(open) => { if (!placeOrder.isPending) setCheckoutOpen(open); }} outletName={profile.outlet?.name ?? 'your outlet'} feeKobo={feeKobo} foodKobo={totalKobo} totalKobo={checkoutTotal} fulfillment={fulfillment} onChoose={setFulfillment} address={address} onAddress={setAddress} paymentStep={paymentStep} onContinue={() => setPaymentStep(true)} onBack={() => setPaymentStep(false)} onPay={() => placeOrder.mutate()} pending={placeOrder.isPending} canPay={cartItems.length > 0 && checkoutOptions.some((o) => o.value === method && !o.disabled)} subscription={method === 'subscription_entitlement'} creditTotal={method === 'food_credit' ? creditTotal : undefined} paymentOptions={checkoutOptions} method={method} onMethod={setMethod} />
 
       {/* Mobile floating cart */}
       {itemCount > 0 && !cartVisible && (

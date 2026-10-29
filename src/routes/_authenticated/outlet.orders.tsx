@@ -46,6 +46,7 @@ function OutletOrders() {
               <TableHead>Customer</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Payment</TableHead>
+              <TableHead>Delivery / pickup</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -61,6 +62,7 @@ function OutletOrders() {
                 </TableCell>
                 <TableCell className="max-w-52 text-xs">{o.order_items.map((i: { item_name: string; quantity: number }) => `${i.item_name} ×${i.quantity}`).join(", ")}</TableCell>
                 <TableCell className="text-xs">{o.payment_method.replace("_", " ")}</TableCell>
+                <TableCell className="max-w-60 text-xs"><p className="font-semibold capitalize">{o.fulfillment_method}</p>{o.fulfillment_method === 'delivery' && <><p className="whitespace-normal break-words">{o.delivery_address}</p><p className="text-muted-foreground">Fee: {naira(o.delivery_fee_kobo)}</p></>}</TableCell>
                 <TableCell className="text-right text-xs font-semibold">{naira(o.total_kobo)}</TableCell>
                 <TableCell><StatusBadge status={o.status} /></TableCell>
                 <TableCell className="text-right">

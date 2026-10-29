@@ -51,6 +51,8 @@ function HistoryPage() {
                       </li>
                     ))}
                   </ul>
+                  <p className="mt-3 text-xs font-semibold capitalize">{o.fulfillment_method === 'delivery' ? `Delivery · ${naira(o.delivery_fee_kobo)} delivery fee` : 'Pickup at your outlet'}</p>
+                  {o.delivery_address && <p className="mt-1 break-words text-xs text-muted-foreground">{o.delivery_address}</p>}
                 </CardContent>
               </Card>
             ))}

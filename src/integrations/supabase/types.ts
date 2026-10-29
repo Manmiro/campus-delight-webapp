@@ -440,7 +440,10 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string
+          delivery_address: string | null
+          delivery_fee_kobo: number
           fulfilled_at: string | null
+          fulfillment_method: string
           id: string
           loan_id: string | null
           outlet_id: string
@@ -454,7 +457,10 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id: string
+          delivery_address?: string | null
+          delivery_fee_kobo?: number
           fulfilled_at?: string | null
+          fulfillment_method?: string
           id?: string
           loan_id?: string | null
           outlet_id: string
@@ -468,7 +474,10 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string
+          delivery_address?: string | null
+          delivery_fee_kobo?: number
           fulfilled_at?: string | null
+          fulfillment_method?: string
           id?: string
           loan_id?: string | null
           outlet_id?: string
@@ -688,6 +697,7 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          delivery_fee_kobo: number
           id: string
           location: string | null
           name: string
@@ -699,6 +709,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          delivery_fee_kobo?: number
           id?: string
           location?: string | null
           name: string
@@ -710,6 +721,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          delivery_fee_kobo?: number
           id?: string
           location?: string | null
           name?: string
@@ -1242,6 +1254,18 @@ export type Database = {
         }
         Returns: Json
       }
+      place_order_with_fulfillment: {
+        Args: {
+          p_delivery_address?: string
+          p_expected_fee_kobo?: number
+          p_fulfillment_method: string
+          p_items: Json
+          p_loan_term_days?: number
+          p_payment_method: string
+          p_subscription_id?: string
+        }
+        Returns: Json
+      }
       prepare_card_order: {
         Args: { p_customer_id: string; p_items: Json; p_reference: string }
         Returns: string
@@ -1251,6 +1275,10 @@ export type Database = {
         Returns: Json
       }
       request_otp: { Args: { p_purpose?: string }; Returns: string }
+      set_outlet_delivery_fee: {
+        Args: { p_fee_kobo: number; p_outlet_id: string }
+        Returns: undefined
+      }
       settle_verified_payment: {
         Args: {
           p_amount_kobo: number

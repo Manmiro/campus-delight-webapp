@@ -60,7 +60,7 @@ export const profileQuery = queryOptions({
   queryKey: ["me", "profile"],
   queryFn: async () => {
     const id = await getUserId();
-    const { data, error } = await supabase.from("profiles").select("*, outlet:outlets(name)").eq("id", id).single();
+    const { data, error } = await supabase.from("profiles").select("*, outlet:outlets(name, delivery_fee_kobo)").eq("id", id).single();
     if (error) throw new Error(error.message);
     return data;
   },
@@ -234,6 +234,16 @@ export const myMenuQuery = (outletId: string) =>
       return data ?? [];
     },
   });
+
+export const outletDeliveryQuery = (outletId: string) => queryOptions({
+  queryKey: ["delivery-fee", outletId],
+  queryFn: async () => {
+    if (!outletId) return null;
+    const { data, error } = await supabase.from("outlets").select("delivery_fee_kobo").eq("id", outletId).single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+});
 
 export const myPlanPricesQuery = (outletId: string) =>
   queryOptions({

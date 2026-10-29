@@ -38,6 +38,9 @@ export async function emailOrder(orderId: string, kind: 'order' | 'fulfilled' | 
   if (error) throw error;
   if (!order || (kind === 'cancelled' ? order.status !== 'cancelled' : kind === 'fulfilled' ? order.status !== 'fulfilled' : !['confirmed', 'fulfilled'].includes(order.status))) return;
   const details = [{ label: 'Meal', value: order.order_items.map(item => `${item.item_name} × ${item.quantity}`).join(', ') }, { label: 'Payment method', value: order.payment_method.replaceAll('_', ' ') }];
+  details.push({ label: 'Collection', value: order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup at your outlet' }, { label: 'Delivery fee', value: money(order.delivery_fee_kobo) });
+  if (order.delivery_address) details.push({ label: 'Delivery address', value: order.delivery_address });
+  if (order.payment_method === 'subscription_entitlement' && order.delivery_fee_kobo > 0) details.push({ label: kind === 'cancelled' ? 'Delivery refunded to wallet' : 'Delivery paid from wallet', value: money(order.delivery_fee_kobo) });
   if (order.loan_id) {
     const { data: loan } = await db.from('loans').select('total_due_kobo,charge_kobo,due_at').eq('id', order.loan_id).single();
     if (loan) details.push({ label: 'Total repayment including charge', value: money(loan.total_due_kobo) }, { label: 'Charge', value: money(loan.charge_kobo) }, { label: 'Repayment due', value: date(loan.due_at) });
