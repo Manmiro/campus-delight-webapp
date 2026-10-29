@@ -3,7 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
-- [ ] Add animated delivery/pickup checkout, outlet-adjustable ₦600 initial fee, atomic charges and fulfillment details; test checkout and permissions.
+- [x] Add animated delivery/pickup checkout with address, outlet-adjustable ₦600 initial fee in Menu & Pricing, atomic charges, receipts and fulfillment details. Signed-in pickup and adjusted-fee delivery purchases read back in history; both cancelled and tokens restored, outlet fee restored to ₦600. Mobile dialog fits without overflow; fee rules and manager isolation tested.
 - [x] Scaffold and brand all six account email templates with the main logo, meal photo and green/gold design; managed webhook and dashboard previews retained.
 - [ ] Activate branded account email delivery — waits on sender-domain DNS verification and publishing the current app.
 - [x] Configure notify.campusdelight.net and fixed foodie transaction receipts; wire successful funding, subscriptions, transfers, rewards, orders/refunds, repayments, outlet fees/decisions and credit adjustments. Receipt rendered on desktop/phone; signed-in invalid transfer rejected, pages load without runtime errors; 51 targeted tests pass. No real payment or token debit performed.
