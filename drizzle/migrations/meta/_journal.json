@@ -162,6 +162,13 @@
       "when": 1793285289883,
       "tag": "0022_delivery_pickup_checkout",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793285395086,
+      "tag": "0023_preserve_append_only_delivery_ledgers",
+      "breakpoints": true
     }
   ]
 }
