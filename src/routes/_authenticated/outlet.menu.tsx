@@ -1,10 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
+import { useServerFn } from '@tanstack/react-start';
+import { setOutletDeliveryFee } from '@/lib/delivery.functions';
+import { deliveryFeeSchema } from '@/lib/delivery-rules';
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { staffAssignmentQuery, myMenuQuery, myPlanPricesQuery } from "@/lib/queries";
+import { Plus, Bike, Save } from "lucide-react";
+import { staffAssignmentQuery, myMenuQuery, myPlanPricesQuery, outletDeliveryQuery } from "@/lib/queries";
 import { naira } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +33,24 @@ function OutletMenu() {
   const isManager = assignment?.staff_role === "outlet_manager";
   const { data: menu } = useSuspenseQuery(myMenuQuery(outletId));
   const { data: prices } = useSuspenseQuery(myPlanPricesQuery(outletId));
+  const { data: delivery } = useSuspenseQuery(outletDeliveryQuery(outletId));
+  const submitDeliveryFee = useServerFn(setOutletDeliveryFee);
+  const [deliveryDraft, setDeliveryDraft] = useState<string | null>(null);
+  const saveDelivery = useMutation({
+    mutationFn: async () => {
+      const draft = deliveryDraft ?? String((delivery?.delivery_fee_kobo ?? 0) / 100);
+      if (!/^\d+(\.\d{1,2})?$/.test(draft.trim())) throw new Error('Enter a valid delivery fee in naira.');
+      const data = deliveryFeeSchema.parse({ outletId, feeKobo: Math.round(Number(draft) * 100) });
+      await submitDeliveryFee({ data });
+    },
+    onSuccess: () => {
+      toast.success('Delivery fee saved');
+      setDeliveryDraft(null);
+      void qc.invalidateQueries({ queryKey: ['delivery-fee', outletId] });
+      void qc.invalidateQueries({ queryKey: ['me', 'profile'] });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not save delivery fee'),
+  });
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("rice");
@@ -82,6 +103,14 @@ function OutletMenu() {
 
   return (
     <div className="space-y-8">
+      <section className="border-b border-border pb-6">
+        <h1 className="flex items-center gap-2 font-display text-xl font-bold"><Bike className="h-6 w-6 text-primary" /> Delivery & pickup</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Pickup is free. Delivery currently costs {naira(delivery?.delivery_fee_kobo)} at your outlet.</p>
+        {isManager && <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div><Label htmlFor="delivery-fee">Delivery fee (₦)</Label><Input id="delivery-fee" className="mt-1 w-40" inputMode="decimal" value={deliveryDraft ?? String((delivery?.delivery_fee_kobo ?? 0) / 100)} onChange={(event) => setDeliveryDraft(event.target.value)} /></div>
+          <Button onClick={() => saveDelivery.mutate()} disabled={saveDelivery.isPending || deliveryDraft === null}><Save className="mr-2 h-4 w-4" />{saveDelivery.isPending ? 'Saving…' : 'Save delivery fee'}</Button>
+        </div>}
+      </section>
       {isManager && (
         <Card>
           <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Add a menu item</CardTitle></CardHeader>
