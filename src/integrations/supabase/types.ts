@@ -159,6 +159,35 @@ export type Database = {
           },
         ]
       }
+      loan_reminder_sends: {
+        Row: {
+          days_left: number
+          loan_id: string
+          reminder_date: string
+          sent_at: string
+        }
+        Insert: {
+          days_left: number
+          loan_id: string
+          reminder_date: string
+          sent_at?: string
+        }
+        Update: {
+          days_left?: number
+          loan_id?: string
+          reminder_date?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_reminder_sends_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_repayments: {
         Row: {
           amount_kobo: number
@@ -1227,6 +1256,22 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
+      due_loan_reminders: {
+        Args: never
+        Returns: {
+          balance_kobo: number
+          customer_id: string
+          days_left: number
+          due_at: string
+          email: string
+          full_name: string
+          gender: string
+          item_summary: string
+          loan_id: string
+          outlet_name: string
+          reminder_date: string
+        }[]
+      }
       fulfill_order: { Args: { p_order_id: string }; Returns: undefined }
       get_config: { Args: { _key: string }; Returns: Json }
       has_role: {
