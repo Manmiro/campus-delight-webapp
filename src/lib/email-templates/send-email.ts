@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
-import { EmailAPIError, sendLovableEmail } from '@lovable.dev/email-js'
 import { TEMPLATES } from './registry'
 
 // Server-only: reads LOVABLE_API_KEY. Never import from client components.
@@ -37,9 +36,9 @@ export async function sendTemplateEmail(
   to: string,
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
-  const apiKey = process.env['LOVABLE_API_KEY']
-  if (!apiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
+  const pingramKey = process.env['PINGRAM_API_KEY']
+  if (!pingramKey) {
+    throw new Error('PINGRAM_API_KEY is not configured')
   }
 
   const template = TEMPLATES[templateName]
@@ -65,28 +64,33 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  try {
-    await sendLovableEmail(
-      {
-        to: recipient,
-        from: { name: SITE_NAME, address: `noreply@${FROM_DOMAIN}` },
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: 'transactional',
-        label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
-      },
-      { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
-    )
-  } catch (error) {
-    if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      return { sent: false, reason: 'recipient_suppressed' }
-    }
-    throw error
+  // Delivered through Pingram using its default sender (no custom domain needed).
+  const response = await fetch('https://api.pingram.io/email', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${pingramKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: `campus_delight_${templateName.replace(/[^a-z0-9]+/gi, '_')}`,
+      to: { id: recipient, email: recipient },
+      email: { subject, html, senderName: SITE_NAME, previewText: text.slice(0, 120) },
+    }),
+    signal: AbortSignal.timeout(20000),
+  })
+  const raw = await response.text()
+  const safe = raw.split(pingramKey).join('[redacted]').split(recipient).join('[redacted]')
+  if (!response.ok) {
+    console.error(`Pingram email failed [${response.status}]: ${safe}`)
+    throw new Error(`Email provider failed [${response.status}]`)
   }
+  try {
+    const result = JSON.parse(raw)
+    if (result && typeof result === 'object' && result.error) {
+      console.error(`Pingram email failed: ${safe}`)
+      throw new Error('Email provider rejected the message')
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith('Email provider')) throw e
+  }
+  void SENDER_DOMAIN; void FROM_DOMAIN; void options.idempotencyKey
 
   return { sent: true }
 }
