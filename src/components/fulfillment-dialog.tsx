@@ -31,8 +31,8 @@ export function FulfillmentDialog(p: Props) {
     else if (p.fulfillment === 'pickup' || (showReview && addressValid)) p.onContinue();
   };
   return <Dialog open={p.open} onOpenChange={(open) => { if (!p.pending) { setDeliveryStep('choice'); p.onOpenChange(open); } }}>
-    <DialogContent className="gap-0 overflow-hidden p-0 sm:p-0 motion-reduce:animate-none">
-      <div className="relative overflow-hidden bg-primary px-6 pb-6 pt-7 text-primary-foreground">
+    <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:p-0 motion-reduce:animate-none">
+      <div className="relative shrink-0 overflow-hidden bg-primary px-6 pb-6 pt-7 [@media(max-height:640px)]:pb-4 [@media(max-height:640px)]:pt-4 text-primary-foreground">
         <img src={heroMeal} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
         <div className="relative">
           <div className="flex items-center gap-2"><img src={logo} alt="Campus Delight" className="h-10 w-10 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
@@ -41,7 +41,7 @@ export function FulfillmentDialog(p: Props) {
           <DialogDescription className="mt-2 text-primary-foreground/90">{p.paymentStep ? 'Review your total and choose how to pay.' : showAddress ? 'Tell us exactly where to bring your order.' : showReview ? 'Confirm your delivery address before payment.' : 'Choose delivery or collect your food at the outlet.'}</DialogDescription>
         </div>
       </div>
-      <div className="max-h-[65dvh] space-y-4 overflow-y-auto p-5 sm:p-6">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5 sm:p-6">
         {showChoice && <>
           <div role="radiogroup" aria-label="Delivery or pickup" className="grid grid-cols-2 gap-3">
             {(['delivery', 'pickup'] as const).map((choice) => {
