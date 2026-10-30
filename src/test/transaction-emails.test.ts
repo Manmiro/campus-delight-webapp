@@ -52,7 +52,7 @@ describe('valid transaction receipts', () => {
   });
   it('does not retry a suppressed recipient', async () => {
     fixtures.sent.mockResolvedValue({ sent: false, reason: 'recipient_suppressed' });
-    fixtures.rows['token_ledger'] = { id: 'welcome-1', customer_id: 'customer-1', tx_type: 'welcome', amount: 1000, available_after: 1000, locked_after: 0, reference: 'WELCOME-1', created_at: '2026-10-26T15:00:00Z' };
+    fixtures.rows['token_ledger'] = { id: 'welcome-1', customer_id: 'customer-1', tx_type: 'welcome', amount: 2000, available_after: 2000, locked_after: 0, reference: 'WELCOME-1', created_at: '2026-10-26T15:00:00Z' };
     await emailTokenEntry('welcome-1');
     expect(fixtures.sent).toHaveBeenCalledTimes(1);
   });

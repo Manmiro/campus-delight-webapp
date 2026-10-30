@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
+import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
 import logoImg from "@/assets/logo.jpg";
 import heroImg from "@/assets/hero-meal.jpg";
@@ -227,9 +228,9 @@ function AuthPage() {
           <div className="relative">
             <span className="inline-block rounded-full bg-golden px-3 py-1 text-xs font-bold text-primary-foreground">Eat Now & Pay Later</span>
             <h2 className="mt-4 font-display text-4xl font-bold leading-tight">Good food.<br />Every day on campus.</h2>
-            <p className="mt-3 max-w-sm text-sm opacity-90">Join today and get 1,000 welcome tokens, meal plans and a ₦2,100 starter Pay Later limit.</p>
+            <p className="mt-3 max-w-sm text-sm opacity-90">Join today and get {WELCOME_TOKENS.toLocaleString("en-NG")} welcome tokens, meal plans and a ₦2,100 starter Pay Later limit.</p>
             <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-              {[["1,000", "Free tokens"], ["11", "Outlets"], ["₦2,100", "Starter limit"]].map(([v, l]) => (
+              {[[WELCOME_TOKENS.toLocaleString("en-NG"), "Free tokens"], ["11", "Outlets"], ["₦2,100", "Starter limit"]].map(([v, l]) => (
                 <div key={l} className="rounded-2xl bg-primary-foreground/15 p-3 backdrop-blur">
                   <p className="font-display text-lg font-bold">{v}</p><p className="text-[11px] opacity-85">{l}</p>
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Coins, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { REFERRAL_REWARD_TOKENS, WELCOME_TOKENS } from "@/lib/prd-rules";
 
 const MENU = [
   { name: "Jollof rice & beef", price: 1500 },
@@ -28,7 +29,7 @@ export function DemoPhoneCard() {
   const added = step === 5 ? 0 : Math.min(step, 2); // items 0 and 1; step 5 resets
   const mealsLeft = MEALS_PER_DAY - added;
   const wallet = START_WALLET - MENU.slice(0, added).reduce((a, m) => a + m.price, 0);
-  const tokens = step === 4 ? 1100 : 1000;
+  const tokens = step === 4 ? WELCOME_TOKENS + REFERRAL_REWARD_TOKENS : WELCOME_TOKENS;
 
   function onMove(e: React.MouseEvent) {
     const r = ref.current?.getBoundingClientRect();

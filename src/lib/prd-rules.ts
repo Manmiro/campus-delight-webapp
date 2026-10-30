@@ -8,7 +8,7 @@
 export const TOKEN_NOMINAL_VALUE_KOBO = 1;
 
 /** Every new customer starts with these tokens. */
-export const WELCOME_TOKENS = 1000;
+export const WELCOME_TOKENS = 2000;
 
 /** Tokens paid to a referrer when the invited customer's first order lands. */
 export const REFERRAL_REWARD_TOKENS = 100;

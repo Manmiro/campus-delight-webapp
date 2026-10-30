@@ -10,6 +10,7 @@ import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
+import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import logoImg from "@/assets/logo.jpg";
 import heroImg from "@/assets/hero-meal.jpg";
 
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/")({
 });
 
 const steps = [
-  { icon: BadgeCheck, title: "Create your account", body: "Pick your campus outlet, get your Campus Delight ID, wallet and 1,000 welcome tokens instantly." },
+  { icon: BadgeCheck, title: "Create your account", body: `Pick your campus outlet, get your Campus Delight ID, wallet and ${WELCOME_TOKENS.toLocaleString("en-NG")} welcome tokens instantly.` },
   { icon: CalendarDays, title: "Choose a meal plan", body: "Weekend, Weekly or Monthly — with BASIC, STANDARD or TURBO daily meal entitlements." },
   { icon: UtensilsIcon, title: "Order your food", body: "Pay with your subscription entitlement, wallet cash, or tokens. Never both at once." },
   { icon: Gift, title: "Refer & earn", body: "Invite friends with your referral link and earn 100 tokens when their first order lands." },
@@ -140,7 +141,7 @@ function Landing() {
                 </Button>
               </div>
               <p className="mt-4 flex items-center gap-1.5 text-xs opacity-85">
-                <Coins className="h-3.5 w-3.5" /> Plus 1,000 free tokens on signup · 1 token = ₦1
+                <Coins className="h-3.5 w-3.5" /> Plus {WELCOME_TOKENS.toLocaleString("en-NG")} free tokens on signup · 1 token = ₦1
               </p>
             </div>
           </div>
@@ -270,7 +271,7 @@ function Landing() {
             <Users className="mx-auto h-8 w-8 opacity-80" />
             <h2 className="mt-3 font-display text-3xl font-bold">Hungry? Your outlet is ready.</h2>
             <p className="mx-auto mt-2 max-w-lg opacity-90">
-              Register in under two minutes and get 1,000 Campus Delight tokens on the house.
+              Register in under two minutes and get {WELCOME_TOKENS.toLocaleString("en-NG")} Campus Delight tokens on the house.
             </p>
             <Button size="lg" className="mt-6 rounded-full" asChild>
               <Link to="/auth" search={{}}>

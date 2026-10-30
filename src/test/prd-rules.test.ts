@@ -17,8 +17,8 @@ import {
 } from "@/lib/prd-rules";
 
 describe("token rules", () => {
-  it("gives every new customer 1,000 welcome tokens worth ₦1 each", () => {
-    expect(WELCOME_TOKENS).toBe(1000);
+  it("gives every new customer 2,000 welcome tokens worth ₦1 each", () => {
+    expect(WELCOME_TOKENS).toBe(2000);
     expect(TOKEN_NOMINAL_VALUE_KOBO).toBe(1);
   });
 

@@ -169,6 +169,13 @@
       "when": 1793285395086,
       "tag": "0023_preserve_append_only_delivery_ledgers",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793318400000,
+      "tag": "0024_update_welcome_tokens",
+      "breakpoints": true
     }
   ]
 }
