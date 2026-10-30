@@ -70,8 +70,12 @@ export async function sendTemplateEmail(
     headers: { Authorization: `Bearer ${pingramKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       type: `campus_delight_${templateName.replace(/[^a-z0-9]+/gi, '_')}`,
-      to: { id: recipient, email: recipient },
-      email: { subject, html, senderName: SITE_NAME, previewText: text.slice(0, 120) },
+      to: recipient,
+      subject,
+      html,
+      fromName: SITE_NAME,
+      previewText: text.slice(0, 120),
+      ...(options.replyTo ? { replyToAddresses: [options.replyTo] } : {}),
     }),
     signal: AbortSignal.timeout(20000),
   })
