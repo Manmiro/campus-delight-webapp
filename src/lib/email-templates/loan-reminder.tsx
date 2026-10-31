@@ -4,13 +4,13 @@ import type { TemplateEntry } from './registry';
 import { dueLabel, reminderCopy } from '../loan-reminder-rules';
 
 export interface LoanReminderProps {
-  name?: string; daysLeft?: number; balance?: string; dueDate?: string; items?: string; outlet?: string;
+  name?: string | undefined; daysLeft?: number | undefined; balance?: string | undefined; dueDate?: string | undefined; items?: string | undefined; outlet?: string | undefined;
 }
 
 const c = { green: '#78A61B', deep: '#4F7410', gold: '#B8860B', cream: '#FFF8E6', white: '#FFFFFF', ink: '#23321D', muted: '#626D5A', soft: '#F3F7EC' };
 const origin = 'https://campus-delight-webapp.lovable.app';
 
-function Row({ label, value }: { label: string; value?: string }) {
+function Row({ label, value }: { label: string; value?: string | undefined }) {
   if (!value) return null;
   return <Text style={{ margin: '0 0 8px', fontSize: 14, color: c.ink }}><span style={{ color: c.muted }}>{label}: </span><strong>{value}</strong></Text>;
 }
