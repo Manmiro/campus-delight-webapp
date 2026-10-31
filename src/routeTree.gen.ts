@@ -47,6 +47,7 @@ import { Route as AuthenticatedOutletOrdersRouteImport } from './routes/_authent
 import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authenticated/outlet.reports'
 import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
 import { Route as AuthenticatedOutletSubscriptionsRouteImport } from './routes/_authenticated/outlet.subscriptions'
+import { Route as ApiPublicJobsLoanRemindersRouteImport } from './routes/api/public/jobs/loan-reminders'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack.webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -265,6 +266,12 @@ const AuthenticatedOutletSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedOutletRoute,
   } as any)
+const ApiPublicJobsLoanRemindersRoute =
+  ApiPublicJobsLoanRemindersRouteImport.update({
+    id: '/api/public/jobs/loan-reminders',
+    path: '/api/public/jobs/loan-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack/webhook',
@@ -325,6 +332,7 @@ export interface FileRoutesByFullPath {
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -365,6 +373,7 @@ export interface FileRoutesByTo {
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/outlet': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -410,6 +419,7 @@ export interface FileRoutesById {
   '/_authenticated/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -454,6 +464,7 @@ export interface FileRouteTypes {
     | '/outlet/subscriptions'
     | '/admin/'
     | '/outlet/'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -494,6 +505,7 @@ export interface FileRouteTypes {
     | '/outlet/subscriptions'
     | '/admin'
     | '/outlet'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -538,6 +550,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outlet/subscriptions'
     | '/_authenticated/admin/'
     | '/_authenticated/outlet/'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -552,6 +565,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
+  ApiPublicJobsLoanRemindersRoute: typeof ApiPublicJobsLoanRemindersRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -826,6 +840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOutletSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedOutletRoute
     }
+    '/api/public/jobs/loan-reminders': {
+      id: '/api/public/jobs/loan-reminders'
+      path: '/api/public/jobs/loan-reminders'
+      fullPath: '/api/public/jobs/loan-reminders'
+      preLoaderRoute: typeof ApiPublicJobsLoanRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
       path: '/api/public/paystack/webhook'
@@ -968,6 +989,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
+  ApiPublicJobsLoanRemindersRoute: ApiPublicJobsLoanRemindersRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

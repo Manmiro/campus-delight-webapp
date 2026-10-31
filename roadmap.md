@@ -45,4 +45,6 @@ Scope decision: build everything (phases 1–4) in this session; seed demo data;
 - [x] Levels, badges, "Your usual?" shortcut, referral milestone bar, birthday banner, confetti
 - [x] Weekly outlet leaderboards (opt-in, 10 pts/order, 2 pts/check-in)
 - [ ] Outlet vs outlet challenges, mystery rewards — need business-approved token budgets
-- [ ] Live order tracker and reminder notifications
+- [x] Pay Later repayment reminder emails daily at 12 noon Lagos from 3 days before due date to due date (once per loan per day); design rendered, rule tests pass, job rejects unauthorised callers.
+- [ ] Confirm a real reminder lands in an inbox — needs an open Pay Later loan due within 3 days.
+- [ ] Live order tracker
