@@ -47,6 +47,7 @@ import { Route as AuthenticatedOutletOrdersRouteImport } from './routes/_authent
 import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authenticated/outlet.reports'
 import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
 import { Route as AuthenticatedOutletSubscriptionsRouteImport } from './routes/_authenticated/outlet.subscriptions'
+import { Route as ApiInternalPingramAuthEmailRouteImport } from './routes/api/internal/pingram-auth-email'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack.webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -265,6 +266,12 @@ const AuthenticatedOutletSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedOutletRoute,
   } as any)
+const ApiInternalPingramAuthEmailRoute =
+  ApiInternalPingramAuthEmailRouteImport.update({
+    id: '/api/internal/pingram-auth-email',
+    path: '/api/internal/pingram-auth-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack/webhook',
@@ -323,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/outlet/': typeof AuthenticatedOutletIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
@@ -363,6 +371,7 @@ export interface FileRoutesByTo {
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/outlet': typeof AuthenticatedOutletIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
@@ -408,6 +417,7 @@ export interface FileRoutesById {
   '/_authenticated/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/_authenticated/outlet/staff': typeof AuthenticatedOutletStaffRoute
   '/_authenticated/outlet/subscriptions': typeof AuthenticatedOutletSubscriptionsRoute
+  '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
@@ -452,6 +462,7 @@ export interface FileRouteTypes {
     | '/outlet/reports'
     | '/outlet/staff'
     | '/outlet/subscriptions'
+    | '/api/internal/pingram-auth-email'
     | '/admin/'
     | '/outlet/'
     | '/api/public/paystack/webhook'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/outlet/reports'
     | '/outlet/staff'
     | '/outlet/subscriptions'
+    | '/api/internal/pingram-auth-email'
     | '/admin'
     | '/outlet'
     | '/api/public/paystack/webhook'
@@ -536,6 +548,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outlet/reports'
     | '/_authenticated/outlet/staff'
     | '/_authenticated/outlet/subscriptions'
+    | '/api/internal/pingram-auth-email'
     | '/_authenticated/admin/'
     | '/_authenticated/outlet/'
     | '/api/public/paystack/webhook'
@@ -552,6 +565,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
+  ApiInternalPingramAuthEmailRoute: typeof ApiInternalPingramAuthEmailRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -826,6 +840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOutletSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedOutletRoute
     }
+    '/api/internal/pingram-auth-email': {
+      id: '/api/internal/pingram-auth-email'
+      path: '/api/internal/pingram-auth-email'
+      fullPath: '/api/internal/pingram-auth-email'
+      preLoaderRoute: typeof ApiInternalPingramAuthEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
       path: '/api/public/paystack/webhook'
@@ -968,6 +989,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
+  ApiInternalPingramAuthEmailRoute: ApiInternalPingramAuthEmailRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

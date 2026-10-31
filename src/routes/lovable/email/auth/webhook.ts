@@ -25,7 +25,10 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           apiKey: process.env['LOVABLE_API_KEY']!,
           from: { name: SITE_NAME, address: `noreply@${FROM_DOMAIN}` },
           senderDomain: SENDER_DOMAIN,
-          sendUrl: process.env['LOVABLE_SEND_URL'],
+          // Keep Lovable's signed auth webhook handler in charge of
+          // verification, rendering, and retry semantics. The send adapter
+          // forwards the resulting message to Pingram on the server.
+          sendUrl: process.env['PINGRAM_AUTH_SEND_URL'] ?? new URL('/api/internal/pingram-auth-email', request.url).toString(),
           emails: {
             signup: {
               subject: 'Confirm your email — Campus Delight',
