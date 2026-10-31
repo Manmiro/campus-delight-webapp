@@ -45,7 +45,7 @@ export function LoanReminder({ name, daysLeft = 3, balance, dueDate, items, outl
             <Text style={{ fontSize: 14, lineHeight: '22px', margin: 0, color: c.ink }}>{copy.perk}</Text>
           </Section>
           <Section style={{ textAlign: 'center', padding: '24px 0 8px' }}>
-            <Button href={`${origin}/pay-later`} style={{ backgroundColor: c.green, color: c.white, borderRadius: 999, fontSize: 14, fontWeight: 700, padding: '14px 26px' }}>Repay now in seconds 💚</Button>
+            <Button href={`${origin}/credit`} style={{ backgroundColor: c.green, color: c.white, borderRadius: 999, fontSize: 14, fontWeight: 700, padding: '14px 26px' }}>Repay now in seconds 💚</Button>
           </Section>
           <Text style={{ fontSize: 13, color: c.muted, textAlign: 'center', lineHeight: '20px' }}>Already paid? Thank you — please ignore this note.<br />With warm plates,<br /><strong style={{ color: c.gold }}>The Campus Delight family</strong></Text>
         </Section>
