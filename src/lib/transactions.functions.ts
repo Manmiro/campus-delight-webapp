@@ -33,7 +33,13 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
       const { data: entry } = await db.from('token_ledger').select('id').eq('related_customer_id', context.userId).eq('tx_type', 'referral_unlock').gte('created_at', startedAt).order('created_at', { ascending: false }).limit(1).maybeSingle();
       if (entry) await mail.emailTokenEntry(entry.id);
     });
-    return { ok: true, emailStatus };
+    const orderId = typeof tx['order_id'] === 'string' ? tx['order_id'] : null;
+    let reference: string | null = typeof tx['reference'] === 'string' ? tx['reference'] : null;
+    if (orderId && !reference) {
+      const { data: order } = await context.supabase.from('orders').select('reference').eq('id', orderId).maybeSingle();
+      reference = order?.reference ?? null;
+    }
+    return { ok: true, emailStatus, orderId, reference };
   });
 
 export const repayFoodLoan = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
