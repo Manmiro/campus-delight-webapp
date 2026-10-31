@@ -48,6 +48,7 @@ import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
 import { Route as AuthenticatedOutletSubscriptionsRouteImport } from './routes/_authenticated/outlet.subscriptions'
 import { Route as ApiInternalPingramAuthEmailRouteImport } from './routes/api/internal/pingram-auth-email'
+import { Route as ApiPublicJobsLoanRemindersRouteImport } from './routes/api/public/jobs/loan-reminders'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack.webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -272,6 +273,12 @@ const ApiInternalPingramAuthEmailRoute =
     path: '/api/internal/pingram-auth-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicJobsLoanRemindersRoute =
+  ApiPublicJobsLoanRemindersRouteImport.update({
+    id: '/api/public/jobs/loan-reminders',
+    path: '/api/public/jobs/loan-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack/webhook',
@@ -333,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -374,6 +382,7 @@ export interface FileRoutesByTo {
   '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/outlet': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -420,6 +429,7 @@ export interface FileRoutesById {
   '/api/internal/pingram-auth-email': typeof ApiInternalPingramAuthEmailRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/outlet/': typeof AuthenticatedOutletIndexRoute
+  '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/api/internal/pingram-auth-email'
     | '/admin/'
     | '/outlet/'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/api/internal/pingram-auth-email'
     | '/admin'
     | '/outlet'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -551,6 +563,7 @@ export interface FileRouteTypes {
     | '/api/internal/pingram-auth-email'
     | '/_authenticated/admin/'
     | '/_authenticated/outlet/'
+    | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -566,6 +579,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
   ApiInternalPingramAuthEmailRoute: typeof ApiInternalPingramAuthEmailRoute
+  ApiPublicJobsLoanRemindersRoute: typeof ApiPublicJobsLoanRemindersRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -847,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInternalPingramAuthEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/loan-reminders': {
+      id: '/api/public/jobs/loan-reminders'
+      path: '/api/public/jobs/loan-reminders'
+      fullPath: '/api/public/jobs/loan-reminders'
+      preLoaderRoute: typeof ApiPublicJobsLoanRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
       path: '/api/public/paystack/webhook'
@@ -990,6 +1011,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
   ApiInternalPingramAuthEmailRoute: ApiInternalPingramAuthEmailRoute,
+  ApiPublicJobsLoanRemindersRoute: ApiPublicJobsLoanRemindersRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
