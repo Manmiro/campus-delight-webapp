@@ -69,7 +69,8 @@ export const profileQuery = queryOptions({
 export const walletQuery = queryOptions({
   queryKey: ["me", "wallet"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("wallets").select("balance_kobo").single();
+    const id = await getUserId();
+    const { data, error } = await supabase.from("wallets").select("balance_kobo").eq("customer_id", id).single();
     if (error) throw new Error(error.message);
     return data;
   },
@@ -78,7 +79,8 @@ export const walletQuery = queryOptions({
 export const tokenAccountQuery = queryOptions({
   queryKey: ["me", "tokens"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("token_accounts").select("available_tokens, locked_tokens").single();
+    const id = await getUserId();
+    const { data, error } = await supabase.from("token_accounts").select("available_tokens, locked_tokens").eq("customer_id", id).single();
     if (error) throw new Error(error.message);
     return data;
   },
@@ -87,9 +89,10 @@ export const tokenAccountQuery = queryOptions({
 export const subscriptionsQuery = queryOptions({
   queryKey: ["me", "subscriptions"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("subscriptions")
-      .select("*")
+      .select("*").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) throw new Error(error.message);
@@ -100,9 +103,10 @@ export const subscriptionsQuery = queryOptions({
 export const todayEntitlementsQuery = queryOptions({
   queryKey: ["me", "entitlements", lagosToday()],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("meal_entitlements")
-      .select("id, subscription_id, allowance, redeemed, service_date")
+      .select("id, subscription_id, allowance, redeemed, service_date").eq("customer_id", id)
       .eq("service_date", lagosToday());
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -112,7 +116,8 @@ export const todayEntitlementsQuery = queryOptions({
 export const creditQuery = queryOptions({
   queryKey: ["me", "credit"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("customer_credit").select("*").maybeSingle();
+    const id = await getUserId();
+    const { data, error } = await supabase.from("customer_credit").select("*").eq("customer_id", id).maybeSingle();
     if (error) throw new Error(error.message);
     return data;
   },
@@ -121,9 +126,10 @@ export const creditQuery = queryOptions({
 export const loansQuery = queryOptions({
   queryKey: ["me", "loans"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("loans")
-      .select("*")
+      .select("*").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) throw new Error(error.message);
@@ -134,9 +140,10 @@ export const loansQuery = queryOptions({
 export const ordersQuery = queryOptions({
   queryKey: ["me", "orders"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("orders")
-      .select("*, order_items(*)")
+      .select("*, order_items(*)").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(30);
     if (error) throw new Error(error.message);
@@ -147,9 +154,10 @@ export const ordersQuery = queryOptions({
 export const notificationsQuery = queryOptions({
   queryKey: ["me", "notifications"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("notifications")
-      .select("*")
+      .select("*").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) throw new Error(error.message);
@@ -160,9 +168,10 @@ export const notificationsQuery = queryOptions({
 export const walletLedgerQuery = queryOptions({
   queryKey: ["me", "wallet-ledger"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("wallet_ledger")
-      .select("*")
+      .select("*").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw new Error(error.message);
@@ -173,9 +182,10 @@ export const walletLedgerQuery = queryOptions({
 export const tokenLedgerQuery = queryOptions({
   queryKey: ["me", "token-ledger"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("token_ledger")
-      .select("*")
+      .select("*").eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw new Error(error.message);
@@ -186,9 +196,11 @@ export const tokenLedgerQuery = queryOptions({
 export const tokenTransfersQuery = queryOptions({
   queryKey: ["me", "token-transfers"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("token_transfers")
       .select("*, sender:profiles!token_transfers_sender_id_fkey(full_name, customer_code), recipient:profiles!token_transfers_recipient_id_fkey(full_name, customer_code)")
+      .or(`sender_id.eq.${id},recipient_id.eq.${id}`)
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw new Error(error.message);
@@ -199,9 +211,10 @@ export const tokenTransfersQuery = queryOptions({
 export const referralsQuery = queryOptions({
   queryKey: ["me", "referrals"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("referrals")
-      .select("*, referred:profiles!referrals_referred_id_fkey(full_name, customer_code)")
+      .select("*, referred:profiles!referrals_referred_id_fkey(full_name, customer_code)").eq("referrer_id", id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -211,9 +224,10 @@ export const referralsQuery = queryOptions({
 export const transferApplicationsQuery = queryOptions({
   queryKey: ["me", "transfer-applications"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase
       .from("outlet_transfer_applications")
-      .select("*, from_outlet:outlets!outlet_transfer_applications_from_outlet_id_fkey(name), to_outlet:outlets!outlet_transfer_applications_to_outlet_id_fkey(name)")
+      .select("*, from_outlet:outlets!outlet_transfer_applications_from_outlet_id_fkey(name), to_outlet:outlets!outlet_transfer_applications_to_outlet_id_fkey(name)").eq("customer_id", id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
