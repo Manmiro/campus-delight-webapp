@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FulfillmentDialog } from '@/components/fulfillment-dialog';
+import { OrderThankYouDialog, type PlacedOrder } from '@/components/order-thank-you-dialog';
 import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
 import { outletDeliveryQuery } from '@/lib/queries';
 
@@ -44,6 +45,7 @@ function OrderPage() {
   const [paymentStep, setPaymentStep] = useState(false);
   const [cartVisible, setCartVisible] = useState(false);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
+  const [thankYou, setThankYou] = useState<PlacedOrder | null>(null);
   const basketAnimations = useRef(new Set<Animation>());
   const exitTimers = useRef(new Set<number>());
 
@@ -98,22 +100,39 @@ function OrderPage() {
     mutationFn: async () => {
       const choice = deliveryChoiceSchema.parse({ fulfillment, address, expectedFeeKobo: feeKobo });
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
-      await submitOrder({ data: {
+      const snapshot: Omit<PlacedOrder, 'reference' | 'burst'> = {
+        firstName: (profile.full_name ?? '').trim().split(/\s+/)[0] || 'foodie',
+        outletName: profile.outlet?.name ?? 'your outlet',
+        items: cartItems.map(([id, quantity]) => {
+          const item = menu.find((m) => m.id === id);
+          return { name: item?.name ?? 'Item', quantity, lineKobo: (item?.price_kobo ?? 0) * quantity };
+        }),
+        fulfillment: choice.fulfillment,
+        address: choice.fulfillment === 'delivery' ? address.trim() : '',
+        foodKobo: totalKobo,
+        deliveryFeeKobo: deliveryFee,
+        totalKobo: checkoutTotal,
+        method,
+        creditTotalKobo: method === 'food_credit' ? creditTotal : undefined,
+        termDays: method === 'food_credit' ? Number(termDays) : undefined,
+      };
+      const res = await submitOrder({ data: {
         items,
         method,
         ...choice,
         ...(method === "subscription_entitlement" && activeSub ? { subscriptionId: activeSub.id } : {}),
         ...(method === "food_credit" ? { termDays: Number(termDays) } : {}),
       } });
+      return { ...snapshot, reference: res?.reference ?? null };
     },
-    onSuccess: () => {
-      toast.success("Order placed!");
+    onSuccess: (placed) => {
       setCart({});
       setMethod("");
       setCheckoutOpen(false);
       setFulfillment(null);
       setPaymentStep(false);
       setAddress('');
+      setThankYou({ ...placed, burst: Date.now() });
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Order failed"),
