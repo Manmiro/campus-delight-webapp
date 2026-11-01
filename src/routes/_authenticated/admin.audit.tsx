@@ -22,7 +22,7 @@ function AdminAudit() {
   });
 
   if ((logs ?? []).length === 0) {
-    return <EmptyState title="No administrative actions recorded yet" hint="Every admin action — outlet changes, transfer decisions, credit adjustments — is logged here." />;
+    return <EmptyState title="No administrative actions recorded yet" hint="Every admin action — balance adjustments, account freezes, outlet changes, transfer decisions and credit adjustments — is logged here." />;
   }
 
   return (

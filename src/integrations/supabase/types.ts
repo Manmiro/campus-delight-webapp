@@ -1233,6 +1233,20 @@ export type Database = {
         Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
         Returns: Json
       }
+      admin_adjust_balances: {
+        Args: {
+          p_cash_delta_kobo: number
+          p_customer: string
+          p_reason: string
+          p_reference?: string
+          p_token_delta: number
+        }
+        Returns: Json
+      }
+      admin_set_account_status: {
+        Args: { p_customer: string; p_is_active: boolean; p_reason: string }
+        Returns: Json
+      }
       apply_outlet_transfer: {
         Args: { p_fee_method: string; p_to_outlet_id: string }
         Returns: Json
@@ -1282,6 +1296,7 @@ export type Database = {
         Returns: boolean
       }
       is_central_admin: { Args: never; Returns: boolean }
+      is_active_user: { Args: never; Returns: boolean }
       is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
       is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
       issue_sms_otp: { Args: { p_customer: string }; Returns: Json }

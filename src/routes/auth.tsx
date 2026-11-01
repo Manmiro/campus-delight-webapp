@@ -91,6 +91,16 @@ function AuthPage() {
   async function afterSignIn() {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw error;
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", data.user.id)
+      .single();
+    if (profileError) throw profileError;
+    if (!profile.is_active) {
+      await supabase.auth.signOut();
+      throw new Error("This account is frozen. Contact Headquarters for help.");
+    }
     if (!hasConfirmedEmail(data.user)) {
       setAwaitingConfirm(true);
       return;
@@ -105,7 +115,12 @@ function AuthPage() {
     let active = true;
     void (async () => {
       const { data } = await supabase.auth.getUser();
-      if (!active || !hasConfirmedEmail(data.user)) return;
+      if (!active || !data.user || !hasConfirmedEmail(data.user)) return;
+      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", data.user.id).maybeSingle();
+      if (profile?.is_active === false) {
+        await supabase.auth.signOut();
+        return;
+      }
       await welcomeReceipt().catch(() => {});
       const role = await getRole();
       if (active) await navigate({ to: roleHome(role) });

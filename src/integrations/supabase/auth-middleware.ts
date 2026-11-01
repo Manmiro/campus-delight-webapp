@@ -100,6 +100,15 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       throw new Error('Unauthorized: No user ID found in token');
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_active')
+      .eq('id', data.claims.sub)
+      .maybeSingle();
+    if (profileError || profile?.is_active !== true) {
+      throw new Error('Unauthorized: Account is frozen or unavailable');
+    }
+
     return next({
       context: {
         supabase,

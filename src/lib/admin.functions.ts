@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -183,4 +184,46 @@ export const adminUpdateConfig = createServerFn({ method: "POST" })
       details: { value: data.value as any },
     });
     return { ok: true };
+  });
+
+export const adminAdjustBalances = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { customerId: string; cashDeltaKobo: number; tokenDelta: number; reason: string; reference: string }) =>
+    z.object({
+      customerId: z.string().uuid(),
+      cashDeltaKobo: z.number().int().safe().max(10_000_000_000),
+      tokenDelta: z.number().int().safe().max(1_000_000_000),
+      reason: z.string().trim().min(1).max(500),
+      reference: z.string().trim().min(1).max(100),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: result, error } = await context.supabase.rpc("admin_adjust_balances", {
+      p_customer: data.customerId,
+      p_cash_delta_kobo: data.cashDeltaKobo,
+      p_token_delta: data.tokenDelta,
+      p_reason: data.reason,
+      p_reference: data.reference,
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const adminSetAccountStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { customerId: string; isActive: boolean; reason: string }) =>
+    z.object({
+      customerId: z.string().uuid(),
+      isActive: z.boolean(),
+      reason: z.string().trim().min(1).max(500),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: result, error } = await context.supabase.rpc("admin_set_account_status", {
+      p_customer: data.customerId,
+      p_is_active: data.isActive,
+      p_reason: data.reason,
+    });
+    if (error) throw new Error(error.message);
+    return result;
   });
