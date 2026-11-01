@@ -41,7 +41,7 @@ export function OrderThankYouDialog({ order, onClose }: { order: PlacedOrder | n
           <div className="relative shrink-0 overflow-hidden bg-primary px-6 pb-7 pt-6 text-center text-primary-foreground [@media(max-height:640px)]:pb-4 [@media(max-height:640px)]:pt-4">
             <img src={heroMeal} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
             <span aria-hidden className="absolute left-5 top-5 animate-float text-2xl motion-reduce:animate-none">🍛</span>
-            <span aria-hidden className="absolute right-6 top-8 animate-float text-2xl [animation-delay:1.2s] motion-reduce:animate-none">🥤</span>
+            <span aria-hidden className="absolute right-14 top-12 animate-float text-2xl [animation-delay:1.2s] motion-reduce:animate-none">🥤</span>
             <div className="relative">
               <div className="mx-auto flex items-center justify-center gap-2"><img src={logo} alt="Campus Delight" className="h-9 w-9 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
               <div className="relative mx-auto mt-4 grid h-20 w-20 place-items-center [@media(max-height:640px)]:h-14 [@media(max-height:640px)]:w-14">
@@ -90,7 +90,7 @@ export function OrderThankYouDialog({ order, onClose }: { order: PlacedOrder | n
             <dl className="space-y-2 border-y border-border py-3 text-sm">
               <div className="flex justify-between gap-2"><dt>Food</dt><dd>{order.method === 'subscription_entitlement' ? 'Covered by your meal plan' : naira(order.foodKobo)}</dd></div>
               <div className="flex justify-between gap-2"><dt>{delivery ? 'Delivery fee' : 'Pickup'}</dt><dd>{delivery ? naira(order.deliveryFeeKobo) : 'Free'}</dd></div>
-              <div className="flex justify-between gap-2 font-display text-xl font-bold"><dt>Total paid</dt><dd className="text-primary">{order.method === 'food_credit' ? naira(0) : naira(order.totalKobo)}</dd></div>
+              <div className="flex justify-between gap-2 font-display text-xl font-bold"><dt>{order.method === 'food_credit' ? 'Paid now' : 'Total paid'}</dt><dd className="text-primary">{order.method === 'food_credit' ? naira(0) : naira(order.totalKobo)}</dd></div>
               <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground"><dt>Paid with</dt><dd className="flex items-center gap-1 font-semibold text-foreground"><m.Icon className="h-4 w-4 text-primary" />{m.label}</dd></div>
               {order.method === 'food_credit' && order.creditTotalKobo !== undefined && <div className="flex justify-between gap-2 text-xs"><dt>To repay within {order.termDays} days</dt><dd className="font-semibold">{naira(order.creditTotalKobo)}</dd></div>}
             </dl>

@@ -101,7 +101,7 @@ function OrderPage() {
       const choice = deliveryChoiceSchema.parse({ fulfillment, address, expectedFeeKobo: feeKobo });
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
       const snapshot: Omit<PlacedOrder, 'reference' | 'burst'> = {
-        firstName: (profile.full_name ?? '').trim().split(/\s+/)[0] || 'foodie',
+        firstName: ((n) => n ? n.charAt(0).toUpperCase() + n.slice(1) : 'foodie')((profile.full_name ?? '').trim().split(/\s+/)[0] ?? ''),
         outletName: profile.outlet?.name ?? 'your outlet',
         items: cartItems.map(([id, quantity]) => {
           const item = menu.find((m) => m.id === id);
