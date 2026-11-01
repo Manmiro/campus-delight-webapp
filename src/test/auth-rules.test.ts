@@ -59,6 +59,12 @@ describe("Customer sign-up form requires every field except the referral code", 
     });
   });
 
+  it("requires Nigerian phone numbers at registration", () => {
+    expect(validateSignUpForm({ ...completeSignUp, phone: "+14155550123" })).toEqual({
+      phone: "Enter a valid phone number, such as 0803 000 0000",
+    });
+  });
+
   it("requires a gender", () => {
     expect(validateSignUpForm({ ...completeSignUp, gender: "" })).toEqual({ gender: "Select your gender" });
   });

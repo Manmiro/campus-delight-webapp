@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { smsPhone, verificationMessage } from "@/lib/sms-rules";
+import { normalizeNigerianPhone, smsPhone, verificationMessage } from "@/lib/sms-rules";
 
 describe("SMS verification rules", () => {
   it("normalizes Nigerian local numbers", () => {
     expect(smsPhone("0803 000 0000")).toBe("+2348030000000");
     expect(smsPhone("2348030000000")).toBe("+2348030000000");
+    expect(normalizeNigerianPhone("0803 000 0000")).toBe("+2348030000000");
+    expect(normalizeNigerianPhone("+234 (803) 000-0000")).toBe("+2348030000000");
   });
   it("keeps international destinations and rejects malformed numbers", () => {
     expect(smsPhone("+2348030000000")).toBe("+2348030000000");

@@ -1,4 +1,4 @@
-import { smsPhone } from "@/lib/sms-rules";
+import { normalizeNigerianPhone } from "@/lib/sms-rules";
 
 export function validateSignInCredentials(email: string, password: string) {
   if (!email.trim()) throw new Error("Enter your email address");
@@ -44,7 +44,7 @@ export function validateSignUpForm(form: SignUpForm): FormErrors {
   if (!form.phone.trim()) errors.phone = "Enter your phone number";
   else {
     try {
-      smsPhone(form.phone);
+      normalizeNigerianPhone(form.phone);
     } catch {
       errors.phone = "Enter a valid phone number, such as 0803 000 0000";
     }

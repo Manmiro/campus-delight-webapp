@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
+import { normalizeNigerianPhone } from "@/lib/sms-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
@@ -171,7 +172,7 @@ function AuthPage() {
             emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               full_name: fullName.trim(),
-              phone: phone.trim(),
+              phone: normalizeNigerianPhone(phone),
               gender,
               date_of_birth: dob,
               outlet_id: outletId,
