@@ -998,18 +998,21 @@ export type Database = {
           available_tokens: number
           customer_id: string
           locked_tokens: number
+          transferable_tokens: number
           updated_at: string
         }
         Insert: {
           available_tokens?: number
           customer_id: string
           locked_tokens?: number
+          transferable_tokens?: number
           updated_at?: string
         }
         Update: {
           available_tokens?: number
           customer_id?: string
           locked_tokens?: number
+          transferable_tokens?: number
           updated_at?: string
         }
         Relationships: [
@@ -1270,6 +1273,10 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
+      credit_purchased_tokens: {
+        Args: { p_amount: number; p_customer: string; p_reference: string }
+        Returns: Json
+      }
       due_loan_reminders: {
         Args: never
         Returns: {

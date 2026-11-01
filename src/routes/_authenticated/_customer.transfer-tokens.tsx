@@ -58,7 +58,7 @@ function TransferTokensPage() {
         <CardContent className="space-y-4">
           <div className="rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground">
             <p className="font-semibold">Available: {fmtTokens(tk?.available_tokens)}</p>
-            <p className="mt-0.5 text-xs">Same-outlet customers only · {TOKEN_TRANSFER_DAILY_CAP_TOKENS}-token daily principal limit · {TOKEN_TRANSFER_FEE_TOKENS}-token fee per transfer</p>
+            <p className="mt-0.5 text-xs">Same-outlet customers only · earned and purchased tokens can transfer · welcome tokens are for food at your registered outlet · {TOKEN_TRANSFER_DAILY_CAP_TOKENS}-token daily principal limit · {TOKEN_TRANSFER_FEE_TOKENS}-token fee</p>
           </div>
           <div>
             <Label htmlFor="recipient">Recipient customer ID or email</Label>
