@@ -491,6 +491,7 @@ function OrderPage() {
         </Button>
       </aside>
       <FulfillmentDialog open={checkoutOpen} onOpenChange={(open) => { if (!placeOrder.isPending) setCheckoutOpen(open); }} outletName={profile.outlet?.name ?? 'your outlet'} feeKobo={feeKobo} foodKobo={totalKobo} totalKobo={checkoutTotal} fulfillment={fulfillment} onChoose={setFulfillment} address={address} onAddress={setAddress} paymentStep={paymentStep} onContinue={() => setPaymentStep(true)} onBack={() => setPaymentStep(false)} onPay={() => placeOrder.mutate()} pending={placeOrder.isPending} canPay={cartItems.length > 0 && checkoutOptions.some((o) => o.value === method && !o.disabled)} subscription={method === 'subscription_entitlement'} creditTotal={method === 'food_credit' ? creditTotal : undefined} paymentOptions={checkoutOptions} method={method} onMethod={setMethod} />
+      <OrderThankYouDialog order={thankYou} onClose={() => setThankYou(null)} />
 
       {/* Mobile floating cart */}
       {itemCount > 0 && !cartVisible && (
