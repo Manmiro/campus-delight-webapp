@@ -15,7 +15,7 @@ describe("Profile phone normalization and uniqueness", () => {
         ('00000000-0000-0000-0000-000000000001', '0803 000 0000'),
         ('00000000-0000-0000-0000-000000000002', NULL);
     `);
-    await db.exec(readFileSync("drizzle/migrations/0027_normalize_unique_profile_phones.sql", "utf8"));
+    await db.exec(readFileSync("drizzle/proposed/normalize_unique_profile_phones.sql", "utf8"));
   }, 30000);
 
   afterAll(async () => {
