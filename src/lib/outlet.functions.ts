@@ -16,11 +16,17 @@ export const setOutletOrderAlarm = createServerFn({ method: "POST" })
         .select("outlet_id")
         .eq("user_id", context.userId)
         .eq("staff_role", "outlet_manager")
-        .eq("status", "active")
         .limit(1)
         .maybeSingle();
       if (assignmentError) throw new Error(assignmentError.message);
       if (!assignment) throw new Error("Only an active outlet manager or central administrator can change this alarm");
+
+      // Use the database helper for lifecycle validation. This keeps the
+      // handler compatible with databases that have not yet added the status
+      // column while still rejecting suspended assignments after migration.
+      const { data: isManager, error: managerError } = await context.supabase.rpc("is_outlet_manager", { _outlet_id: assignment.outlet_id });
+      if (managerError) throw new Error(managerError.message);
+      if (!isManager) throw new Error("Only an active outlet manager or central administrator can change this alarm");
       outletId = assignment.outlet_id;
     }
 

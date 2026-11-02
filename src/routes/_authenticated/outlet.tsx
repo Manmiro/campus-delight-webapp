@@ -1,11 +1,13 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
 import {
   ClipboardList, LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { staffAssignmentQuery, outletOrdersQuery, profileQuery } from "@/lib/queries";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useOutletOrderAlarmListener } from "@/lib/outlet-alarm";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { unlockOutletOrderAlarmAudio, useOutletOrderAlarmListener } from "@/lib/outlet-alarm";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/outlet")({
@@ -38,14 +40,39 @@ function OutletLayout() {
 }
 
 function OutletOrderAlarmListener() {
+  const queryClient = useQueryClient();
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const outletId = assignment?.outlet_id ?? "";
   const { data: orders } = useSuspenseQuery({
     ...outletOrdersQuery(outletId),
-    refetchInterval: 10_000,
-    refetchIntervalInBackground: false,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
   });
+
+  useEffect(() => {
+    if (!outletId) return;
+    const channel = supabase
+      .channel(`outlet-orders:${outletId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `outlet_id=eq.${outletId}` }, () => {
+        void queryClient.invalidateQueries({ queryKey: outletOrdersQuery(outletId).queryKey });
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [outletId, queryClient]);
+
+  useEffect(() => {
+    const unlock = () => { void unlockOutletOrderAlarmAudio(); };
+    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
 
   useOutletOrderAlarmListener({
     active: assignment?.staff_role === "outlet_manager",

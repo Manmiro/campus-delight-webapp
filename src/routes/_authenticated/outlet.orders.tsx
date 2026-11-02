@@ -21,8 +21,8 @@ function OutletOrders() {
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
   const { data: orders } = useSuspenseQuery({
     ...outletOrdersQuery(assignment?.outlet_id ?? ""),
-    refetchInterval: 10_000,
-    refetchIntervalInBackground: false,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
   });
 
   const act = useMutation({

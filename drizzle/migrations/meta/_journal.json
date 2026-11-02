@@ -211,6 +211,13 @@
       "when": 1793664600000,
       "tag": "0031_outlet_order_access_and_polling_support",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793665200000,
+      "tag": "0032_reconcile_live_outlet_order_schema",
+      "breakpoints": true
     }
   ]
 }
