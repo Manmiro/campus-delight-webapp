@@ -628,18 +628,21 @@ export type Database = {
           id: string
           outlet_id: string
           staff_role: string
+          status: string
           user_id: string
         }
         Insert: {
           id?: string
           outlet_id: string
           staff_role: string
+          status?: string
           user_id: string
         }
         Update: {
           id?: string
           outlet_id?: string
           staff_role?: string
+          status?: string
           user_id?: string
         }
         Relationships: [
@@ -1250,6 +1253,9 @@ export type Database = {
         Args: { p_customer: string; p_is_active: boolean; p_reason: string }
         Returns: Json
       }
+      admin_remove_outlet_manager: { Args: { p_outlet_id: string; p_reason: string }; Returns: Json }
+      admin_replace_outlet_manager: { Args: { p_new_user_id: string; p_outlet_id: string; p_reason: string }; Returns: Json }
+      admin_set_outlet_manager_suspension: { Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }; Returns: Json }
       apply_outlet_transfer: {
         Args: { p_fee_method: string; p_to_outlet_id: string }
         Returns: Json

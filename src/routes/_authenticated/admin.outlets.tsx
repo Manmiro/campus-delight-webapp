@@ -5,7 +5,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { adminCreateOutlet, adminSetOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
+import { adminCreateOutlet, adminManagerLifecycle, adminReplaceOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+type ManagerAssignment = {
+  id: string;
+  user_id: string;
+  outlet_id: string;
+  staff_role: string;
+  status: "active" | "suspended";
+  profile: { full_name: string; email: string | null } | null;
+};
 
 export const Route = createFileRoute("/_authenticated/admin/outlets")({
   component: AdminOutlets,
@@ -28,15 +38,38 @@ const outletsQuery = queryOptions({
   },
 });
 
+const managersQuery = queryOptions({
+  queryKey: ["admin", "outlet-managers"],
+  queryFn: async (): Promise<ManagerAssignment[]> => {
+    const { data: assignments, error } = await supabase
+      .from("outlet_staff")
+      .select("id, user_id, outlet_id, staff_role, status")
+      .eq("staff_role", "outlet_manager");
+    if (error) throw new Error(error.message);
+    const rows = assignments ?? [];
+    if (rows.length === 0) return [];
+    const ids = rows.map((row) => row.user_id);
+    const { data: profiles, error: profileError } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+    if (profileError) throw new Error(profileError.message);
+    const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+    return rows.map((row) => ({ ...row, status: row.status as "active" | "suspended", profile: profileById.get(row.user_id) ?? null }));
+  },
+});
+
 function AdminOutlets() {
   const qc = useQueryClient();
   const createOutlet = useServerFn(adminCreateOutlet);
   const updateOutlet = useServerFn(adminUpdateOutlet);
-  const setManager = useServerFn(adminSetOutletManager);
+  const replaceManager = useServerFn(adminReplaceOutletManager);
+  const manageManager = useServerFn(adminManagerLifecycle);
 
   const { data: outlets } = useSuspenseQuery(outletsQuery);
+  const { data: managers } = useQuery(managersQuery);
   const [form, setForm] = useState({ name: "", code: "", location: "" });
-  const [mgrForm, setMgrForm] = useState({ outletId: "", email: "", fullName: "", password: "" });
+  const [mgrForm, setMgrForm] = useState({ outletId: "", email: "", fullName: "", password: "", reason: "" });
+  const [managerMode, setManagerMode] = useState<"assign" | "replace">("assign");
+  const [managerAction, setManagerAction] = useState<{ outletId: string; action: "remove" | "suspend" | "restore"; name: string } | null>(null);
+  const [managerActionReason, setManagerActionReason] = useState("");
 
   const create = useMutation({
     mutationFn: (input: { name: string; code: string; location: string }) => createOutlet({ data: input }),
@@ -58,14 +91,38 @@ function AdminOutlets() {
   });
 
   const assignManager = useMutation({
-    mutationFn: (input: { outletId: string; email: string; fullName: string; password: string }) => setManager({ data: input }),
+    mutationFn: (input: { outletId: string; email: string; fullName: string; password: string; reason: string }) => replaceManager({ data: input }),
     onSuccess: () => {
-      toast.success("Outlet manager assigned");
-      setMgrForm({ outletId: "", email: "", fullName: "", password: "" });
-      void qc.invalidateQueries();
+      toast.success(managerMode === "replace" ? "Outlet manager replaced" : "Outlet manager assigned");
+      setMgrForm({ outletId: "", email: "", fullName: "", password: "", reason: "" });
+      setManagerMode("assign");
+      void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not assign manager"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update manager"),
   });
+
+  const managerLifecycle = useMutation({
+    mutationFn: () => {
+      const action = managerAction;
+      if (!action) throw new Error("Choose a manager action");
+      return manageManager({ data: { outletId: action.outletId, action: action.action, reason: managerActionReason } });
+    },
+    onSuccess: () => {
+      const action = managerAction?.action;
+      toast.success(action === "remove" ? "Manager removed" : action === "suspend" ? "Manager suspended" : "Manager restored");
+      setManagerAction(null);
+      setManagerActionReason("");
+      void qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update manager"),
+  });
+
+  const managerForOutlet = (outletId: string) => managers?.find((manager) => manager.outlet_id === outletId);
+  const openManagerForm = (outletId: string, mode: "assign" | "replace") => {
+    setManagerMode(mode);
+    setMgrForm({ outletId, email: "", fullName: "", password: "", reason: mode === "replace" ? "" : "Headquarters manager assignment" });
+  };
+  const managerName = managerAction?.name ?? "this manager";
 
   return (
     <div className="space-y-8">
@@ -88,6 +145,53 @@ function AdminOutlets() {
             <Button disabled={!form.name || !form.code || create.isPending} onClick={() => create.mutate(form)}>Create outlet</Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">Codes must be unique. New outlets are live immediately — menus and prices are configured by the outlet manager.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Outlet managers</CardTitle></CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Outlet</TableHead>
+                  <TableHead>Manager</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {outlets.map((outlet) => {
+                  const manager = managerForOutlet(outlet.id);
+                  return (
+                    <TableRow key={outlet.id}>
+                      <TableCell className="font-medium">{outlet.name}</TableCell>
+                      <TableCell className="text-sm">
+                        {manager ? <><p>{manager.profile?.full_name ?? "Unnamed manager"}</p><p className="text-xs text-muted-foreground">{manager.profile?.email ?? "No email"}</p></> : <span className="text-muted-foreground">Not assigned</span>}
+                      </TableCell>
+                      <TableCell>
+                        {manager ? <Badge variant="outline" className="text-[10px] capitalize">{manager.status}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {manager ? (
+                            <>
+                              <Button type="button" size="sm" variant="outline" onClick={() => openManagerForm(outlet.id, "replace")}>Replace Manager</Button>
+                              <Button type="button" size="sm" variant="outline" onClick={() => { setManagerAction({ outletId: outlet.id, action: manager.status === "active" ? "suspend" : "restore", name: manager.profile?.full_name ?? "this manager" }); setManagerActionReason(""); }}>
+                                {manager.status === "active" ? "Suspend Manager" : "Restore Manager"}
+                              </Button>
+                              <Button type="button" size="sm" variant="destructive" onClick={() => { setManagerAction({ outletId: outlet.id, action: "remove", name: manager.profile?.full_name ?? "this manager" }); setManagerActionReason(""); }}>Remove Manager</Button>
+                            </>
+                          ) : <Button type="button" size="sm" variant="outline" onClick={() => openManagerForm(outlet.id, "assign")}>Assign Manager</Button>}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -131,7 +235,7 @@ function AdminOutlets() {
       </Card>
 
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Assign an outlet manager</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="font-display text-lg">{managerMode === "replace" ? "Replace outlet manager" : "Assign an outlet manager"}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -155,15 +259,38 @@ function AdminOutlets() {
               <Label>Temporary password</Label>
               <Input value={mgrForm.password} onChange={(e) => setMgrForm((f) => ({ ...f, password: e.target.value }))} placeholder="min. 6 characters" />
             </div>
+            <div className="sm:col-span-2">
+              <Label>Reason</Label>
+              <Input value={mgrForm.reason} onChange={(e) => setMgrForm((f) => ({ ...f, reason: e.target.value }))} placeholder="Required audit note" maxLength={500} />
+            </div>
           </div>
           <Button
-            disabled={!mgrForm.outletId || !mgrForm.email || !mgrForm.fullName || mgrForm.password.length < 6 || assignManager.isPending}
+            disabled={!mgrForm.outletId || !mgrForm.email || !mgrForm.fullName || mgrForm.password.length < 6 || !mgrForm.reason.trim() || assignManager.isPending}
             onClick={() => assignManager.mutate(mgrForm)}
           >
-            Assign manager
+            {managerMode === "replace" ? "Replace Manager" : "Assign manager"}
           </Button>
+          {managerMode === "replace" && <Button type="button" variant="ghost" className="ml-2" onClick={() => { setManagerMode("assign"); setMgrForm({ outletId: "", email: "", fullName: "", password: "", reason: "" }); }}>Cancel replace</Button>}
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(managerAction)} onOpenChange={(open) => { if (!open && !managerLifecycle.isPending) { setManagerAction(null); setManagerActionReason(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{managerAction?.action === "remove" ? "Remove Manager" : managerAction?.action === "suspend" ? "Suspend Manager" : "Restore Manager"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">{managerAction?.action === "remove" ? `Remove ${managerName} from this outlet and clear their manager role?` : managerAction?.action === "suspend" ? `Pause ${managerName}'s outlet assignment and manager role?` : `Restore ${managerName}'s outlet assignment and manager role?`}</p>
+            <div>
+              <Label htmlFor="manager-action-reason">Reason</Label>
+              <Input id="manager-action-reason" className="mt-1" value={managerActionReason} onChange={(event) => setManagerActionReason(event.target.value)} placeholder="Required audit note" maxLength={500} />
+            </div>
+            <Button type="button" variant={managerAction?.action === "remove" ? "destructive" : "default"} className="w-full" disabled={!managerActionReason.trim() || managerLifecycle.isPending} onClick={() => managerLifecycle.mutate()}>
+              {managerLifecycle.isPending ? "Saving…" : managerAction?.action === "remove" ? "Remove Manager" : managerAction?.action === "suspend" ? "Suspend Manager" : "Restore Manager"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

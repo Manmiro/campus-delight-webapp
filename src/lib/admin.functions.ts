@@ -13,6 +13,30 @@ async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   return supabaseAdmin;
 }
 
+type ManagerAccountInput = { email: string; fullName: string; password: string };
+
+async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise<string> {
+  const { data: users, error: listErr } = await db.auth.admin.listUsers();
+  if (listErr) throw new Error(listErr.message);
+  let userId = users.users.find((u: { email?: string | null }) => u.email?.toLowerCase() === data.email.toLowerCase())?.id;
+
+  if (!userId) {
+    const { data: created, error: createErr } = await db.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (createErr) throw new Error(createErr.message);
+    if (!created.user) throw new Error("Could not create the manager account");
+    userId = created.user.id;
+  }
+
+  const { error: profileErr } = await db.from("profiles").update({ full_name: data.fullName, email: data.email, is_active: true }).eq("id", userId);
+  if (profileErr) throw new Error(profileErr.message);
+  return userId;
+}
+
 export const adminCreateOutlet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -76,46 +100,44 @@ export const adminSetOutletManager = createServerFn({ method: "POST" })
   .inputValidator((input: { outletId: string; email: string; fullName: string; password: string }) => input)
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
-    const { data: users, error: listErr } = await db.auth.admin.listUsers();
-    if (listErr) throw new Error(listErr.message);
-    let userId = users.users.find((u) => u.email?.toLowerCase() === data.email.toLowerCase())?.id;
-
-    if (!userId) {
-      const { data: created, error: createErr } = await db.auth.admin.createUser({
-        email: data.email,
-        password: data.password,
-        email_confirm: true,
-        user_metadata: { full_name: data.fullName },
-      });
-      if (createErr) throw new Error(createErr.message);
-      if (!created.user) throw new Error("Could not create the manager account");
-      userId = created.user.id;
-    }
-
-    const { error: roleErr } = await db.from("user_roles").upsert({ user_id: userId, role: "outlet_manager" });
-    if (roleErr) throw new Error(roleErr.message);
-    const { error: staffErr } = await db
-      .from("outlet_staff")
-      .upsert(
-        { user_id: userId, outlet_id: data.outletId, staff_role: "outlet_manager" },
-        { onConflict: "user_id,outlet_id,staff_role" },
-      );
-    if (staffErr) throw new Error(staffErr.message);
-    // Signup already creates the profile and allocates codes; preserve them on reassignment.
-    const { error: profileErr } = await db.from("profiles").update({
-      full_name: data.fullName,
-      email: data.email,
-      is_active: false,
-    }).eq("id", userId);
-    if (profileErr) throw new Error(profileErr.message);
-    await db.from("audit_logs").insert({
-      actor_id: context.userId,
-      action: "assign_outlet_manager",
-      entity: "outlet_staff",
-      entity_id: data.outletId,
-      details: { email: data.email },
+    const userId = await ensureManagerAccount(db, data);
+    const { data: result, error } = await db.rpc("admin_replace_outlet_manager", {
+      p_outlet_id: data.outletId,
+      p_new_user_id: userId,
+      p_reason: "Headquarters manager assignment",
     });
-    return { userId };
+    if (error) throw new Error(error.message);
+    return { userId, result };
+  });
+
+export const adminReplaceOutletManager = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; email: string; fullName: string; password: string; reason: string }) =>
+    z.object({ outletId: z.string().uuid(), email: z.string().trim().email(), fullName: z.string().trim().min(1).max(100), password: z.string().min(6), reason: z.string().trim().min(1).max(500) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const userId = await ensureManagerAccount(db, data);
+    const { data: result, error } = await db.rpc("admin_replace_outlet_manager", {
+      p_outlet_id: data.outletId,
+      p_new_user_id: userId,
+      p_reason: data.reason,
+    });
+    if (error) throw new Error(error.message);
+    return { userId, result };
+  });
+
+export const adminManagerLifecycle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; action: "remove" | "suspend" | "restore"; reason: string }) =>
+    z.object({ outletId: z.string().uuid(), action: z.enum(["remove", "suspend", "restore"]), reason: z.string().trim().min(1).max(500) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { error, data: result } = data.action === "remove"
+      ? await context.supabase.rpc("admin_remove_outlet_manager", { p_outlet_id: data.outletId, p_reason: data.reason })
+      : await context.supabase.rpc("admin_set_outlet_manager_suspension", { p_outlet_id: data.outletId, p_suspended: data.action === "suspend", p_reason: data.reason });
+    if (error) throw new Error(error.message);
+    return result;
   });
 
 /** Approves or rejects an outlet-transfer application (central HQ only). */
