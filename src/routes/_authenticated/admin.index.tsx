@@ -3,6 +3,8 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
+import { profileQuery } from "@/lib/queries";
+import { OutletOrderAlarmControls } from "@/components/outlet-order-alarm";
 import { Activity, Building2, CalendarDays, CreditCard, Landmark, MapPin, Search, Settings, Users, Vote, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,6 +78,7 @@ function AdminOverview() {
   const { data: loans } = useSuspenseQuery(loansQuery);
   const { data: wallets } = useSuspenseQuery(walletsQuery);
   const { data: tokens } = useSuspenseQuery(tokensQuery);
+  const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: audit } = useQuery(auditQuery);
 
   const activeSubs = subs.filter((s) => s.status === "active");
@@ -170,6 +173,8 @@ function AdminOverview() {
           ))}
         </div>
       </section>
+
+      <OutletOrderAlarmControls isCentralAdmin enabled={profile.outlet_order_alarm_enabled ?? true} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         {/* Loan health */}

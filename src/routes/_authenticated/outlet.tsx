@@ -3,6 +3,9 @@ import {
   ClipboardList, LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
+import { staffAssignmentQuery, outletOrdersQuery, profileQuery } from "@/lib/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useOutletOrderAlarmListener } from "@/lib/outlet-alarm";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/outlet")({
@@ -28,7 +31,27 @@ const nav: NavItem[] = [
 function OutletLayout() {
   return (
     <AppShell nav={nav} title="Outlet Console" subtitle="Run your Campus Delight outlet.">
+      <OutletOrderAlarmListener />
       <Outlet />
     </AppShell>
   );
+}
+
+function OutletOrderAlarmListener() {
+  const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
+  const { data: profile } = useSuspenseQuery(profileQuery);
+  const outletId = assignment?.outlet_id ?? "";
+  const { data: orders } = useSuspenseQuery({
+    ...outletOrdersQuery(outletId),
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
+  });
+
+  useOutletOrderAlarmListener({
+    active: assignment?.staff_role === "outlet_manager",
+    alarmEnabled: profile.outlet_order_alarm_enabled ?? true,
+    orders,
+    outletId,
+  });
+  return null;
 }
