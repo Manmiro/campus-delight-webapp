@@ -72,6 +72,15 @@ type AlarmOrder = {
   customer?: { full_name?: string | null } | null;
 };
 
+export function newlyConfirmedOrders(
+  orders: AlarmOrder[],
+  previousStatuses: ReadonlyMap<string, string>,
+): AlarmOrder[] {
+  return orders.filter(
+    (order) => order.status === "confirmed" && previousStatuses.get(order.id) !== "confirmed",
+  );
+}
+
 /** Observe newly fetched confirmed orders for either outlet fulfillment screen. */
 export function useOutletOrderAlarmListener({
   active,
@@ -84,20 +93,27 @@ export function useOutletOrderAlarmListener({
   orders: AlarmOrder[];
   outletId: string;
 }) {
-  const seenOrderIds = useRef<Set<string>>(new Set());
+  const seenOrderStatuses = useRef<Map<string, string>>(new Map());
   const hasHydratedOrders = useRef(false);
+  const previousOutletId = useRef(outletId);
 
   useEffect(() => {
     if (!active || !outletId) return;
-    const currentIds = new Set(orders.map((order) => order.id));
+    if (previousOutletId.current !== outletId) {
+      seenOrderStatuses.current = new Map();
+      hasHydratedOrders.current = false;
+      previousOutletId.current = outletId;
+    }
+
+    const currentStatuses = new Map(orders.map((order) => [order.id, order.status]));
     if (!hasHydratedOrders.current) {
-      seenOrderIds.current = currentIds;
+      seenOrderStatuses.current = currentStatuses;
       hasHydratedOrders.current = true;
       return;
     }
 
-    const freshOrders = orders.filter((order) => !seenOrderIds.current.has(order.id));
-    seenOrderIds.current = currentIds;
+    const freshOrders = newlyConfirmedOrders(orders, seenOrderStatuses.current);
+    seenOrderStatuses.current = currentStatuses;
     if (!alarmEnabled) return;
 
     for (const order of freshOrders) {

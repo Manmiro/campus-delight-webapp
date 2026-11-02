@@ -204,6 +204,13 @@
       "when": 1793664000000,
       "tag": "0030_outlet_manager_order_alarm",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793664600000,
+      "tag": "0031_outlet_order_access_and_polling_support",
+      "breakpoints": true
     }
   ]
 }

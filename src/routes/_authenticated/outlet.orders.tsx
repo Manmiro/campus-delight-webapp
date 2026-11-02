@@ -19,7 +19,11 @@ function OutletOrders() {
   const qc = useQueryClient();
   const submitAction = useServerFn(updateFoodOrder);
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
-  const { data: orders } = useSuspenseQuery(outletOrdersQuery(assignment?.outlet_id ?? ""));
+  const { data: orders } = useSuspenseQuery({
+    ...outletOrdersQuery(assignment?.outlet_id ?? ""),
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
+  });
 
   const act = useMutation({
     mutationFn: async ({ orderId, action }: { orderId: string; action: "fulfill" | "cancel" }) => {
@@ -27,7 +31,9 @@ function OutletOrders() {
     },
     onSuccess: () => {
       toast.success("Done");
-      void qc.invalidateQueries({ queryKey: ["outlet"] });
+      void qc.invalidateQueries({
+        queryKey: outletOrdersQuery(assignment?.outlet_id ?? "").queryKey,
+      });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Action failed"),
   });
