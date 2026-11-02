@@ -21,3 +21,4 @@
 - Fulfillment checkout uses an atomic database RPC that snapshots outlet delivery fees, validates the quoted fee and charges the chosen account; subscription meals charge delivery to the wallet with cancellation refunds. Outlet fee edits use an audited manager-scoped RPC to prevent cross-outlet changes.
 - Scheduled jobs are TanStack routes under src/routes/api/public/jobs/ guarded by authenticateCronRequest; per-day sends are claimed in a service-only table before emailing so retries never double-send.
 - Personal ("me") queries filter explicitly by the signed-in user id, because staff and headquarters RLS can expose many rows and break single-row reads.
+- Unapproved database changes live in `drizzle/proposed/` (outside the migration journal) so the migrator never applies them before the business signs off; tests may load them from there.

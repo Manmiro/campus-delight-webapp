@@ -50,7 +50,7 @@ describe("Token transfer source restrictions", () => {
         ('${welcomeOnly}'), ('${earned}'), ('${purchased}'), ('${recipient}');
       UPDATE public.token_accounts SET available_tokens = 100 WHERE customer_id = '${welcomeOnly}';
     `);
-    await db.exec(readFileSync("drizzle/migrations/0028_non_transferable_welcome_tokens.sql", "utf8"));
+    await db.exec(readFileSync("drizzle/proposed/non_transferable_welcome_tokens.sql", "utf8"));
   }, 30000);
 
   afterAll(async () => {

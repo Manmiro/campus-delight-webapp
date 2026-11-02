@@ -1001,21 +1001,18 @@ export type Database = {
           available_tokens: number
           customer_id: string
           locked_tokens: number
-          transferable_tokens: number
           updated_at: string
         }
         Insert: {
           available_tokens?: number
           customer_id: string
           locked_tokens?: number
-          transferable_tokens?: number
           updated_at?: string
         }
         Update: {
           available_tokens?: number
           customer_id?: string
           locked_tokens?: number
-          transferable_tokens?: number
           updated_at?: string
         }
         Relationships: [
@@ -1235,10 +1232,6 @@ export type Database = {
         Args: { p_reference: string; p_subscription_id: string }
         Returns: boolean
       }
-      admin_adjust_credit_limit: {
-        Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
-        Returns: Json
-      }
       admin_adjust_balances: {
         Args: {
           p_cash_delta_kobo: number
@@ -1247,6 +1240,10 @@ export type Database = {
           p_reference?: string
           p_token_delta: number
         }
+        Returns: Json
+      }
+      admin_adjust_credit_limit: {
+        Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
         Returns: Json
       }
       admin_set_account_status: {
@@ -1279,10 +1276,6 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
-      credit_purchased_tokens: {
-        Args: { p_amount: number; p_customer: string; p_reference: string }
-        Returns: Json
-      }
       due_loan_reminders: {
         Args: never
         Returns: {
@@ -1308,8 +1301,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_central_admin: { Args: never; Returns: boolean }
       is_active_user: { Args: never; Returns: boolean }
+      is_central_admin: { Args: never; Returns: boolean }
       is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
       is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
       issue_sms_otp: { Args: { p_customer: string }; Returns: Json }

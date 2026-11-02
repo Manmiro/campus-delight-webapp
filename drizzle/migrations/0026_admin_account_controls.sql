@@ -202,3 +202,5 @@ REVOKE ALL ON FUNCTION public.admin_adjust_balances(uuid, bigint, bigint, text, 
 REVOKE ALL ON FUNCTION public.admin_set_account_status(uuid, boolean, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_adjust_balances(uuid, bigint, bigint, text, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_set_account_status(uuid, boolean, text) TO authenticated;
+REVOKE ALL ON FUNCTION public.is_active_user() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_active_user() TO authenticated;
