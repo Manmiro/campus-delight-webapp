@@ -1,11 +1,17 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { staffAssignmentQuery, outletOrdersQuery, outletCustomersQuery, myMenuQuery, subscriptionsQuery } from "@/lib/queries";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { staffAssignmentQuery, outletOrdersQuery, outletCustomersQuery, myMenuQuery, profileQuery } from "@/lib/queries";
+import { setOutletOrderAlarm } from "@/lib/outlet.functions";
+import { outletOrderAlarmMessage } from "@/lib/outlet-alarm";
 import { naira } from "@/lib/format";
 import { StatCard, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authenticated/outlet/")({
   component: OutletOverview,
@@ -13,11 +19,71 @@ export const Route = createFileRoute("/_authenticated/outlet/")({
 });
 
 function OutletOverview() {
+  const saveAlarm = useServerFn(setOutletOrderAlarm);
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
   const outletId = assignment?.outlet_id ?? "";
-  const { data: orders } = useSuspenseQuery(outletOrdersQuery(outletId));
+  const { data: profile } = useSuspenseQuery(profileQuery);
+  const { data: orders } = useSuspenseQuery({ ...outletOrdersQuery(outletId), refetchInterval: 10_000, refetchIntervalInBackground: false });
   const { data: customers } = useSuspenseQuery(outletCustomersQuery(outletId));
   const { data: menu } = useSuspenseQuery(myMenuQuery(outletId));
+  const isManager = assignment?.staff_role === "outlet_manager";
+  const [alarmEnabled, setAlarmEnabled] = useState(profile.outlet_order_alarm_enabled ?? true);
+  const seenOrderIds = useRef<Set<string>>(new Set());
+  const hasHydratedOrders = useRef(false);
+
+  const alarmMutation = useMutation({
+    mutationFn: (enabled: boolean) => saveAlarm({ data: { enabled } }),
+    onMutate: (enabled) => setAlarmEnabled(enabled),
+    onSuccess: (_result, enabled) => toast.success(`New-order alarm ${enabled ? "on" : "off"}`),
+    onError: (error, enabled) => {
+      setAlarmEnabled(!enabled);
+      toast.error(error instanceof Error ? error.message : "Could not update the order alarm");
+    },
+  });
+
+  useEffect(() => {
+    if (!isManager || !outletId) return;
+    const currentIds = new Set(orders.map((order) => order.id));
+    if (!hasHydratedOrders.current) {
+      seenOrderIds.current = currentIds;
+      hasHydratedOrders.current = true;
+      return;
+    }
+
+    const freshOrders = orders.filter((order) => !seenOrderIds.current.has(order.id));
+    seenOrderIds.current = currentIds;
+    if (!alarmEnabled) return;
+
+    for (const order of freshOrders) {
+      if (order.status !== "confirmed") continue;
+      const message = outletOrderAlarmMessage(order.customer?.full_name, outletId);
+      toast.info(message, { duration: 12_000 });
+      try {
+        navigator.vibrate?.([220, 100, 220]);
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("New Campus Delight order", { body: message });
+        }
+        const audio = new AudioContext();
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.08;
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+        oscillator.start();
+        oscillator.stop(audio.currentTime + 0.18);
+      } catch {
+        // Browser notification/audio permissions are optional; the toast remains visible.
+      }
+    }
+  }, [alarmEnabled, isManager, orders, outletId]);
+
+  async function toggleAlarm(enabled: boolean) {
+    if (enabled && "Notification" in window && Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+    alarmMutation.mutate(enabled);
+  }
 
   const today = new Date().toDateString();
   const todaysOrders = orders.filter((o) => new Date(o.created_at).toDateString() === today);
@@ -44,6 +110,21 @@ function OutletOverview() {
         <StatCard label="Revenue (all time)" value={naira(revenue)} />
         <StatCard label="Customers" value={customers.length} hint={`${menu.length} menu items published`} />
       </div>
+
+      {isManager && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
+            <div>
+              <p className="font-semibold">New-order alarm</p>
+              <p className="text-sm text-muted-foreground">{alarmEnabled ? "On — new confirmed orders will alert this dashboard." : "Off — new orders will not trigger an alarm."}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">{alarmEnabled ? "On" : "Off"}</span>
+              <Switch checked={alarmEnabled} disabled={alarmMutation.isPending} onCheckedChange={toggleAlarm} aria-label="Toggle new-order alarm" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

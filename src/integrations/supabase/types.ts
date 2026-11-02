@@ -823,6 +823,7 @@ export type Database = {
           id: string
           is_active: boolean
           leaderboard_opt_in: boolean
+          outlet_order_alarm_enabled: boolean
           outlet_id: string | null
           phone: string | null
           referral_code: string
@@ -839,6 +840,7 @@ export type Database = {
           id: string
           is_active?: boolean
           leaderboard_opt_in?: boolean
+          outlet_order_alarm_enabled?: boolean
           outlet_id?: string | null
           phone?: string | null
           referral_code: string
@@ -855,6 +857,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           leaderboard_opt_in?: boolean
+          outlet_order_alarm_enabled?: boolean
           outlet_id?: string | null
           phone?: string | null
           referral_code?: string
