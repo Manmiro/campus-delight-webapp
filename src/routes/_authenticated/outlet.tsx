@@ -1,11 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  ClipboardList, LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
+  ClipboardList, Home, LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
+import { personalDashboardLink } from "@/lib/role-nav";
 import { staffAssignmentQuery, outletOrdersQuery, profileQuery } from "@/lib/queries";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { unlockOutletOrderAlarmAudio, useOutletOrderAlarmListener } from "@/lib/outlet-alarm";
 import { AppShell, type NavItem } from "@/components/app-shell";
@@ -31,8 +32,14 @@ const nav: NavItem[] = [
 ];
 
 function OutletLayout() {
+  const { data: role } = useQuery({ queryKey: ["my-role"], queryFn: () => getMyRole() });
+  const personal = role ? personalDashboardLink(role) : null;
+  const navList: NavItem[] = personal
+    ? [...nav, { to: personal.to, label: personal.label, icon: <Home className="h-4 w-4" /> }]
+    : nav;
+
   return (
-    <AppShell nav={nav} title="Outlet Console" subtitle="Run your Campus Delight outlet.">
+    <AppShell nav={navList} title="Outlet Console" subtitle="Run your Campus Delight outlet.">
       <OutletOrderAlarmListener />
       <Outlet />
     </AppShell>

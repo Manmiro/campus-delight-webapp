@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
-  Building2, CalendarDays, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
+  Building2, CalendarDays, Store, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
-import { canEnterCustomerArea, customerAreaRedirect, headquartersLink } from "@/lib/role-nav";
+import { canEnterCustomerArea, customerAreaRedirect, headquartersLink, outletConsoleLink } from "@/lib/role-nav";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/_customer")({
@@ -35,11 +35,14 @@ const nav: NavItem[] = [
 
 function CustomerLayout() {
   const { data: role } = useQuery({ queryKey: ["my-role"], queryFn: () => getMyRole() });
-  const other = role ? headquartersLink(role) : null;
+  const hq = role ? headquartersLink(role) : null;
+  const outlet = role ? outletConsoleLink(role) : null;
 
-  const navList = other
-    ? [...nav, { to: other.to, label: other.label, icon: <Building2 className="h-4 w-4" /> }]
-    : nav;
+  const navList: NavItem[] = [
+    ...nav,
+    ...(outlet ? [{ to: outlet.to, label: outlet.label, icon: <Store className="h-4 w-4" /> }] : []),
+    ...(hq ? [{ to: hq.to, label: hq.label, icon: <Building2 className="h-4 w-4" /> }] : []),
+  ];
 
   return (
     <AppShell nav={navList} title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
