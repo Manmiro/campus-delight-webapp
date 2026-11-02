@@ -628,18 +628,21 @@ export type Database = {
           id: string
           outlet_id: string
           staff_role: string
+          status: string
           user_id: string
         }
         Insert: {
           id?: string
           outlet_id: string
           staff_role: string
+          status?: string
           user_id: string
         }
         Update: {
           id?: string
           outlet_id?: string
           staff_role?: string
+          status?: string
           user_id?: string
         }
         Relationships: [
@@ -821,6 +824,7 @@ export type Database = {
           is_active: boolean
           leaderboard_opt_in: boolean
           outlet_id: string | null
+          outlet_order_alarm_enabled: boolean
           phone: string | null
           referral_code: string
           verification_status: string
@@ -837,6 +841,7 @@ export type Database = {
           is_active?: boolean
           leaderboard_opt_in?: boolean
           outlet_id?: string | null
+          outlet_order_alarm_enabled?: boolean
           phone?: string | null
           referral_code: string
           verification_status?: string
@@ -853,6 +858,7 @@ export type Database = {
           is_active?: boolean
           leaderboard_opt_in?: boolean
           outlet_id?: string | null
+          outlet_order_alarm_enabled?: boolean
           phone?: string | null
           referral_code?: string
           verification_status?: string
@@ -1243,8 +1249,24 @@ export type Database = {
         Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
         Returns: Json
       }
+      admin_clear_manager_role: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      admin_remove_outlet_manager: {
+        Args: { p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_replace_outlet_manager: {
+        Args: { p_new_user_id: string; p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_set_account_status: {
         Args: { p_customer: string; p_is_active: boolean; p_reason: string }
+        Returns: Json
+      }
+      admin_set_outlet_manager_suspension: {
+        Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
         Returns: Json
       }
       apply_outlet_transfer: {

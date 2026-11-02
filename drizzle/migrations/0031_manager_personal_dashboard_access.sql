@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.outlet_staff IS 'Outlet staff assignments. Active outlet managers may also use their personal customer dashboard.';

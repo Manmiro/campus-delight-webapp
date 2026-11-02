@@ -218,6 +218,13 @@
       "when": 1793665200000,
       "tag": "0032_reconcile_live_outlet_order_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793665200001,
+      "tag": "0031_manager_personal_dashboard_access",
+      "breakpoints": true
     }
   ]
 }
