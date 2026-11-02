@@ -54,7 +54,7 @@ export async function playOutletOrderAlarmChime(): Promise<void> {
       oscillator.type = "triangle";
       oscillator.frequency.setValueAtTime(note.frequency, noteStart);
       gain.gain.setValueAtTime(0.0001, noteStart);
-      gain.gain.exponentialRampToValueAtTime(0.2, noteStart + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.36, noteStart + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
       oscillator.connect(gain);
       gain.connect(audio.destination);
