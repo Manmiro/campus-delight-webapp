@@ -225,6 +225,13 @@
       "when": 1793665200001,
       "tag": "0031_manager_personal_dashboard_access",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793671934428,
+      "tag": "0032_menu_item_delete_keeps_order_history",
+      "breakpoints": true
     }
   ]
 }
