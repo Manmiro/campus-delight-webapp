@@ -69,14 +69,44 @@ export const adminCreateOutlet = createServerFn({ method: "POST" })
 
 export const adminUpdateOutlet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { outletId: string; status?: string; name?: string; location?: string; address?: string }) => input)
+  .inputValidator((input: {
+    outletId: string;
+    status?: string;
+    name?: string;
+    code?: string;
+    location?: string;
+    address?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+  }) => z.object({
+    outletId: z.string().uuid(),
+    status: z.enum(["active", "suspended", "inactive"]).optional(),
+    name: z.string().trim().min(1).max(200).optional(),
+    code: z.string().trim().min(1).max(50).optional(),
+    location: z.string().trim().max(200).optional(),
+    address: z.string().trim().max(500).optional(),
+    contactPhone: z.string().trim().max(50).optional(),
+    contactEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
+  }).parse(input))
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
-    const patch: { status?: string; name?: string; location?: string; address?: string } = {};
-    if (data["status"]) patch["status"] = data["status"];
-    if (data["name"]) patch["name"] = data["name"];
-    if (data["location"] !== undefined) patch["location"] = data["location"];
-    if (data["address"] !== undefined) patch["address"] = data["address"];
+    const patch: {
+      status?: string;
+      name?: string;
+      code?: string;
+      location?: string | null;
+      address?: string | null;
+      contact_phone?: string | null;
+      contact_email?: string | null;
+    } = {};
+    if (data.status !== undefined) patch.status = data.status;
+    if (data.name !== undefined) patch.name = data.name;
+    if (data.code !== undefined) patch.code = data.code.toUpperCase();
+    if (data.location !== undefined) patch.location = data.location || null;
+    if (data.address !== undefined) patch.address = data.address || null;
+    if (data.contactPhone !== undefined) patch.contact_phone = data.contactPhone || null;
+    if (data.contactEmail !== undefined) patch.contact_email = data.contactEmail || null;
+    if (Object.keys(patch).length === 0) throw new Error("No outlet changes provided");
     const { data: outlet, error } = await db
       .from("outlets")
       .update(patch)
@@ -92,6 +122,91 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
       details: patch,
     });
     return outlet;
+  });
+
+export const adminDeleteOutlet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string }) => z.object({ outletId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    // Check authority in the server handler, then let the audited RPC perform
+    // the deletion using the signed-in admin's database identity.
+    await assertCentralAdmin(context);
+    const { data: result, error } = await context.supabase.rpc("admin_delete_outlet", {
+      p_outlet_id: data.outletId,
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const adminCreateCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { fullName: string; email: string; phone?: string; password: string; outletId: string }) =>
+    z.object({
+      fullName: z.string().trim().min(1).max(100),
+      email: z.string().trim().email(),
+      phone: z.string().trim().max(50).optional().or(z.literal("")),
+      password: z.string().min(6).max(128),
+      outletId: z.string().uuid(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const { data: outlet, error: outletError } = await db
+      .from("outlets")
+      .select("id")
+      .eq("id", data.outletId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (outletError) throw new Error(outletError.message);
+    if (!outlet) throw new Error("Choose an active outlet");
+
+    const { data: created, error: createError } = await db.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: data.fullName,
+        phone: data.phone || null,
+        outlet_id: data.outletId,
+      },
+    });
+    if (createError) throw new Error(createError.message);
+    if (!created.user) throw new Error("Could not create the customer account");
+
+    const { data: profile, error: profileError } = await db
+      .from("profiles")
+      .select("id, full_name, email, customer_code")
+      .eq("id", created.user.id)
+      .single();
+    if (profileError || !profile) throw new Error(profileError?.message ?? "Customer profile was not created");
+
+    const { error: auditError } = await db.from("audit_logs").insert({
+      actor_id: context.userId,
+      action: "create_customer",
+      entity: "profiles",
+      entity_id: profile.id,
+      details: { customer_code: profile.customer_code, outlet_id: data.outletId },
+    });
+    if (auditError) throw new Error(auditError.message);
+    return profile;
+  });
+
+export const adminDeleteCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { customerId: string; reason: string }) =>
+    z.object({ customerId: z.string().uuid(), reason: z.string().trim().min(1).max(500) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const { data: result, error } = await context.supabase.rpc("admin_delete_customer", {
+      p_customer: data.customerId,
+      p_reason: data.reason,
+    });
+    if (error) throw new Error(error.message);
+
+    const { error: authError } = await db.auth.admin.deleteUser(data.customerId);
+    if (authError) throw new Error(`Customer data was removed, but authentication cleanup failed: ${authError.message}`);
+    return result;
   });
 
 /** Creates (or reuses) an outlet manager account with the outlet_staff assignment. */

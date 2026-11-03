@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { adminAdjustBalances, adminSetAccountStatus } from "@/lib/admin.functions";
+import { adminAdjustBalances, adminCreateCustomer, adminDeleteCustomer, adminSetAccountStatus } from "@/lib/admin.functions";
 import { formatDate, naira, tokens as fmtTokens } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { deliverFile } from "@/lib/download";
 import { customersCsv, customersCsvFilename } from "@/lib/customer-export";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   component: AdminCustomers,
@@ -47,6 +48,16 @@ type ManageState = {
   reason: string;
 };
 
+type CustomerCreateForm = {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  outletId: string;
+};
+
+type AdminOutlet = { id: string; name: string };
+
 function normalizeCode(raw: string) {
   return raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().replace(/^CD+/, "");
 }
@@ -61,9 +72,23 @@ function AdminCustomers() {
   const qc = useQueryClient();
   const submitAdjustment = useServerFn(adminAdjustBalances);
   const submitStatus = useServerFn(adminSetAccountStatus);
+  const createCustomer = useServerFn(adminCreateCustomer);
+  const deleteCustomer = useServerFn(adminDeleteCustomer);
   const [search, setSearch] = useState("");
   const [manage, setManage] = useState<ManageState | null>(null);
+  const [createForm, setCreateForm] = useState<CustomerCreateForm>({ fullName: "", email: "", phone: "", password: "", outletId: "" });
+  const [deleteTarget, setDeleteTarget] = useState<AdminCustomer | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
   const digits = normalizeCode(search);
+
+  const { data: activeOutlets } = useQuery({
+    queryKey: ["admin", "active-outlets"],
+    queryFn: async (): Promise<AdminOutlet[]> => {
+      const { data, error } = await supabase.from("outlets").select("id, name").eq("status", "active").order("name");
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ["admin", "customers", digits],
@@ -131,6 +156,34 @@ function AdminCustomers() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Account status update failed"),
   });
 
+  const create = useMutation({
+    mutationFn: () => createCustomer({ data: createForm }),
+    onSuccess: (customer) => {
+      toast.success(`Customer account created${customer.customer_code ? ` — ${customer.customer_code}` : ""}.`);
+      setCreateForm({ fullName: "", email: "", phone: "", password: "", outletId: "" });
+      void qc.invalidateQueries({ queryKey: ["admin", "customers"] });
+      void qc.invalidateQueries({ queryKey: ["admin", "customers-count"] });
+      void qc.invalidateQueries({ queryKey: ["admin", "audit-all"] });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Customer account creation failed"),
+  });
+
+  const remove = useMutation({
+    mutationFn: () => {
+      if (!deleteTarget) throw new Error("Choose a customer account first");
+      return deleteCustomer({ data: { customerId: deleteTarget.id, reason: deleteReason } });
+    },
+    onSuccess: () => {
+      toast.success("Customer account deleted.");
+      setDeleteTarget(null);
+      setDeleteReason("");
+      void qc.invalidateQueries({ queryKey: ["admin", "customers"] });
+      void qc.invalidateQueries({ queryKey: ["admin", "customers-count"] });
+      void qc.invalidateQueries({ queryKey: ["admin", "audit-all"] });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Customer account deletion failed"),
+  });
+
   function exportCsv() {
     if (!canExport) return;
     const blob = new Blob([customersCsv(rows)], { type: "text/csv;charset=utf-8" });
@@ -139,7 +192,45 @@ function AdminCustomers() {
   }
 
   return (
-    <Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3"><CardTitle>Create a new customer account</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label htmlFor="new-customer-name">Full name</Label>
+              <Input id="new-customer-name" className="mt-1" value={createForm.fullName} onChange={(event) => setCreateForm((form) => ({ ...form, fullName: event.target.value }))} placeholder="Ada Obi" />
+            </div>
+            <div>
+              <Label htmlFor="new-customer-email">Email</Label>
+              <Input id="new-customer-email" type="email" className="mt-1" value={createForm.email} onChange={(event) => setCreateForm((form) => ({ ...form, email: event.target.value }))} placeholder="ada@example.com" />
+            </div>
+            <div>
+              <Label htmlFor="new-customer-phone">Phone</Label>
+              <Input id="new-customer-phone" className="mt-1" value={createForm.phone} onChange={(event) => setCreateForm((form) => ({ ...form, phone: event.target.value }))} placeholder="08031234567" />
+            </div>
+            <div>
+              <Label htmlFor="new-customer-password">Temporary password</Label>
+              <Input id="new-customer-password" type="password" className="mt-1" value={createForm.password} onChange={(event) => setCreateForm((form) => ({ ...form, password: event.target.value }))} placeholder="Minimum 6 characters" />
+            </div>
+            <div>
+              <Label>Outlet</Label>
+              <Select value={createForm.outletId} onValueChange={(value) => setCreateForm((form) => ({ ...form, outletId: value }))}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Choose active outlet" /></SelectTrigger>
+                <SelectContent>{(activeOutlets ?? []).map((outlet) => <SelectItem key={outlet.id} value={outlet.id}>{outlet.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="button" disabled={!createForm.fullName.trim() || !createForm.email.trim() || createForm.password.length < 6 || !createForm.outletId || create.isPending} onClick={() => create.mutate()}>
+              {create.isPending ? "Creating…" : "Create customer account"}
+            </Button>
+            <p className="text-xs text-muted-foreground">The customer receives a confirmed sign-in and the standard welcome-token allocation.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
       <CardHeader className="gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle>Customers</CardTitle>
@@ -202,14 +293,19 @@ function AdminCustomers() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setManage({ customer: c, account: "cash", direction: "credit", amount: "", reason: "" })}
-                  >
-                    Manage
-                  </Button>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setManage({ customer: c, account: "cash", direction: "credit", amount: "", reason: "" })}
+                    >
+                      Manage
+                    </Button>
+                    <Button type="button" size="sm" variant="destructive" onClick={() => { setDeleteTarget(c); setDeleteReason(""); }}>
+                      <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -223,6 +319,7 @@ function AdminCustomers() {
           </Table>
         </div>
       </CardContent>
+      </Card>
       <Dialog open={Boolean(manage)} onOpenChange={(open) => { if (!open && !adjustAccount.isPending && !changeStatus.isPending) setManage(null); }}>
         <DialogContent>
           <DialogHeader>
@@ -275,6 +372,23 @@ function AdminCustomers() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+      <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !remove.isPending) { setDeleteTarget(null); setDeleteReason(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete customer account</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Delete <span className="font-semibold text-foreground">{deleteTarget?.full_name}</span> ({deleteTarget?.customer_code})? This is allowed only for a customer with zero balances and no orders, payments, subscriptions, loans, transfers, or other financial history. Staff and Headquarters accounts cannot be deleted here.
+            </p>
+            <div>
+              <Label htmlFor="delete-customer-reason">Reason</Label>
+              <Input id="delete-customer-reason" className="mt-1" value={deleteReason} onChange={(event) => setDeleteReason(event.target.value)} placeholder="Required audit note" maxLength={500} />
+            </div>
+            <Button type="button" variant="destructive" className="w-full" disabled={!deleteTarget || !deleteReason.trim() || remove.isPending} onClick={() => remove.mutate()}>
+              {remove.isPending ? "Deleting…" : "Delete customer account"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

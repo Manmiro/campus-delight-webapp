@@ -5,7 +5,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { adminCreateOutlet, adminManagerLifecycle, adminReplaceOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
+import { adminCreateOutlet, adminDeleteOutlet, adminManagerLifecycle, adminReplaceOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pencil, Trash2 } from "lucide-react";
 
 type ManagerAssignment = {
   id: string;
@@ -24,6 +25,15 @@ type ManagerAssignment = {
   profile: { full_name: string; email: string | null } | null;
 };
 
+type OutletForm = {
+  name: string;
+  code: string;
+  location: string;
+  address: string;
+  contactPhone: string;
+  contactEmail: string;
+};
+
 export const Route = createFileRoute("/_authenticated/admin/outlets")({
   component: AdminOutlets,
   head: () => ({ meta: [{"title": "Outlet Management — Campus Delight HQ"}, {"name": "description", "content": "View and manage outlet management in your Campus Delight account."}, {"property": "og:title", "content": "Outlet Management — Campus Delight HQ"}, {"property": "og:description", "content": "View and manage outlet management in your Campus Delight account."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
@@ -32,7 +42,7 @@ export const Route = createFileRoute("/_authenticated/admin/outlets")({
 const outletsQuery = queryOptions({
   queryKey: ["admin", "outlets-list"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("outlets").select("id, name, code, location, address, status, created_at").order("created_at", { ascending: true });
+    const { data, error } = await supabase.from("outlets").select("id, name, code, location, address, contact_phone, contact_email, status, created_at").order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
   },
@@ -60,12 +70,16 @@ function AdminOutlets() {
   const qc = useQueryClient();
   const createOutlet = useServerFn(adminCreateOutlet);
   const updateOutlet = useServerFn(adminUpdateOutlet);
+  const deleteOutlet = useServerFn(adminDeleteOutlet);
   const replaceManager = useServerFn(adminReplaceOutletManager);
   const manageManager = useServerFn(adminManagerLifecycle);
 
   const { data: outlets } = useSuspenseQuery(outletsQuery);
   const { data: managers } = useQuery(managersQuery);
   const [form, setForm] = useState({ name: "", code: "", location: "" });
+  const [editOutlet, setEditOutlet] = useState<(typeof outlets)[number] | null>(null);
+  const [editForm, setEditForm] = useState<OutletForm>({ name: "", code: "", location: "", address: "", contactPhone: "", contactEmail: "" });
+  const [deleteTarget, setDeleteTarget] = useState<(typeof outlets)[number] | null>(null);
   const [mgrForm, setMgrForm] = useState({ outletId: "", email: "", fullName: "", password: "", reason: "" });
   const [managerMode, setManagerMode] = useState<"assign" | "replace">("assign");
   const [managerAction, setManagerAction] = useState<{ outletId: string; action: "remove" | "suspend" | "restore"; name: string } | null>(null);
@@ -82,12 +96,32 @@ function AdminOutlets() {
   });
 
   const setStatus = useMutation({
-    mutationFn: (input: { outletId: string; status: string }) => updateOutlet({ data: input }),
+    mutationFn: (input: { outletId: string; status: "active" | "suspended" | "inactive" }) => updateOutlet({ data: input }),
     onSuccess: () => {
       toast.success("Outlet updated");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
+  });
+
+  const saveEdit = useMutation({
+    mutationFn: (input: OutletForm & { outletId: string }) => updateOutlet({ data: input }),
+    onSuccess: () => {
+      toast.success("Outlet details updated");
+      setEditOutlet(null);
+      void qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update outlet"),
+  });
+
+  const removeOutlet = useMutation({
+    mutationFn: (outletId: string) => deleteOutlet({ data: { outletId } }),
+    onSuccess: () => {
+      toast.success("Outlet deleted");
+      setDeleteTarget(null);
+      void qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete outlet"),
   });
 
   const assignManager = useMutation({
@@ -128,6 +162,17 @@ function AdminOutlets() {
     });
   };
   const managerName = managerAction?.name ?? "this manager";
+  const openEdit = (outlet: (typeof outlets)[number]) => {
+    setEditOutlet(outlet);
+    setEditForm({
+      name: outlet.name,
+      code: outlet.code,
+      location: outlet.location ?? "",
+      address: outlet.address ?? "",
+      contactPhone: outlet.contact_phone ?? "",
+      contactEmail: outlet.contact_email ?? "",
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -203,39 +248,49 @@ function AdminOutlets() {
       <Card>
         <CardHeader className="pb-2"><CardTitle className="font-display text-lg">All outlets ({outlets.length})</CardTitle></CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Outlet</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Set status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {outlets.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="text-sm font-medium">{o.name}</TableCell>
-                  <TableCell className="font-mono text-xs">{o.code}</TableCell>
-                  <TableCell className="text-xs">{o.location}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-[10px] capitalize">{o.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Select value={o.status} onValueChange={(v) => setStatus.mutate({ outletId: o.id, status: v })}>
-                      <SelectTrigger className="ml-auto h-8 w-32"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="suspended">Suspended</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Outlet</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {outlets.map((o) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="text-sm font-medium">{o.name}</TableCell>
+                    <TableCell className="font-mono text-xs">{o.code}</TableCell>
+                    <TableCell className="text-xs">{o.location}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] capitalize">{o.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => openEdit(o)}>
+                          <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+                        </Button>
+                        <Select value={o.status} onValueChange={(v) => setStatus.mutate({ outletId: o.id, status: v })}>
+                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="suspended">Suspended</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button type="button" size="sm" variant="destructive" onClick={() => setDeleteTarget(o)}>
+                          <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -278,6 +333,55 @@ function AdminOutlets() {
           {managerMode === "replace" && <Button type="button" variant="ghost" className="ml-2" onClick={() => { setManagerMode("assign"); setMgrForm({ outletId: "", email: "", fullName: "", password: "", reason: "" }); }}>Cancel replace</Button>}
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(editOutlet)} onOpenChange={(open) => { if (!open && !saveEdit.isPending) setEditOutlet(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Edit outlet</DialogTitle></DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="edit-outlet-name">Outlet name</Label>
+              <Input id="edit-outlet-name" className="mt-1" value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-outlet-code">Code</Label>
+              <Input id="edit-outlet-code" className="mt-1" value={editForm.code} onChange={(e) => setEditForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-outlet-location">Campus / city</Label>
+              <Input id="edit-outlet-location" className="mt-1" value={editForm.location} onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-outlet-address">Address</Label>
+              <Input id="edit-outlet-address" className="mt-1" value={editForm.address} onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-outlet-phone">Contact phone</Label>
+              <Input id="edit-outlet-phone" className="mt-1" value={editForm.contactPhone} onChange={(e) => setEditForm((f) => ({ ...f, contactPhone: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-outlet-email">Contact email</Label>
+              <Input id="edit-outlet-email" type="email" className="mt-1" value={editForm.contactEmail} onChange={(e) => setEditForm((f) => ({ ...f, contactEmail: e.target.value }))} />
+            </div>
+          </div>
+          <Button className="w-full" disabled={!editForm.name.trim() || !editForm.code.trim() || saveEdit.isPending} onClick={() => editOutlet && saveEdit.mutate({ outletId: editOutlet.id, ...editForm })}>
+            {saveEdit.isPending ? "Saving…" : "Save changes"}
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !removeOutlet.isPending) setDeleteTarget(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete outlet</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Delete <span className="font-semibold text-foreground">{deleteTarget?.name}</span>? This is only allowed when the outlet has no customers or historical orders, subscriptions, loans, or transfers. Otherwise, mark it inactive.
+            </p>
+            <Button type="button" variant="destructive" className="w-full" disabled={!deleteTarget || removeOutlet.isPending} onClick={() => deleteTarget && removeOutlet.mutate(deleteTarget.id)}>
+              {removeOutlet.isPending ? "Deleting…" : "Delete outlet"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={Boolean(managerAction)} onOpenChange={(open) => { if (!open && !managerLifecycle.isPending) { setManagerAction(null); setManagerActionReason(""); } }}>
         <DialogContent>
