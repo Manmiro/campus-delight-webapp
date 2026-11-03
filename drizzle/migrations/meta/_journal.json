@@ -232,6 +232,20 @@
       "when": 1793671934428,
       "tag": "0032_menu_item_delete_keeps_order_history",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793677156427,
+      "tag": "0033_normalize_unique_profile_phones",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793677201126,
+      "tag": "0034_non_transferable_welcome_tokens",
+      "breakpoints": true
     }
   ]
 }
