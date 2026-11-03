@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/_customer/subscription")({
   component: SubscriptionPage,
-  head: () => ({ meta: [{ title: "My Subscription — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack." }, { property: "og:title", content: "My Subscription — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "My Food Plans — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack." }, { property: "og:title", content: "My Food Plans — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 const plans = [

@@ -19,10 +19,10 @@ export const Route = createFileRoute("/_authenticated/_customer")({
 
 const nav: NavItem[] = [
   { to: "/dashboard", label: "Home", icon: <Home className="h-4 w-4" />, exact: true },
-  { to: "/subscription", label: "My Subscription", icon: <CalendarDays className="h-4 w-4" /> },
+  { to: "/subscription", label: "My Food Plans", icon: <CalendarDays className="h-4 w-4" /> },
   { to: "/order", label: "Order Food", icon: <ShoppingBag className="h-4 w-4" /> },
-  { to: "/wallet", label: "Wallet", icon: <Wallet className="h-4 w-4" /> },
-  { to: "/tokens", label: "Tokens", icon: <Coins className="h-4 w-4" /> },
+  { to: "/wallet", label: "My Wallet", icon: <Wallet className="h-4 w-4" /> },
+  { to: "/tokens", label: "My Tokens", icon: <Coins className="h-4 w-4" /> },
   { to: "/transfer-tokens", label: "Transfer Tokens", icon: <Send className="h-4 w-4" /> },
   { to: "/refer", label: "Refer & Earn", icon: <Gift className="h-4 w-4" /> },
   { to: "/leaderboard", label: "Leaderboard", icon: <Trophy className="h-4 w-4" /> },
