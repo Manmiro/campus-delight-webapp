@@ -5,6 +5,7 @@ import {
   canEnterOutletArea,
   customerAreaRedirect,
   headquartersLink,
+  outletConsoleLink,
   personalDashboardLink,
 } from "@/lib/role-nav";
 
@@ -29,5 +30,14 @@ describe("Role areas", () => {
     expect(canEnterOutletArea("outlet_staff")).toBe(true);
     expect(customerAreaRedirect("outlet_staff")).toBe("/outlet");
     expect(customerAreaRedirect("central_admin")).toBe("/admin");
+  });
+
+  it("lets outlet managers switch between the outlet console and their personal dashboard", () => {
+    expect(canEnterOutletArea("outlet_manager")).toBe(true);
+    expect(canEnterCustomerArea("outlet_manager")).toBe(true);
+    expect(personalDashboardLink("outlet_manager")).toEqual({ to: "/dashboard", label: "My Dashboard" });
+    expect(outletConsoleLink("outlet_manager")).toEqual({ to: "/outlet", label: "Outlet Dashboard" });
+    expect(outletConsoleLink("customer")).toBeNull();
+    expect(outletConsoleLink("outlet_staff")).toBeNull();
   });
 });

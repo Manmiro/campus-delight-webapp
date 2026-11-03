@@ -121,6 +121,11 @@ function AdminOutlets() {
   const openManagerForm = (outletId: string, mode: "assign" | "replace") => {
     setManagerMode(mode);
     setMgrForm({ outletId, email: "", fullName: "", password: "", reason: mode === "replace" ? "" : "Headquarters manager assignment" });
+    requestAnimationFrame(() => {
+      const card = document.getElementById("manager-form");
+      card?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => document.getElementById("manager-email")?.focus({ preventScroll: true }), 400);
+    });
   };
   const managerName = managerAction?.name ?? "this manager";
 
@@ -234,7 +239,7 @@ function AdminOutlets() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="manager-form" className={managerMode === "replace" ? "scroll-mt-24 ring-2 ring-primary/40" : "scroll-mt-24"}>
         <CardHeader className="pb-2"><CardTitle className="font-display text-lg">{managerMode === "replace" ? "Replace outlet manager" : "Assign an outlet manager"}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -253,7 +258,7 @@ function AdminOutlets() {
             </div>
             <div>
               <Label>Manager email (sign-in)</Label>
-              <Input type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@compusdelight.net" />
+              <Input id="manager-email" type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@compusdelight.net" />
             </div>
             <div>
               <Label>Temporary password</Label>

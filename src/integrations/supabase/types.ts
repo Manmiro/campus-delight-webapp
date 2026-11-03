@@ -823,8 +823,8 @@ export type Database = {
           id: string
           is_active: boolean
           leaderboard_opt_in: boolean
-          outlet_order_alarm_enabled: boolean
           outlet_id: string | null
+          outlet_order_alarm_enabled: boolean
           phone: string | null
           referral_code: string
           verification_status: string
@@ -840,8 +840,8 @@ export type Database = {
           id: string
           is_active?: boolean
           leaderboard_opt_in?: boolean
-          outlet_order_alarm_enabled?: boolean
           outlet_id?: string | null
+          outlet_order_alarm_enabled?: boolean
           phone?: string | null
           referral_code: string
           verification_status?: string
@@ -857,8 +857,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           leaderboard_opt_in?: boolean
-          outlet_order_alarm_enabled?: boolean
           outlet_id?: string | null
+          outlet_order_alarm_enabled?: boolean
           phone?: string | null
           referral_code?: string
           verification_status?: string
@@ -1004,18 +1004,21 @@ export type Database = {
           available_tokens: number
           customer_id: string
           locked_tokens: number
+          transferable_tokens: number
           updated_at: string
         }
         Insert: {
           available_tokens?: number
           customer_id: string
           locked_tokens?: number
+          transferable_tokens?: number
           updated_at?: string
         }
         Update: {
           available_tokens?: number
           customer_id?: string
           locked_tokens?: number
+          transferable_tokens?: number
           updated_at?: string
         }
         Relationships: [
@@ -1249,13 +1252,26 @@ export type Database = {
         Args: { p_customer: string; p_new_limit_kobo: number; p_reason: string }
         Returns: Json
       }
+      admin_clear_manager_role: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      admin_remove_outlet_manager: {
+        Args: { p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_replace_outlet_manager: {
+        Args: { p_new_user_id: string; p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_set_account_status: {
         Args: { p_customer: string; p_is_active: boolean; p_reason: string }
         Returns: Json
       }
-      admin_remove_outlet_manager: { Args: { p_outlet_id: string; p_reason: string }; Returns: Json }
-      admin_replace_outlet_manager: { Args: { p_new_user_id: string; p_outlet_id: string; p_reason: string }; Returns: Json }
-      admin_set_outlet_manager_suspension: { Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }; Returns: Json }
+      admin_set_outlet_manager_suspension: {
+        Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
+        Returns: Json
+      }
       apply_outlet_transfer: {
         Args: { p_fee_method: string; p_to_outlet_id: string }
         Returns: Json
@@ -1279,6 +1295,10 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
+      credit_purchased_tokens: {
+        Args: { p_amount: number; p_customer: string; p_reference: string }
+        Returns: Json
+      }
       due_loan_reminders: {
         Args: never
         Returns: {
@@ -1314,6 +1334,7 @@ export type Database = {
         Returns: undefined
       }
       my_outlet_id: { Args: never; Returns: string }
+      normalize_nigerian_phone: { Args: { p_phone: string }; Returns: string }
       place_order: {
         Args: {
           p_items: Json

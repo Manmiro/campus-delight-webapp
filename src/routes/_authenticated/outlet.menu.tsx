@@ -6,7 +6,8 @@ import { deliveryFeeSchema } from '@/lib/delivery-rules';
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Bike, Save } from "lucide-react";
+import { Plus, Bike, Save, Pencil, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { staffAssignmentQuery, myMenuQuery, myPlanPricesQuery, outletDeliveryQuery } from "@/lib/queries";
 import { naira } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +88,33 @@ function OutletMenu() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
   });
 
+  const [editing, setEditing] = useState<{ id: string; name: string; category: string; price: string } | null>(null);
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
+
+  const saveEdit = useMutation({
+    mutationFn: async () => {
+      if (!editing) return;
+      const n = editing.name.trim();
+      if (!n) throw new Error("Item name is required");
+      if (!/^\d+(\.\d{1,2})?$/.test(editing.price.trim()) || Number(editing.price) <= 0) throw new Error("Enter a valid price in naira");
+      const { error } = await supabase.from("menu_items")
+        .update({ name: n, category: editing.category, price_kobo: Math.round(Number(editing.price) * 100) })
+        .eq("id", editing.id).eq("outlet_id", outletId);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => { toast.success("Menu item updated"); setEditing(null); void qc.invalidateQueries({ queryKey: ["menu", outletId] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update item"),
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("menu_items").delete().eq("id", id).eq("outlet_id", outletId);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => { toast.success("Menu item deleted"); setDeleting(null); void qc.invalidateQueries({ queryKey: ["menu", outletId] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete item"),
+  });
+
   const savePrice = useMutation({
     mutationFn: async ({ plan, tier, priceKobo }: { plan: string; tier: string; priceKobo: number }) => {
       const { error } = await supabase
@@ -154,6 +182,7 @@ function OutletMenu() {
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead>Available</TableHead>
                 <TableHead>Pay-later</TableHead>
+                {isManager && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,12 +199,58 @@ function OutletMenu() {
                     <Switch checked={m.is_credit_eligible} disabled={!isManager}
                       onCheckedChange={(v) => patchItem.mutate({ id: m.id, patch: { is_credit_eligible: v } })} />
                   </TableCell>
+                  {isManager && (
+                    <TableCell className="text-right">
+                      <div className="inline-flex gap-1">
+                        <Button size="sm" variant="outline" aria-label={`Edit ${m.name}`}
+                          onClick={() => setEditing({ id: m.id, name: m.name, category: m.category, price: String(m.price_kobo / 100) })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-destructive" aria-label={`Delete ${m.name}`}
+                          onClick={() => setDeleting({ id: m.id, name: m.name })}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit menu item</DialogTitle><DialogDescription>Changes show to customers immediately.</DialogDescription></DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <div><Label htmlFor="edit-name">Item name</Label><Input id="edit-name" className="mt-1" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
+              <div><Label>Category</Label>
+                <Select value={editing.category} onValueChange={(v) => setEditing({ ...editing, category: v })}>
+                  <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label htmlFor="edit-price">Price (₦)</Label><Input id="edit-price" className="mt-1" inputMode="decimal" value={editing.price} onChange={(e) => setEditing({ ...editing, price: e.target.value })} /></div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={() => saveEdit.mutate()} disabled={saveEdit.isPending}>{saveEdit.isPending ? "Saving…" : "Save changes"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete {deleting?.name}?</DialogTitle><DialogDescription>It will be removed from your outlet's menu. Past orders keep their records.</DialogDescription></DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleting && deleteItem.mutate(deleting.id)} disabled={deleteItem.isPending}>{deleteItem.isPending ? "Deleting…" : "Delete"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="pb-2">

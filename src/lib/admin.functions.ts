@@ -101,7 +101,7 @@ export const adminSetOutletManager = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const userId = await ensureManagerAccount(db, data);
-    const { data: result, error } = await db.rpc("admin_replace_outlet_manager", {
+    const { data: result, error } = await context.supabase.rpc("admin_replace_outlet_manager", {
       p_outlet_id: data.outletId,
       p_new_user_id: userId,
       p_reason: "Headquarters manager assignment",
@@ -118,7 +118,8 @@ export const adminReplaceOutletManager = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const userId = await ensureManagerAccount(db, data);
-    const { data: result, error } = await db.rpc("admin_replace_outlet_manager", {
+    // Run as the signed-in admin so the database can confirm headquarters authority.
+    const { data: result, error } = await context.supabase.rpc("admin_replace_outlet_manager", {
       p_outlet_id: data.outletId,
       p_new_user_id: userId,
       p_reason: data.reason,
