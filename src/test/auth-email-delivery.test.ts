@@ -34,7 +34,7 @@ describe("Pingram auth email delivery", () => {
       subject: "Confirm your email — Campus Delight",
       html: "<p>Verify me</p>",
       fromName: "Campus Delight",
-      fromAddress: "noreply@compusdelight.net",
+      fromAddress: "noreply@campusdelight.net",
     });
     expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer pingram_sk_test");
   });

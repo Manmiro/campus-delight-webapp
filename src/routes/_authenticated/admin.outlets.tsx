@@ -313,7 +313,7 @@ function AdminOutlets() {
             </div>
             <div>
               <Label>Manager email (sign-in)</Label>
-              <Input id="manager-email" type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@compusdelight.net" />
+              <Input id="manager-email" type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@campusdelight.net" />
             </div>
             <div>
               <Label>Temporary password</Label>
