@@ -260,6 +260,13 @@
       "when": 1793677201128,
       "tag": "0036_admin_customer_management",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793685778903,
+      "tag": "0037_admin_outlet_customer_delete",
+      "breakpoints": true
     }
   ]
 }

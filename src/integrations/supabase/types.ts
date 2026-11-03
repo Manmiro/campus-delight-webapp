@@ -1256,6 +1256,11 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      admin_delete_customer: {
+        Args: { p_customer: string; p_reason: string }
+        Returns: Json
+      }
+      admin_delete_outlet: { Args: { p_outlet_id: string }; Returns: Json }
       admin_remove_outlet_manager: {
         Args: { p_outlet_id: string; p_reason: string }
         Returns: Json
