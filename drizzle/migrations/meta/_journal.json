@@ -267,6 +267,13 @@
       "when": 1793685778903,
       "tag": "0037_admin_outlet_customer_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793777301948,
+      "tag": "0038_email_send_claims",
+      "breakpoints": true
     }
   ]
 }

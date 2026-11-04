@@ -15,7 +15,7 @@ const FROM_DOMAIN = "campusdelight.net"
 
 export type SendTemplateEmailResult =
   | { sent: true }
-  | { sent: false; reason: 'recipient_suppressed' }
+  | { sent: false; reason: 'recipient_suppressed' | 'already_sent' }
 
 export interface SendTemplateEmailOptions {
   templateData?: Record<string, any>
@@ -64,6 +64,21 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
+  // Pingram has no idempotency support, so claim the logical send ourselves.
+  const key = options.idempotencyKey
+  const dedupe = key ? await import('../email-dedupe.server') : null
+  if (key && dedupe && !(await dedupe.claimEmailSend(key, templateName))) {
+    return { sent: false, reason: 'already_sent' }
+  }
+  try {
+    await deliver(recipient, pingramKey)
+  } catch (e) {
+    if (key && dedupe) await dedupe.releaseEmailSend(key).catch(() => {})
+    throw e
+  }
+  return { sent: true }
+
+  async function deliver(recipient: string, pingramKey: string) {
   // Delivered through Pingram using its default sender (no custom domain needed).
   const response = await fetch('https://api.pingram.io/email', {
     method: 'POST',
@@ -94,7 +109,6 @@ export async function sendTemplateEmail(
   } catch (e) {
     if (e instanceof Error && e.message.startsWith('Email provider')) throw e
   }
-  void SENDER_DOMAIN; void FROM_DOMAIN; void options.idempotencyKey
-
-  return { sent: true }
+  void SENDER_DOMAIN; void FROM_DOMAIN
+  }
 }

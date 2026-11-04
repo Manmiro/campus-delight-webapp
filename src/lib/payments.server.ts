@@ -69,6 +69,8 @@ export async function applyVerifiedPayment(reference: string) {
   const { data, error: settlementError } = await db.rpc("settle_verified_payment", { p_reference: reference, p_amount_kobo: verified.amount, p_currency: verified.currency, p_payload: verified as Json });
   if (settlementError) throw new Error(settlementError.message);
   const settlement = data as { applied: boolean; status: string; purpose: string | null; already?: boolean };
+  // Repeat verifications (redirect refreshes, webhook retries) may retry a failed
+  // receipt, but the per-payment send claim guarantees at most one email.
   if (settlement.applied || settlement.already) {
     const { emailPayment, tryTransactionEmail } = await import('./transaction-emails.server');
     await tryTransactionEmail(() => emailPayment(reference));

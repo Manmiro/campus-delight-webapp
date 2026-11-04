@@ -159,6 +159,24 @@ export type Database = {
           },
         ]
       }
+      email_send_claims: {
+        Row: {
+          created_at: string
+          idempotency_key: string
+          template_name: string
+        }
+        Insert: {
+          created_at?: string
+          idempotency_key: string
+          template_name: string
+        }
+        Update: {
+          created_at?: string
+          idempotency_key?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
       loan_reminder_sends: {
         Row: {
           days_left: number
