@@ -274,6 +274,13 @@
       "when": 1793777301948,
       "tag": "0038_email_send_claims",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793781527203,
+      "tag": "0039_automated_overdue_loans",
+      "breakpoints": true
     }
   ]
 }
