@@ -5,7 +5,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { adminCreateOutlet, adminDeleteOutlet, adminManagerLifecycle, adminReplaceOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
+import { adminCreateOutlet, adminDeleteOutlet, adminListOutlets, adminManagerLifecycle, adminReplaceOutletManager, adminUpdateOutlet } from "@/lib/admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,11 +41,7 @@ export const Route = createFileRoute("/_authenticated/admin/outlets")({
 
 const outletsQuery = queryOptions({
   queryKey: ["admin", "outlets-list"],
-  queryFn: async () => {
-    const { data, error } = await supabase.from("outlets").select("id, name, code, location, address, contact_phone, contact_email, status, created_at").order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  },
+  queryFn: () => adminListOutlets(),
 });
 
 const managersQuery = queryOptions({

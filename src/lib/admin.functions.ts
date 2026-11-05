@@ -13,6 +13,18 @@ async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   return supabaseAdmin;
 }
 
+export const adminListOutlets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const db = await assertCentralAdmin(context);
+    const { data, error } = await db
+      .from("outlets")
+      .select("id, name, code, location, address, contact_phone, contact_email, status, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 type ManagerAccountInput = { email: string; fullName: string; password: string };
 
 async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise<string> {
