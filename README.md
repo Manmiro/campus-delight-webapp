@@ -4,6 +4,10 @@ I'm building a web app for a special kind of restaurant called Campus Delight. K
 
 This project was built with [Lovable](https://lovable.dev).
 
+## Turnstile configuration
+
+Set `VITE_TURNSTILE_SITE_KEY` for the browser widget. In Supabase Dashboard, enable Auth CAPTCHA protection, select Cloudflare Turnstile, and save the Turnstile secret key there. Configure the widget for the deployed hostnames; the auth form forwards the single-use token to Supabase for sign-in and sign-up validation.
+
 **Live app**: https://campus-delight-webapp.lovable.app
 
 ## Build with Lovable

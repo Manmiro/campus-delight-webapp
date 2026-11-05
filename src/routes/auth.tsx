@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { listOutlets } from "@/lib/catalog.functions";
@@ -20,6 +20,7 @@ import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
 import logoImg from "@/assets/logo.jpg";
 import heroImg from "@/assets/hero-meal.jpg";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const outletsQuery = queryOptions({
   queryKey: ["public-outlets"],
@@ -77,6 +78,19 @@ function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState(false);
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
+
+  const handleTurnstileToken = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+    if (token) setTurnstileError(false);
+  }, []);
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileError(true);
+  }, []);
 
   const clearError = (field: keyof FormErrors) =>
     setErrors((prev) => {
@@ -164,11 +178,21 @@ function AuthPage() {
 
     setBusy(true);
     try {
+      if (!turnstileToken) {
+        setTurnstileError(true);
+        toast.error("Please wait for the security check to complete.");
+        return;
+      }
+      const token = turnstileToken;
+      setTurnstileToken(null);
+      setTurnstileResetSignal((value) => value + 1);
+
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: normalizeEmailAddress(email),
           password,
           options: {
+            captchaToken: token,
             emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               full_name: fullName.trim(),
@@ -188,7 +212,10 @@ function AuthPage() {
         }
       } else {
         const credentials = validateSignInCredentials(email, password);
-        const { error } = await supabase.auth.signInWithPassword(credentials);
+        const { error } = await supabase.auth.signInWithPassword({
+          ...credentials,
+          options: { captchaToken: token },
+        });
         if (error?.code === "email_not_confirmed") {
           setAwaitingConfirm(true);
           return;
@@ -371,6 +398,8 @@ function AuthPage() {
                 <FieldError message={errors.acceptedTerms} />
               </div>
             )}
+            <TurnstileWidget resetSignal={turnstileResetSignal} onToken={handleTurnstileToken} onError={handleTurnstileError} />
+            {turnstileError && <p role="alert" className="text-xs text-destructive">Security verification is unavailable. Please refresh and try again.</p>}
             <Button type="submit" className="h-11 w-full rounded-2xl text-base shadow-glow" disabled={busy || (mode === "signup" && !acceptedTerms)}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "signin" ? "Sign in" : "Create my account"}
