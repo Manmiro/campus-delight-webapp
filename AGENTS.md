@@ -22,3 +22,5 @@
 - Scheduled jobs are TanStack routes under src/routes/api/public/jobs/ guarded by authenticateCronRequest; per-day sends are claimed in a service-only table before emailing so retries never double-send.
 - Personal ("me") queries filter explicitly by the signed-in user id, because staff and headquarters RLS can expose many rows and break single-row reads.
 - Unapproved database changes live in `drizzle/proposed/` (outside the migration journal) so the migrator never applies them before the business signs off; tests may load them from there.
+- Loan restriction exceptions are per-loan and changed only through an audited HQ-authenticated RPC; customer notices use the same database restriction query so UI and enforcement agree. Exceptions never waive debt or permit new overdue credit.
+- Consolidate overdue processing and warning delivery with the existing loan reminder job; derive enforcement directly from due timestamps so scheduling delay cannot bypass restrictions.

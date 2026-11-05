@@ -2,9 +2,10 @@ import React from 'react';
 import { Body, Button, Container, Head, Heading, Html, Img, Preview, Section, Text } from '@react-email/components';
 import type { TemplateEntry } from './registry';
 import { dueLabel, reminderCopy } from '../loan-reminder-rules';
+import { overdueWarningCopy } from '../overdue-rules';
 
 export interface LoanReminderProps {
-  name?: string | undefined; daysLeft?: number | undefined; balance?: string | undefined; dueDate?: string | undefined; items?: string | undefined; outlet?: string | undefined;
+  name?: string | undefined; overdueDay?: number | undefined; daysLeft?: number | undefined; balance?: string | undefined; dueDate?: string | undefined; items?: string | undefined; outlet?: string | undefined;
 }
 
 const c = { green: '#78A61B', deep: '#4F7410', gold: '#B8860B', cream: '#FFF8E6', white: '#FFFFFF', ink: '#23321D', muted: '#626D5A', soft: '#F3F7EC' };
@@ -15,9 +16,10 @@ function Row({ label, value }: { label: string; value?: string | undefined }) {
   return <Text style={{ margin: '0 0 8px', fontSize: 14, color: c.ink }}><span style={{ color: c.muted }}>{label}: </span><strong>{value}</strong></Text>;
 }
 
-export function LoanReminder({ name, daysLeft = 3, balance, dueDate, items, outlet }: LoanReminderProps) {
+export function LoanReminder({ name, overdueDay, daysLeft = 3, balance, dueDate, items, outlet }: LoanReminderProps) {
   const first = name?.split(' ')[0] || 'friend';
-  const copy = reminderCopy(daysLeft);
+  const warning = overdueDay ? overdueWarningCopy(overdueDay) : null;
+  const copy = warning ? { ...warning, perk: `${warning.warning} If headquarters has restored access, that exception remains. Wallet top-ups automatically repay open loans; partial payments are welcome.` } : reminderCopy(daysLeft);
   return <Html lang="en"><Head /><Preview>{`${first}, your Pay Later repayment is due ${dueLabel(daysLeft)} — ${balance ?? ''}`}</Preview>
     <Body style={{ backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif', color: c.ink, margin: 0 }}>
       <Container style={{ maxWidth: 560, padding: '24px 16px' }}>
@@ -27,7 +29,7 @@ export function LoanReminder({ name, daysLeft = 3, balance, dueDate, items, outl
           <Text style={{ color: c.gold, fontSize: 12, margin: '4px 0' }}>Feeding the Future with Honour</Text>
         </Section>
         <Section style={{ backgroundColor: c.green, borderRadius: 16, padding: '28px 24px', textAlign: 'center' }}>
-          <Text style={{ color: c.cream, fontSize: 12, fontWeight: 700, letterSpacing: 2, margin: '0 0 8px' }}>EAT NOW &amp; PAY LATER · DUE {dueLabel(daysLeft).toUpperCase()}</Text>
+          <Text style={{ color: c.cream, fontSize: 12, fontWeight: 700, letterSpacing: 2, margin: '0 0 8px' }}>{warning?.badge ?? `EAT NOW & PAY LATER · DUE ${dueLabel(daysLeft).toUpperCase()}`}</Text>
           <Heading style={{ color: c.white, fontSize: 26, lineHeight: '34px', margin: 0 }}>{copy.title}</Heading>
           <Text style={{ color: c.white, fontSize: 16, margin: '12px 0 0' }}>Hi {first},</Text>
         </Section>

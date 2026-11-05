@@ -254,6 +254,41 @@ export type Database = {
           },
         ]
       }
+      loan_restriction_exceptions: {
+        Row: {
+          loan_id: string
+          ordering_restored: boolean
+          reason: string
+          transfers_restored: boolean
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          loan_id: string
+          ordering_restored?: boolean
+          reason: string
+          transfers_restored?: boolean
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          loan_id?: string
+          ordering_restored?: boolean
+          reason?: string
+          transfers_restored?: boolean
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_restriction_exceptions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: true
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loans: {
         Row: {
           charge_kobo: number
@@ -1292,6 +1327,15 @@ export type Database = {
         Args: { p_customer: string; p_is_active: boolean; p_reason: string }
         Returns: Json
       }
+      admin_set_loan_restriction_exception: {
+        Args: {
+          p_loan_id: string
+          p_ordering_restored: boolean
+          p_reason: string
+          p_transfers_restored: boolean
+        }
+        Returns: Json
+      }
       admin_set_outlet_manager_suspension: {
         Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
         Returns: Json
@@ -1333,6 +1377,7 @@ export type Database = {
         Args: { p_amount: number; p_customer: string; p_reference: string }
         Returns: Json
       }
+      customer_loan_restrictions: { Args: never; Returns: Json }
       due_loan_reminders: {
         Args: never
         Returns: {

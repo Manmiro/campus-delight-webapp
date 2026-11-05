@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { FulfillmentDialog } from '@/components/fulfillment-dialog';
 import { OrderThankYouDialog, type PlacedOrder } from '@/components/order-thank-you-dialog';
 import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
-import { outletDeliveryQuery } from '@/lib/queries';
+import { outletDeliveryQuery, loanRestrictionsQuery } from '@/lib/queries';
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
   component: OrderPage,
@@ -64,6 +64,7 @@ function OrderPage() {
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: credit } = useSuspenseQuery(creditQuery);
   const { data: delivery } = useSuspenseQuery(outletDeliveryQuery(profile.outlet_id ?? ''));
+  const { data: restrictions } = useSuspenseQuery(loanRestrictionsQuery);
 
   useEffect(() => {
     const summary = document.getElementById("cart");
@@ -156,6 +157,10 @@ function OrderPage() {
   });
   const checkoutEnabled = orderPaymentOptions({ mealsLeftToday: mealsLeft, walletBalanceKobo: wallet?.balance_kobo ?? 0, tokenBalance: tk?.available_tokens ?? 0, totalKobo: payableKobo, availableCreditKobo: availableCredit, isVerified: profile.verification_status === 'verified', accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000 });
   checkoutEnabled.subscription_entitlement = mealsLeft > 0 && (wallet?.balance_kobo ?? 0) >= deliveryFee;
+  for (const enabled of [payEnabled, checkoutEnabled]) {
+    if (restrictions.orderingLocked) { enabled.cash_wallet = false; enabled.tokens = false; enabled.food_credit = false; }
+    if (restrictions.hasOverdue) enabled.food_credit = false;
+  }
   const checkoutOptions = [
     { value: 'cash_wallet', label: `Cash wallet · ${naira(wallet?.balance_kobo)}`, disabled: !checkoutEnabled.cash_wallet },
     { value: 'tokens', label: `Tokens · needs ${tokensForKobo(payableKobo)}`, disabled: !checkoutEnabled.tokens },
@@ -443,6 +448,7 @@ function OrderPage() {
         </div>
 
         <div className="mt-5">
+          {restrictions.orderingLocked && <p role="alert" className="mb-3 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">Ordering is paused because your loan is 3 days overdue. Meal subscriptions still work. Repay your loan or contact headquarters.</p>}
           <p className="text-xs font-semibold">Pay with (one method only)</p>
           <div role="radiogroup" className="mt-2 grid grid-cols-2 gap-2">
             {methodOptions.map((o) => (
@@ -474,6 +480,7 @@ function OrderPage() {
               <div className="flex justify-between font-semibold"><dt>Total repayable</dt><dd>{naira(creditTotal)}</dd></div>
               <p className="pt-1 text-[11px] text-muted-foreground">
                 Due in {term.days} days. Part-payments welcome; settle fully on time and your limit doubles.
+                Overdue debt adds 10% of the original total due per completed 24 hours, without a ceiling. Wallet top-ups automatically repay open loans.
               </p>
             </dl>
           </div>

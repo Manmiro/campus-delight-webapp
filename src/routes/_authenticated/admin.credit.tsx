@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { adjustFoodCredit } from "@/lib/transactions.functions";
+import { adminRestoreLoanAccess } from "@/lib/admin.functions";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { naira, formatDateTime } from "@/lib/format";
 import { StatCard, EmptyState, StatusBadge } from "@/components/bits";
@@ -22,6 +24,17 @@ export const Route = createFileRoute("/_authenticated/admin/credit")({
 function AdminCredit() {
   const qc = useQueryClient();
   const submitAdjustment = useServerFn(adjustFoodCredit);
+  const restoreAccess = useServerFn(adminRestoreLoanAccess);
+  const [access, setAccess] = useState<{ loanId: string; name: string; orderingRestored: boolean; transfersRestored: boolean; reason: string } | null>(null);
+  const { data: exceptions } = useQuery({ queryKey: ["admin", "loan-exceptions"], queryFn: async () => {
+    const { data, error } = await supabase.from("loan_restriction_exceptions").select("*");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } });
+  const saveAccess = useMutation({ mutationFn: async () => {
+    if (!access) throw new Error("Choose a loan");
+    return restoreAccess({ data: access });
+  }, onSuccess: () => { toast.success("Loan access updated — debt and charges are unchanged"); setAccess(null); void qc.invalidateQueries({ queryKey: ["admin"] }); void qc.invalidateQueries({ queryKey: ["me"] }); }, onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update access") });
   const [adjust, setAdjust] = useState<{ customerId: string; name: string; current: number; value: string; reason: string } | null>(null);
 
   const { data: loans } = useQuery({
@@ -73,6 +86,16 @@ function AdminCredit() {
         <StatCard label="Credit accounts" value={(credits ?? []).length} />
       </div>
 
+      <Dialog open={access !== null} onOpenChange={(open) => { if (!open && !saveAccess.isPending) setAccess(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Restore access — {access?.name}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Applies to this loan only. Debt, daily charges and the restriction on new overdue borrowing remain. Other overdue loans may still restrict this customer.</p>
+          <Label className="flex items-center gap-3"><Checkbox checked={access?.orderingRestored ?? false} onCheckedChange={(v) => setAccess((a) => a ? { ...a, orderingRestored: v === true } : a)} />Unpause ordering</Label>
+          <Label className="flex items-center gap-3"><Checkbox checked={access?.transfersRestored ?? false} onCheckedChange={(v) => setAccess((a) => a ? { ...a, transfersRestored: v === true } : a)} />Unfreeze token transfers</Label>
+          <Label htmlFor="access-reason">Reason</Label><Input id="access-reason" value={access?.reason ?? ""} onChange={(e) => setAccess((a) => a ? { ...a, reason: e.target.value } : a)} maxLength={500} />
+          <Button disabled={!access?.reason.trim() || saveAccess.isPending} onClick={() => saveAccess.mutate()}>{saveAccess.isPending ? "Saving…" : "Save access"}</Button>
+        </DialogContent>
+      </Dialog>
       {(loans ?? []).length === 0 ? (
         <EmptyState title="No loans yet" hint="Borrowing activity across all outlets appears here." />
       ) : (
@@ -88,6 +111,7 @@ function AdminCredit() {
                   <TableHead>Term</TableHead>
                   <TableHead>Due date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Ordering & transfers</TableHead>
                   <TableHead className="text-right">Adjust limit</TableHead>
                 </TableRow>
               </TableHeader>
@@ -104,14 +128,20 @@ function AdminCredit() {
                     <TableCell className="text-xs">{l.term_days}d</TableCell>
                     <TableCell className="text-xs">{formatDateTime(l.due_at)}</TableCell>
                     <TableCell><StatusBadge status={l.status} /></TableCell>
+                    <TableCell>
+                      {["active", "partially_repaid", "overdue"].includes(l.status) && <Button size="sm" variant="outline" onClick={() => {
+                        const e = exceptions?.find((e) => e.loan_id === l.id);
+                        setAccess({ loanId: l.id, name: l.customer?.full_name ?? "Customer", orderingRestored: e?.ordering_restored ?? false, transfersRestored: e?.transfers_restored ?? false, reason: "" });
+                      }}>Manage access</Button>}
+                    </TableCell>
                     <TableCell className="text-right">
                       {credits?.some((c) => c.customer?.customer_code === l.customer?.customer_code) ? (
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button size="sm" variant="outline" onClick={() => {
-                              const acct = credits!.find((c) => c.customer?.customer_code === l.customer?.customer_code);
+                              const acct = credits?.find((c) => c.customer_id === l.customer_id);
                               setAdjust({
-                                customerId: (acct?.customer_id ?? l.customer?.customer_code) as string,
+                                customerId: l.customer_id,
                                 name: l.customer?.full_name ?? "",
                                 current: acct?.credit_limit_kobo ?? 0,
                                 value: String((acct?.credit_limit_kobo ?? 0) / 100),

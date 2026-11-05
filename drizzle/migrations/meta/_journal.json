@@ -281,6 +281,13 @@
       "when": 1793781527203,
       "tag": "0039_automated_overdue_loans",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793844259755,
+      "tag": "0040_hq_overdue_restriction_exceptions",
+      "breakpoints": true
     }
   ]
 }
