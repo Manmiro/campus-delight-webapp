@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, passwordStrength } from "@/lib/auth-rules";
+import { hasConfirmedEmail, isDisposableEmailAddress, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, passwordStrength } from "@/lib/auth-rules";
 
 describe("Customer email verification and sign-in", () => {
   it("requires an email address to sign in", () => {
@@ -16,6 +16,15 @@ describe("Customer email verification and sign-in", () => {
   });
   it("asks for the email and password separately when signing in", () => {
     expect(validateSignInForm("", "")).toEqual({ email: "Enter your email address", password: "Enter your password" });
+  });
+  it("normalizes Gmail dots, aliases, casing, and googlemail", () => {
+    expect(normalizeEmailAddress(" User.Name+food@GoogleMail.com ")).toBe("username@gmail.com");
+    expect(validateSignInCredentials("User.Name+food@gmail.com", "password").email).toBe("username@gmail.com");
+  });
+  it("identifies disposable domains and their subdomains", () => {
+    expect(isDisposableEmailAddress("customer@TempMail.com")).toBe(true);
+    expect(isDisposableEmailAddress("customer@mail.10MinuteMail.com")).toBe(true);
+    expect(isDisposableEmailAddress("customer@campusdelight.net")).toBe(false);
   });
 });
 
@@ -49,6 +58,10 @@ describe("Customer sign-up form requires every field except the referral code", 
     expect(validateSignUpForm({ ...completeSignUp, email: "" })).toEqual({ email: "Enter your email address" });
     expect(validateSignUpForm({ ...completeSignUp, email: "ada.obi" })).toEqual({
       email: "Enter a valid email address, such as you@example.com",
+    });
+    expect(validateSignUpForm({ ...completeSignUp, email: "ada+food@gmail.com" })).toEqual({});
+    expect(validateSignUpForm({ ...completeSignUp, email: "ada@mailinator.com" })).toEqual({
+      email: "Temporary email addresses are not accepted. Use a permanent email address.",
     });
   });
 

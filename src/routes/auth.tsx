@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { hasConfirmedEmail, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
+import { hasConfirmedEmail, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
 import { normalizeNigerianPhone } from "@/lib/sms-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
@@ -134,7 +134,7 @@ function AuthPage() {
     try {
       const { error } = await supabase.auth.resend({
         type: "signup",
-        email: email.trim(),
+        email: normalizeEmailAddress(email),
         options: { emailRedirectTo: `${window.location.origin}/auth` },
       });
       if (error) throw error;
@@ -166,7 +166,7 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: normalizeEmailAddress(email),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth`,

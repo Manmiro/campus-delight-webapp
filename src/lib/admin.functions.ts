@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { isDisposableEmailAddress, normalizeEmailAddress } from "@/lib/auth-rules";
 
 async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -40,13 +41,15 @@ export const adminRestoreLoanAccess = createServerFn({ method: "POST" })
   });
 
 async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise<string> {
+  const email = normalizeEmailAddress(data.email);
+  if (isDisposableEmailAddress(email)) throw new Error("Temporary email addresses are not accepted. Use a permanent email address.");
   const { data: users, error: listErr } = await db.auth.admin.listUsers();
   if (listErr) throw new Error(listErr.message);
-  let userId = users.users.find((u: { email?: string | null }) => u.email?.toLowerCase() === data.email.toLowerCase())?.id;
+  let userId = users.users.find((u: { email?: string | null }) => normalizeEmailAddress(u.email ?? "") === email)?.id;
 
   if (!userId) {
     const { data: created, error: createErr } = await db.auth.admin.createUser({
-      email: data.email,
+      email,
       password: data.password,
       email_confirm: true,
       user_metadata: { full_name: data.fullName },
@@ -56,7 +59,7 @@ async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise
     userId = created.user.id;
   }
 
-  const { error: profileErr } = await db.from("profiles").update({ full_name: data.fullName, email: data.email, is_active: true }).eq("id", userId);
+  const { error: profileErr } = await db.from("profiles").update({ full_name: data.fullName, email, is_active: true }).eq("id", userId);
   if (profileErr) throw new Error(profileErr.message);
   return userId;
 }
@@ -167,7 +170,7 @@ export const adminCreateCustomer = createServerFn({ method: "POST" })
   .inputValidator((input: { fullName: string; email: string; phone?: string; password: string; outletId: string }) =>
     z.object({
       fullName: z.string().trim().min(1).max(100),
-      email: z.string().trim().email(),
+      email: z.string().trim().email().max(254).transform(normalizeEmailAddress).refine((email) => !isDisposableEmailAddress(email), "Temporary email addresses are not accepted. Use a permanent email address."),
       phone: z.string().trim().max(50).optional().or(z.literal("")),
       password: z.string().min(6).max(128),
       outletId: z.string().uuid(),
