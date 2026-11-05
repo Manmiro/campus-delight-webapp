@@ -159,6 +159,24 @@ export type Database = {
           },
         ]
       }
+      email_send_claims: {
+        Row: {
+          created_at: string
+          idempotency_key: string
+          template_name: string
+        }
+        Insert: {
+          created_at?: string
+          idempotency_key: string
+          template_name: string
+        }
+        Update: {
+          created_at?: string
+          idempotency_key?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
       loan_reminder_sends: {
         Row: {
           days_left: number
@@ -231,6 +249,41 @@ export type Database = {
             foreignKeyName: "loan_repayments_loan_id_fkey"
             columns: ["loan_id"]
             isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_restriction_exceptions: {
+        Row: {
+          loan_id: string
+          ordering_restored: boolean
+          reason: string
+          transfers_restored: boolean
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          loan_id: string
+          ordering_restored?: boolean
+          reason: string
+          transfers_restored?: boolean
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          loan_id?: string
+          ordering_restored?: boolean
+          reason?: string
+          transfers_restored?: boolean
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_restriction_exceptions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: true
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
@@ -1234,6 +1287,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accrue_loan_overdue: { Args: { p_loan_id: string }; Returns: number }
       activate_subscription: {
         Args: { p_reference: string; p_subscription_id: string }
         Returns: boolean
@@ -1260,10 +1314,7 @@ export type Database = {
         Args: { p_customer: string; p_reason: string }
         Returns: Json
       }
-      admin_delete_outlet: {
-        Args: { p_outlet_id: string }
-        Returns: Json
-      }
+      admin_delete_outlet: { Args: { p_outlet_id: string }; Returns: Json }
       admin_remove_outlet_manager: {
         Args: { p_outlet_id: string; p_reason: string }
         Returns: Json
@@ -1276,8 +1327,27 @@ export type Database = {
         Args: { p_customer: string; p_is_active: boolean; p_reason: string }
         Returns: Json
       }
+      admin_set_loan_restriction_exception: {
+        Args: {
+          p_loan_id: string
+          p_ordering_restored: boolean
+          p_reason: string
+          p_transfers_restored: boolean
+        }
+        Returns: Json
+      }
       admin_set_outlet_manager_suspension: {
         Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
+        Returns: Json
+      }
+      apply_loan_repayment: {
+        Args: {
+          p_amount_kobo: number
+          p_customer: string
+          p_description: string
+          p_loan_id: string
+          p_reference: string
+        }
         Returns: Json
       }
       apply_outlet_transfer: {
@@ -1307,6 +1377,7 @@ export type Database = {
         Args: { p_amount: number; p_customer: string; p_reference: string }
         Returns: Json
       }
+      customer_loan_restrictions: { Args: never; Returns: Json }
       due_loan_reminders: {
         Args: never
         Returns: {
@@ -1337,12 +1408,29 @@ export type Database = {
       is_outlet_manager: { Args: { _outlet_id: string }; Returns: boolean }
       is_outlet_staff: { Args: { _outlet_id: string }; Returns: boolean }
       issue_sms_otp: { Args: { p_customer: string }; Returns: Json }
+      loan_outstanding_kobo: { Args: { p_loan_id: string }; Returns: number }
       lock_referral_reward: {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined
       }
       my_outlet_id: { Args: never; Returns: string }
       normalize_nigerian_phone: { Args: { p_phone: string }; Returns: string }
+      overdue_loan_warnings: {
+        Args: never
+        Returns: {
+          balance_kobo: number
+          customer_id: string
+          due_at: string
+          email: string
+          full_name: string
+          item_summary: string
+          loan_id: string
+          outlet_name: string
+          overdue_day: number
+          overdue_kobo: number
+          total_due_kobo: number
+        }[]
+      }
       place_order: {
         Args: {
           p_items: Json
@@ -1367,6 +1455,11 @@ export type Database = {
       prepare_card_order: {
         Args: { p_customer_id: string; p_items: Json; p_reference: string }
         Returns: string
+      }
+      process_overdue_loans: { Args: never; Returns: Json }
+      refresh_customer_outstanding: {
+        Args: { p_customer: string }
+        Returns: number
       }
       repay_loan: {
         Args: { p_amount_kobo: number; p_loan_id: string }

@@ -52,3 +52,21 @@ export async function sendDueLoanReminders() {
   }
   return { due: rows.length, sent, skipped, failed };
 }
+
+export async function sendOverdueLoanWarnings() {
+  const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+  const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+  const { data, error } = await db.rpc("overdue_loan_warnings");
+  if (error) throw new Error(error.message);
+  let sent = 0, skipped = 0, failed = 0;
+  for (const row of data ?? []) {
+    try {
+      const result = await sendTemplateEmail("loan-overdue-warning", row.email, {
+        idempotencyKey: `loan-overdue-warning:${row.loan_id}:${row.overdue_day}`,
+        templateData: { name: row.full_name, overdueDay: row.overdue_day, balance: naira(Number(row.balance_kobo)), dueDate: new Date(row.due_at).toLocaleString("en-NG", { timeZone: "Africa/Lagos" }), items: row.item_summary, outlet: row.outlet_name },
+      });
+      if (result.sent) sent++; else skipped++;
+    } catch { failed++; }
+  }
+  return { sent, skipped, failed };
+}

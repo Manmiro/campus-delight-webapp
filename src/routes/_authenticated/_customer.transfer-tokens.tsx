@@ -4,7 +4,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { useServerFn } from "@tanstack/react-start";
 import { transferTokens } from "@/lib/transactions.functions";
 import { toast } from "sonner";
-import { tokenAccountQuery, tokenTransfersQuery, profileQuery } from "@/lib/queries";
+import { tokenAccountQuery, tokenTransfersQuery, profileQuery, loanRestrictionsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import {
   TOKEN_TRANSFER_DAILY_CAP_TOKENS,
@@ -29,6 +29,7 @@ function TransferTokensPage() {
   const { data: me } = useSuspenseQuery(profileQuery);
   const { data: tk } = useSuspenseQuery(tokenAccountQuery);
   const { data: history } = useSuspenseQuery(tokenTransfersQuery);
+  const { data: restrictions } = useSuspenseQuery(loanRestrictionsQuery);
   const [identifier, setIdentifier] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -56,6 +57,7 @@ function TransferTokensPage() {
       <Card className="h-fit">
         <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Send tokens</CardTitle></CardHeader>
         <CardContent className="space-y-4">
+          {restrictions.transfersFrozen && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">Token transfers are frozen while your loan is overdue. Repay your loan or contact headquarters.</p>}
           <div className="rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground">
             <p className="font-semibold">Available: {fmtTokens(tk?.available_tokens)}</p>
             <p className="mt-0.5 text-xs">Same-outlet customers only · earned and purchased tokens can transfer · welcome tokens are for food at your registered outlet · {TOKEN_TRANSFER_DAILY_CAP_TOKENS}-token daily principal limit · {TOKEN_TRANSFER_FEE_TOKENS}-token fee</p>
@@ -74,7 +76,7 @@ function TransferTokensPage() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">You can still transfer {fmtTokens(remainingToday)} today.</p>
-          <Button className="w-full" disabled={!identifier || amountNum <= 0 || send.isPending} onClick={() => send.mutate()}>
+          <Button className="w-full" disabled={restrictions.transfersFrozen || !identifier || amountNum <= 0 || send.isPending} onClick={() => send.mutate()}>
             {send.isPending ? "Sending…" : "Send tokens"}
           </Button>
         </CardContent>

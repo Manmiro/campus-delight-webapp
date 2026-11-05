@@ -24,4 +24,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'transaction-receipt': transactionReceipt,
   'birthday-greeting': birthdayGreeting,
   'loan-reminder': loanReminder,
+  'loan-overdue-warning': { ...loanReminder, subject: (d) => `Your Pay Later repayment: overdue day ${Number(d['overdueDay'])} — Campus Delight`, displayName: 'Overdue repayment warning', previewData: { ...loanReminder.previewData, overdueDay: 1 } },
 }

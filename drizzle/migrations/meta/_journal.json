@@ -264,8 +264,36 @@
     {
       "idx": 37,
       "version": "7",
-      "when": 1793677201129,
-      "tag": "0037_restrict_public_outlet_columns",
+      "when": 1793685778903,
+      "tag": "0037_admin_outlet_customer_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793777301948,
+      "tag": "0038_email_send_claims",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793781527203,
+      "tag": "0039_automated_overdue_loans",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793844259755,
+      "tag": "0040_hq_overdue_restriction_exceptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793844259756,
+      "tag": "0041_restrict_public_outlet_columns",
       "breakpoints": true
     }
   ]

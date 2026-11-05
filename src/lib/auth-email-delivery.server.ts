@@ -1,5 +1,5 @@
 const SITE_NAME = "Campus Delight";
-const FROM_ADDRESS = "noreply@compusdelight.net";
+const FROM_ADDRESS = "noreply@campusdelight.net";
 
 export interface ManagedAuthEmail {
   to: string;

@@ -43,7 +43,7 @@ function AdminSettings() {
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
         These rules drive the whole platform. Existing loans always keep the terms they were created with —
-        changes here apply to new activity only. The overdue rule stays marked provisional until the business signs it off.
+        changes here apply to new activity only. Overdue debt adds 10% of the original total due per completed 24 hours, without a ceiling. Ordering and token-transfer exceptions are managed on Eat Now & Pay Later.
       </p>
       <div className="grid gap-4 md:grid-cols-2">
         {(configs ?? []).map((c) => (

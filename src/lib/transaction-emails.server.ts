@@ -61,6 +61,18 @@ export async function emailPayment(reference: string) {
   if (kind === 'funding') {
     const { data: entry } = await db.from('wallet_ledger').select('balance_after_kobo').eq('reference', reference).eq('customer_id', payment.customer_id).eq('tx_type', 'funding').maybeSingle();
     if (entry) details.push({ label: 'Wallet balance after funding', value: money(entry.balance_after_kobo) });
+    const { data: offsets, error: offsetError } = await db.from('loan_repayments').select('*').eq('customer_id', payment.customer_id).eq('status', 'successful').like('reference', `AUTO-${reference}-%`);
+    if (offsetError) throw offsetError;
+    const repaid = (offsets ?? []).reduce((sum, r) => sum + r.amount_kobo, 0);
+    if (repaid > 0) {
+      details.push({ label: 'Automatically applied to Pay Later', value: money(repaid) });
+      if (entry) details.push({ label: 'Wallet balance after automatic repayment', value: money(entry.balance_after_kobo - repaid) });
+    }
+    for (const r of offsets ?? []) {
+      const { data: outstanding, error: balanceError } = await db.rpc('loan_outstanding_kobo', { p_loan_id: r.loan_id });
+      if (balanceError) throw balanceError;
+      await emailRepayment(r.reference, r.customer_id, Number(outstanding));
+    }
   } else if (payment.related_id) {
     const { data: sub } = await db.from('subscriptions').select('plan,tier,start_date,end_date').eq('id', payment.related_id).single();
     if (sub) details.push({ label: 'Meal plan', value: `${sub.plan} · ${sub.tier}` }, { label: 'Service dates', value: `${sub.start_date} to ${sub.end_date}` });

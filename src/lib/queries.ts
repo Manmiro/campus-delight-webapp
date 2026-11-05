@@ -137,6 +137,17 @@ export const loansQuery = queryOptions({
   },
 });
 
+export const loanRestrictionsQuery = queryOptions({
+  queryKey: ["me", "loan-restrictions"],
+  refetchInterval: 60_000,
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("customer_loan_restrictions");
+    if (error) throw new Error(error.message);
+    if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("Could not check loan restrictions");
+    return { hasOverdue: data["hasOverdue"] === true, orderingLocked: data["orderingLocked"] === true, transfersFrozen: data["transfersFrozen"] === true };
+  },
+});
+
 export const ordersQuery = queryOptions({
   queryKey: ["me", "orders"],
   queryFn: async () => {

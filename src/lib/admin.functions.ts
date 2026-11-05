@@ -27,6 +27,18 @@ export const adminListOutlets = createServerFn({ method: "GET" })
 
 type ManagerAccountInput = { email: string; fullName: string; password: string };
 
+export const adminRestoreLoanAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { loanId: string; orderingRestored: boolean; transfersRestored: boolean; reason: string }) =>
+    z.object({ loanId: z.string().uuid(), orderingRestored: z.boolean(), transfersRestored: z.boolean(), reason: z.string().trim().min(1).max(500) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: result, error } = await context.supabase.rpc("admin_set_loan_restriction_exception", {
+      p_loan_id: data.loanId, p_ordering_restored: data.orderingRestored, p_transfers_restored: data.transfersRestored, p_reason: data.reason,
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
 async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise<string> {
   const { data: users, error: listErr } = await db.auth.admin.listUsers();
   if (listErr) throw new Error(listErr.message);

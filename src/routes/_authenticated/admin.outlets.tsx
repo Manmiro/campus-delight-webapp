@@ -269,7 +269,7 @@ function AdminOutlets() {
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(o)}>
                           <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
                         </Button>
-                        <Select value={o.status} onValueChange={(v) => setStatus.mutate({ outletId: o.id, status: v })}>
+                        <Select value={o.status} onValueChange={(v) => setStatus.mutate({ outletId: o.id, status: v as "active" | "suspended" | "inactive" })}>
                           <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="active">Active</SelectItem>
@@ -309,7 +309,7 @@ function AdminOutlets() {
             </div>
             <div>
               <Label>Manager email (sign-in)</Label>
-              <Input id="manager-email" type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@compusdelight.net" />
+              <Input id="manager-email" type="email" value={mgrForm.email} onChange={(e) => setMgrForm((f) => ({ ...f, email: e.target.value }))} placeholder="manager@campusdelight.net" />
             </div>
             <div>
               <Label>Temporary password</Label>
