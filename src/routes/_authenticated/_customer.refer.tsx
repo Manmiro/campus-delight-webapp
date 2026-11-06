@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Copy, Gift, Lock } from "lucide-react";
+import { Check, Copy, Gift, Lock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import logoImg from "@/assets/logo.jpg";
 import { profileQuery, referralsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { StatCard, StatusBadge } from "@/components/bits";
@@ -15,14 +17,18 @@ export const Route = createFileRoute("/_authenticated/_customer/refer")({
 });
 
 function ReferPage() {
+  const [copied, setCopied] = useState<"link" | "code" | null>(null);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: referrals } = useSuspenseQuery(referralsQuery);
 
   const referralLink = `${window.location.origin}/auth?mode=signup&ref=${profile.referral_code}`;
 
-  const copyReferralValue = (value: string, label: string) => {
-    void navigator.clipboard.writeText(value);
-    toast.success(`${label} copied`);
+  const copyReferralValue = (value: string, kind: "link" | "code", label: string) => {
+    void navigator.clipboard.writeText(value).then(() => {
+      setCopied(kind);
+      toast.success(`${label} copied`);
+      window.setTimeout(() => setCopied((current) => current === kind ? null : current), 1500);
+    }).catch(() => toast.error(`Could not copy the ${label.toLowerCase()}`));
   };
 
   const rewarded = referrals.filter((r) => r.status === "rewarded").length;
@@ -36,15 +42,29 @@ function ReferPage() {
         <StatCard label="Locked rewards" value={fmtTokens(pending * 100)} icon={<Lock className="h-5 w-5 text-golden" />} hint={`${pending} awaiting first order`} />
       </div>
 
-      <Card>
+      <Card className="relative overflow-visible">
+        {copied && (
+          <div key={copied} className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex justify-center" role="status" aria-live="polite">
+            <div className="animate-copy-success relative flex items-center gap-2 rounded-full bg-gradient-brand px-3 py-2 text-primary-foreground shadow-glow">
+              <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-primary-foreground shadow-sm">
+                <img src={logoImg} alt="" className="h-full w-full object-cover" />
+              </span>
+              <span className="text-xs font-extrabold tracking-wide">Copied!</span>
+              <span className="hidden text-xs opacity-80 sm:inline">{copied === "link" ? "Link ready to share" : "Code ready to share"}</span>
+              <Sparkles className="h-4 w-4 text-golden" aria-hidden="true" />
+              <span className="absolute -right-3 -top-2 animate-copy-spark text-golden" aria-hidden="true">✦</span>
+              <span className="absolute -bottom-2 -left-2 animate-copy-spark text-golden [animation-delay:120ms]" aria-hidden="true">✦</span>
+            </div>
+          </div>
+        )}
         <CardContent className="grid gap-5 p-5 md:grid-cols-2 md:gap-6">
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:block">
             <div className="min-w-0">
               <p className="text-sm text-muted-foreground">Your referral link</p>
               <p className="max-w-xl truncate font-mono text-sm">{referralLink}</p>
             </div>
-            <Button className="shrink-0" onClick={() => copyReferralValue(referralLink, "Referral link")}>
-              <Copy className="mr-2 h-4 w-4" /> Copy link
+            <Button className="shrink-0" onClick={() => copyReferralValue(referralLink, "link", "Referral link")}>
+              {copied === "link" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy link</>}
             </Button>
           </div>
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:block">
@@ -52,8 +72,8 @@ function ReferPage() {
               <p className="text-sm text-muted-foreground">Your referral code</p>
               <p className="font-mono text-sm font-semibold tracking-wide">{profile.referral_code}</p>
             </div>
-            <Button variant="outline" className="shrink-0" onClick={() => copyReferralValue(profile.referral_code, "Referral code")}>
-              <Copy className="mr-2 h-4 w-4" /> Copy code
+            <Button variant="outline" className="shrink-0" onClick={() => copyReferralValue(profile.referral_code, "code", "Referral code")}>
+              {copied === "code" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy code</>}
             </Button>
           </div>
         </CardContent>

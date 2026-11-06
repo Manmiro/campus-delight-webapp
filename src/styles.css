@@ -190,6 +190,8 @@
 @utility animate-confetti { animation: cd-confetti 2.2s cubic-bezier(0.2, 0.6, 0.4, 1) forwards; }
 @utility animate-spin-wheel { animation: cd-spin-wheel 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @utility animate-cart-out { animation: cd-cart-out 0.34s cubic-bezier(0.5, 0, 0.75, 0) forwards; overflow: hidden; }
+@utility animate-copy-success { animation: cd-copy-success 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@utility animate-copy-spark { animation: cd-copy-spark 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
 @keyframes cd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
 @keyframes cd-pop-in { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -207,7 +209,17 @@
   35% { opacity: 0.9; transform: translateX(22px) scale(0.97); max-height: 88px; }
   100% { opacity: 0; transform: translateX(130px) scale(0.85); max-height: 0; padding-block: 0; }
 }
+@keyframes cd-copy-success {
+  0% { opacity: 0; transform: translateY(10px) scale(0.86); }
+  18% { opacity: 1; transform: translateY(0) scale(1.04); }
+  30%, 78% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-14px) scale(0.96); }
+}
+@keyframes cd-copy-spark {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  25%, 70% { opacity: 1; transform: scale(1) rotate(0); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-float, .animate-wiggle, .animate-pop-in, .animate-cart-out { animation: none; }
+  .animate-float, .animate-wiggle, .animate-pop-in, .animate-cart-out, .animate-copy-success, .animate-copy-spark { animation: none; }
 }
