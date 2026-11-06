@@ -57,6 +57,7 @@ function OutletOverview() {
             <Button asChild variant="outline" className="w-full justify-start"><Link to="/outlet/orders">Fulfill orders</Link></Button>
             <Button asChild variant="outline" className="w-full justify-start"><Link to="/outlet/menu">Edit menu & prices</Link></Button>
             <Button asChild variant="outline" className="w-full justify-start"><Link to="/outlet/reports">View reports</Link></Button>
+            <Button asChild variant="outline" className="w-full justify-start"><Link to="/outlet/messages">Message headquarters</Link></Button>
           </CardContent>
         </Card>
         <Card className="sm:col-span-2">

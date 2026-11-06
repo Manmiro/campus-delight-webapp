@@ -5,7 +5,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { profileQuery } from "@/lib/queries";
 import { OutletOrderAlarmControls } from "@/components/outlet-order-alarm";
-import { Activity, Building2, CalendarDays, CreditCard, Landmark, MapPin, Search, Settings, Users, Vote, Wallet } from "lucide-react";
+import { Activity, Building2, CalendarDays, CreditCard, Landmark, MapPin, MessageSquare, Search, Settings, Users, Vote, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -105,6 +105,7 @@ function AdminOverview() {
     { to: "/admin/financial", icon: Landmark, label: "Check money" },
     { to: "/admin/transfers", icon: Vote, label: "Review transfers" },
     { to: "/admin/credit", icon: CreditCard, label: "Pay Later limits" },
+    { to: "/admin/messages", icon: MessageSquare, label: "Message outlets" },
     { to: "/admin/settings", icon: Settings, label: "System settings" },
   ] as const;
 

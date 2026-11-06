@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin.credit'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminFinancialRouteImport } from './routes/_authenticated/admin.financial'
+import { Route as AuthenticatedAdminMessagesRouteImport } from './routes/_authenticated/admin.messages'
 import { Route as AuthenticatedAdminOperationsRouteImport } from './routes/_authenticated/admin.operations'
 import { Route as AuthenticatedAdminOutletsRouteImport } from './routes/_authenticated/admin.outlets'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
@@ -44,6 +45,7 @@ import { Route as AuthenticatedAdminTransfersRouteImport } from './routes/_authe
 import { Route as AuthenticatedOutletIndexRouteImport } from './routes/_authenticated/outlet.index'
 import { Route as AuthenticatedOutletCustomersRouteImport } from './routes/_authenticated/outlet.customers'
 import { Route as AuthenticatedOutletMenuRouteImport } from './routes/_authenticated/outlet.menu'
+import { Route as AuthenticatedOutletMessagesRouteImport } from './routes/_authenticated/outlet.messages'
 import { Route as AuthenticatedOutletOrdersRouteImport } from './routes/_authenticated/outlet.orders'
 import { Route as AuthenticatedOutletReportsRouteImport } from './routes/_authenticated/outlet.reports'
 import { Route as AuthenticatedOutletStaffRouteImport } from './routes/_authenticated/outlet.staff'
@@ -209,6 +211,12 @@ const AuthenticatedAdminFinancialRoute =
     path: '/financial',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminMessagesRoute =
+  AuthenticatedAdminMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminOperationsRoute =
   AuthenticatedAdminOperationsRouteImport.update({
     id: '/operations',
@@ -250,6 +258,12 @@ const AuthenticatedOutletMenuRoute = AuthenticatedOutletMenuRouteImport.update({
   path: '/menu',
   getParentRoute: () => AuthenticatedOutletRoute,
 } as any)
+const AuthenticatedOutletMessagesRoute =
+  AuthenticatedOutletMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => AuthenticatedOutletRoute,
+  } as any)
 const AuthenticatedOutletOrdersRoute =
   AuthenticatedOutletOrdersRouteImport.update({
     id: '/orders',
@@ -335,12 +349,14 @@ export interface FileRoutesByFullPath {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/financial': typeof AuthenticatedAdminFinancialRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
   '/admin/operations': typeof AuthenticatedAdminOperationsRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/outlet/messages': typeof AuthenticatedOutletMessagesRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
@@ -378,12 +394,14 @@ export interface FileRoutesByTo {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/financial': typeof AuthenticatedAdminFinancialRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
   '/admin/operations': typeof AuthenticatedAdminOperationsRoute
   '/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/outlet/messages': typeof AuthenticatedOutletMessagesRoute
   '/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/outlet/staff': typeof AuthenticatedOutletStaffRoute
@@ -426,12 +444,14 @@ export interface FileRoutesById {
   '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/financial': typeof AuthenticatedAdminFinancialRoute
+  '/_authenticated/admin/messages': typeof AuthenticatedAdminMessagesRoute
   '/_authenticated/admin/operations': typeof AuthenticatedAdminOperationsRoute
   '/_authenticated/admin/outlets': typeof AuthenticatedAdminOutletsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/transfers': typeof AuthenticatedAdminTransfersRoute
   '/_authenticated/outlet/customers': typeof AuthenticatedOutletCustomersRoute
   '/_authenticated/outlet/menu': typeof AuthenticatedOutletMenuRoute
+  '/_authenticated/outlet/messages': typeof AuthenticatedOutletMessagesRoute
   '/_authenticated/outlet/orders': typeof AuthenticatedOutletOrdersRoute
   '/_authenticated/outlet/reports': typeof AuthenticatedOutletReportsRoute
   '/_authenticated/outlet/staff': typeof AuthenticatedOutletStaffRoute
@@ -473,12 +493,14 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/financial'
+    | '/admin/messages'
     | '/admin/operations'
     | '/admin/outlets'
     | '/admin/settings'
     | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
+    | '/outlet/messages'
     | '/outlet/orders'
     | '/outlet/reports'
     | '/outlet/staff'
@@ -516,12 +538,14 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/financial'
+    | '/admin/messages'
     | '/admin/operations'
     | '/admin/outlets'
     | '/admin/settings'
     | '/admin/transfers'
     | '/outlet/customers'
     | '/outlet/menu'
+    | '/outlet/messages'
     | '/outlet/orders'
     | '/outlet/reports'
     | '/outlet/staff'
@@ -563,12 +587,14 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/credit'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/financial'
+    | '/_authenticated/admin/messages'
     | '/_authenticated/admin/operations'
     | '/_authenticated/admin/outlets'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/transfers'
     | '/_authenticated/outlet/customers'
     | '/_authenticated/outlet/menu'
+    | '/_authenticated/outlet/messages'
     | '/_authenticated/outlet/orders'
     | '/_authenticated/outlet/reports'
     | '/_authenticated/outlet/staff'
@@ -797,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminFinancialRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/messages': {
+      id: '/_authenticated/admin/messages'
+      path: '/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AuthenticatedAdminMessagesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/operations': {
       id: '/_authenticated/admin/operations'
       path: '/operations'
@@ -844,6 +877,13 @@ declare module '@tanstack/react-router' {
       path: '/menu'
       fullPath: '/outlet/menu'
       preLoaderRoute: typeof AuthenticatedOutletMenuRouteImport
+      parentRoute: typeof AuthenticatedOutletRoute
+    }
+    '/_authenticated/outlet/messages': {
+      id: '/_authenticated/outlet/messages'
+      path: '/messages'
+      fullPath: '/outlet/messages'
+      preLoaderRoute: typeof AuthenticatedOutletMessagesRouteImport
       parentRoute: typeof AuthenticatedOutletRoute
     }
     '/_authenticated/outlet/orders': {
@@ -964,6 +1004,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminFinancialRoute: typeof AuthenticatedAdminFinancialRoute
+  AuthenticatedAdminMessagesRoute: typeof AuthenticatedAdminMessagesRoute
   AuthenticatedAdminOperationsRoute: typeof AuthenticatedAdminOperationsRoute
   AuthenticatedAdminOutletsRoute: typeof AuthenticatedAdminOutletsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
@@ -976,6 +1017,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminFinancialRoute: AuthenticatedAdminFinancialRoute,
+  AuthenticatedAdminMessagesRoute: AuthenticatedAdminMessagesRoute,
   AuthenticatedAdminOperationsRoute: AuthenticatedAdminOperationsRoute,
   AuthenticatedAdminOutletsRoute: AuthenticatedAdminOutletsRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
@@ -989,6 +1031,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedOutletRouteChildren {
   AuthenticatedOutletCustomersRoute: typeof AuthenticatedOutletCustomersRoute
   AuthenticatedOutletMenuRoute: typeof AuthenticatedOutletMenuRoute
+  AuthenticatedOutletMessagesRoute: typeof AuthenticatedOutletMessagesRoute
   AuthenticatedOutletOrdersRoute: typeof AuthenticatedOutletOrdersRoute
   AuthenticatedOutletReportsRoute: typeof AuthenticatedOutletReportsRoute
   AuthenticatedOutletStaffRoute: typeof AuthenticatedOutletStaffRoute
@@ -999,6 +1042,7 @@ interface AuthenticatedOutletRouteChildren {
 const AuthenticatedOutletRouteChildren: AuthenticatedOutletRouteChildren = {
   AuthenticatedOutletCustomersRoute: AuthenticatedOutletCustomersRoute,
   AuthenticatedOutletMenuRoute: AuthenticatedOutletMenuRoute,
+  AuthenticatedOutletMessagesRoute: AuthenticatedOutletMessagesRoute,
   AuthenticatedOutletOrdersRoute: AuthenticatedOutletOrdersRoute,
   AuthenticatedOutletReportsRoute: AuthenticatedOutletReportsRoute,
   AuthenticatedOutletStaffRoute: AuthenticatedOutletStaffRoute,

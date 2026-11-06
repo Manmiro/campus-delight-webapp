@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  ClipboardList, Home, LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
+  ClipboardList, Home, LayoutDashboard, MessageSquare, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { personalDashboardLink } from "@/lib/role-nav";
@@ -29,6 +29,7 @@ const nav: NavItem[] = [
   { to: "/outlet/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
   { to: "/outlet/staff", label: "Staff", icon: <UserCog className="h-4 w-4" /> },
   { to: "/outlet/reports", label: "Reports", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/outlet/messages", label: "Messages", icon: <MessageSquare className="h-4 w-4" /> },
 ];
 
 function OutletLayout() {
