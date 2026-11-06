@@ -146,3 +146,6 @@ CREATE POLICY "dashboard users remove their staged attachments"
     bucket_id = 'dashboard-attachments'
     AND name LIKE (auth.uid()::text || '/%')
   );
+
+-- Refresh PostgREST's schema cache immediately after the new relations exist.
+NOTIFY pgrst, 'reload schema';

@@ -316,6 +316,13 @@
       "when": 1793977200001,
       "tag": "0044_headquarters_outlet_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1793977200002,
+      "tag": "0045_dashboard_messaging",
+      "breakpoints": true
     }
   ]
 }
