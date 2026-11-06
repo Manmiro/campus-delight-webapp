@@ -1,5 +1,5 @@
 -- Dashboard-to-dashboard messaging between headquarters and active outlet staff.
-CREATE TABLE public.dashboard_messages (
+CREATE TABLE IF NOT EXISTS public.dashboard_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sender_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
   sender_outlet_id uuid REFERENCES public.outlets(id) ON DELETE SET NULL,
@@ -28,11 +28,11 @@ CREATE TABLE public.dashboard_messages (
   )
 );
 
-CREATE INDEX dashboard_messages_created_at_idx ON public.dashboard_messages (created_at DESC);
-CREATE INDEX dashboard_messages_target_outlet_idx ON public.dashboard_messages (target_outlet_id, created_at DESC);
-CREATE INDEX dashboard_messages_sender_idx ON public.dashboard_messages (sender_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS dashboard_messages_created_at_idx ON public.dashboard_messages (created_at DESC);
+CREATE INDEX IF NOT EXISTS dashboard_messages_target_outlet_idx ON public.dashboard_messages (target_outlet_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS dashboard_messages_sender_idx ON public.dashboard_messages (sender_id, created_at DESC);
 
-CREATE TABLE public.dashboard_message_reads (
+CREATE TABLE IF NOT EXISTS public.dashboard_message_reads (
   message_id uuid NOT NULL REFERENCES public.dashboard_messages(id) ON DELETE CASCADE,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   read_at timestamptz NOT NULL DEFAULT now(),
@@ -68,10 +68,12 @@ AS $$
 $$;
 
 ALTER TABLE public.dashboard_messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "dashboard participants read messages" ON public.dashboard_messages;
 CREATE POLICY "dashboard participants read messages"
   ON public.dashboard_messages FOR SELECT TO authenticated
   USING (public.can_read_dashboard_message(id));
 
+DROP POLICY IF EXISTS "dashboard users send permitted messages" ON public.dashboard_messages;
 CREATE POLICY "dashboard users send permitted messages"
   ON public.dashboard_messages FOR INSERT TO authenticated
   WITH CHECK (
@@ -96,14 +98,17 @@ CREATE POLICY "dashboard users send permitted messages"
   );
 
 ALTER TABLE public.dashboard_message_reads ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users read their message receipts" ON public.dashboard_message_reads;
 CREATE POLICY "users read their message receipts"
   ON public.dashboard_message_reads FOR SELECT TO authenticated
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "users mark readable messages" ON public.dashboard_message_reads;
 CREATE POLICY "users mark readable messages"
   ON public.dashboard_message_reads FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid() AND public.can_read_dashboard_message(message_id));
 
+DROP POLICY IF EXISTS "users update their message receipts" ON public.dashboard_message_reads;
 CREATE POLICY "users update their message receipts"
   ON public.dashboard_message_reads FOR UPDATE TO authenticated
   USING (user_id = auth.uid())
@@ -121,6 +126,7 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit)
 VALUES ('dashboard-attachments', 'dashboard-attachments', false, 1048576)
 ON CONFLICT (id) DO UPDATE SET public = false, file_size_limit = 1048576;
 
+DROP POLICY IF EXISTS "dashboard users upload their attachments" ON storage.objects;
 CREATE POLICY "dashboard users upload their attachments"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (
@@ -128,6 +134,7 @@ CREATE POLICY "dashboard users upload their attachments"
     AND name LIKE (auth.uid()::text || '/%')
   );
 
+DROP POLICY IF EXISTS "dashboard participants download attachments" ON storage.objects;
 CREATE POLICY "dashboard participants download attachments"
   ON storage.objects FOR SELECT TO authenticated
   USING (
@@ -140,6 +147,7 @@ CREATE POLICY "dashboard participants download attachments"
     )
   );
 
+DROP POLICY IF EXISTS "dashboard users remove their staged attachments" ON storage.objects;
 CREATE POLICY "dashboard users remove their staged attachments"
   ON storage.objects FOR DELETE TO authenticated
   USING (
