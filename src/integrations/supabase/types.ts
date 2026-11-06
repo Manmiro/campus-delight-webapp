@@ -786,7 +786,6 @@ export type Database = {
           id: string
           location: string | null
           name: string
-          price_edit_locked: boolean
           status: string
         }
         Insert: {
@@ -799,7 +798,6 @@ export type Database = {
           id?: string
           location?: string | null
           name: string
-          price_edit_locked?: boolean
           status?: string
         }
         Update: {
@@ -812,7 +810,6 @@ export type Database = {
           id?: string
           location?: string | null
           name?: string
-          price_edit_locked?: boolean
           status?: string
         }
         Relationships: []
@@ -1341,10 +1338,6 @@ export type Database = {
       }
       admin_set_outlet_manager_suspension: {
         Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
-        Returns: Json
-      }
-      admin_set_outlet_price_edit_lock: {
-        Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
         Returns: Json
       }
       apply_loan_repayment: {
