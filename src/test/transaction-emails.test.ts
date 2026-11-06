@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const fixtures = vi.hoisted(() => ({ rows: {} as Record<string, any>, sent: vi.fn() }));
 vi.mock('@/integrations/supabase/client.server', () => ({ supabaseAdmin: {
   from: (table: string) => {
-    const query: any = { select: () => query, eq: () => query, single: async () => ({ data: fixtures.rows[table], error: null }), maybeSingle: async () => ({ data: fixtures.rows[table], error: null }) };
+    const query: any = { select: () => query, eq: () => query, like: () => query, order: () => query, limit: () => query, single: async () => ({ data: fixtures.rows[table], error: null }), maybeSingle: async () => ({ data: fixtures.rows[table], error: null }) };
     return query;
   },
 } }));
