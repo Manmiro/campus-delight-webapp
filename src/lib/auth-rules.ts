@@ -39,7 +39,7 @@ export function normalizeEmailAddress(value: string): string {
   const domain = email.slice(at + 1);
   if (!GMAIL_DOMAINS.has(domain)) return email;
 
-  return `${local.split("+", 1)[0].replace(/\./g, "")}@gmail.com`;
+  return `${(local.split("+", 1)[0] ?? "").replace(/\./g, "")}@gmail.com`;
 }
 
 export function isDisposableEmailAddress(value: string): boolean {
