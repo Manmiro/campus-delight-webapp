@@ -32,6 +32,8 @@ function OutletMenu() {
   const { data: assignment } = useSuspenseQuery(staffAssignmentQuery);
   const outletId = assignment?.outlet_id ?? "";
   const isManager = assignment?.staff_role === "outlet_manager";
+  const priceEditLocked = assignment?.outlet?.price_edit_locked ?? false;
+  const canEditPrices = isManager && !priceEditLocked;
   const { data: menu } = useSuspenseQuery(myMenuQuery(outletId));
   const { data: prices } = useSuspenseQuery(myPlanPricesQuery(outletId));
   const { data: delivery } = useSuspenseQuery(outletDeliveryQuery(outletId));
@@ -139,7 +141,7 @@ function OutletMenu() {
           <Button onClick={() => saveDelivery.mutate()} disabled={saveDelivery.isPending || deliveryDraft === null}><Save className="mr-2 h-4 w-4" />{saveDelivery.isPending ? 'Saving…' : 'Save delivery fee'}</Button>
         </div>}
       </section>
-      {isManager && (
+      {canEditPrices && (
         <Card>
           <CardHeader className="pb-2"><CardTitle className="font-display text-lg">Add a menu item</CardTitle></CardHeader>
           <CardContent>
@@ -207,6 +209,7 @@ function OutletMenu() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline" className="text-destructive" aria-label={`Delete ${m.name}`}
+                          disabled={priceEditLocked}
                           onClick={() => setDeleting({ id: m.id, name: m.name })}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -232,7 +235,7 @@ function OutletMenu() {
                   <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label htmlFor="edit-price">Price (₦)</Label><Input id="edit-price" className="mt-1" inputMode="decimal" value={editing.price} onChange={(e) => setEditing({ ...editing, price: e.target.value })} /></div>
+              <div><Label htmlFor="edit-price">Price (₦)</Label><Input id="edit-price" className="mt-1" inputMode="decimal" disabled={priceEditLocked} value={editing.price} onChange={(e) => setEditing({ ...editing, price: e.target.value })} /></div>
             </div>
           )}
           <DialogFooter>
@@ -275,7 +278,7 @@ function OutletMenu() {
                       const key = `${p}-${t}`;
                       return (
                         <TableCell key={t} className="text-right">
-                          {isManager ? (
+                  {canEditPrices ? (
                             <div className="inline-flex items-center gap-1">
                               <Input
                                 className="h-8 w-24 text-right"
@@ -287,7 +290,7 @@ function OutletMenu() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                disabled={!priceDrafts[key]}
+                                disabled={!priceDrafts[key] || savePrice.isPending}
                                 onClick={() => savePrice.mutate({ plan: p, tier: t, priceKobo: Math.round(Number(priceDrafts[key]) * 100) })}
                               >
                                 Save
@@ -306,6 +309,7 @@ function OutletMenu() {
           </div>
         </CardContent>
       </Card>
+      {priceEditLocked && isManager && <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">Headquarters has locked price edits for this outlet. You can still manage availability, but menu and food-plan prices require Headquarters.</p>}
     </div>
   );
 }

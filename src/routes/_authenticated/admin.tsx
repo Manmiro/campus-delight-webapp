@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
-  BarChart3, Building2, Home, Landmark, LayoutDashboard, ScrollText, Settings, Users, Vote,
+  BarChart3, Building2, ClipboardList, Home, Landmark, LayoutDashboard, ScrollText, Settings, Users, Vote,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { canEnterAdminArea } from "@/lib/role-nav";
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const nav: NavItem[] = [
   { to: "/admin", label: "Global Overview", icon: <LayoutDashboard className="h-4 w-4" />, exact: true },
   { to: "/admin/outlets", label: "Outlet Management", icon: <Building2 className="h-4 w-4" /> },
+  { to: "/admin/operations", label: "Outlet Operations", icon: <ClipboardList className="h-4 w-4" /> },
   { to: "/admin/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
   { to: "/admin/financial", label: "Financial Oversight", icon: <Landmark className="h-4 w-4" /> },
   { to: "/admin/transfers", label: "Outlet Transfers", icon: <Vote className="h-4 w-4" /> },

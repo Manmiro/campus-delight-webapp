@@ -20,10 +20,121 @@ export const adminListOutlets = createServerFn({ method: "GET" })
     const db = await assertCentralAdmin(context);
     const { data, error } = await db
       .from("outlets")
-      .select("id, name, code, location, address, contact_phone, contact_email, status, created_at")
+      .select("id, name, code, location, address, contact_phone, contact_email, status, price_edit_locked, created_at")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
+  });
+
+const menuCategorySchema = z.enum(["meals", "rice", "pastries", "swallow", "drinks", "snacks", "sides"]);
+const planSchema = z.enum(["weekend", "weekly", "monthly"]);
+const tierSchema = z.enum(["basic", "standard", "turbo"]);
+
+export const adminListOutletCatalog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string }) => z.object({ outletId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const [{ data: outlet, error: outletError }, { data: menu, error: menuError }, { data: prices, error: priceError }] = await Promise.all([
+      db.from("outlets").select("id, name, code, price_edit_locked").eq("id", data.outletId).single(),
+      db.from("menu_items").select("id, outlet_id, name, category, price_kobo, is_available, is_credit_eligible").eq("outlet_id", data.outletId).order("category").order("name"),
+      db.from("outlet_plan_prices").select("id, outlet_id, plan, tier, price_kobo, is_active").eq("outlet_id", data.outletId).order("plan").order("tier"),
+    ]);
+    if (outletError) throw new Error(outletError.message);
+    if (menuError) throw new Error(menuError.message);
+    if (priceError) throw new Error(priceError.message);
+    return { outlet, menu: menu ?? [], prices: prices ?? [] };
+  });
+
+export const adminListOutletOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string }) => z.object({ outletId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const { data: orders, error } = await db
+      .from("orders")
+      .select("*, order_items(*), customer:profiles(full_name, customer_code)")
+      .eq("outlet_id", data.outletId)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return orders ?? [];
+  });
+
+export const adminUpsertMenuItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; menuItemId?: string; name: string; category: string; priceKobo: number; isCreditEligible: boolean; isAvailable?: boolean }) =>
+    z.object({
+      outletId: z.string().uuid(),
+      menuItemId: z.string().uuid().optional(),
+      name: z.string().trim().min(1).max(120),
+      category: menuCategorySchema,
+      priceKobo: z.number().int().positive().safe(),
+      isCreditEligible: z.boolean(),
+      isAvailable: z.boolean().optional(),
+    }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const patch = {
+      outlet_id: data.outletId,
+      name: data.name,
+      category: data.category,
+      price_kobo: data.priceKobo,
+      is_credit_eligible: data.isCreditEligible,
+      ...(data.isAvailable === undefined ? {} : { is_available: data.isAvailable }),
+    };
+    const query = data.menuItemId
+      ? db.from("menu_items").update(patch).eq("id", data.menuItemId).eq("outlet_id", data.outletId).select().single()
+      : db.from("menu_items").insert(patch).select().single();
+    const { data: item, error } = await query;
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({
+      actor_id: context.userId,
+      action: data.menuItemId ? "admin_update_menu_item" : "admin_create_menu_item",
+      entity: "menu_items",
+      entity_id: item.id,
+      details: { outlet_id: data.outletId, price_kobo: data.priceKobo },
+    });
+    return item;
+  });
+
+export const adminDeleteMenuItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; menuItemId: string }) => z.object({ outletId: z.string().uuid(), menuItemId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const { error } = await db.from("menu_items").delete().eq("id", data.menuItemId).eq("outlet_id", data.outletId);
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({ actor_id: context.userId, action: "admin_delete_menu_item", entity: "menu_items", entity_id: data.menuItemId, details: { outlet_id: data.outletId } });
+    return { ok: true };
+  });
+
+export const adminUpsertPlanPrice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; plan: string; tier: string; priceKobo: number; isActive?: boolean }) =>
+    z.object({ outletId: z.string().uuid(), plan: planSchema, tier: tierSchema, priceKobo: z.number().int().nonnegative().safe(), isActive: z.boolean().optional() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await assertCentralAdmin(context);
+    const { data: price, error } = await db.from("outlet_plan_prices").upsert({
+      outlet_id: data.outletId,
+      plan: data.plan,
+      tier: data.tier,
+      price_kobo: data.priceKobo,
+      is_active: data.isActive ?? true,
+    }, { onConflict: "outlet_id,plan,tier" }).select().single();
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({ actor_id: context.userId, action: "admin_update_plan_price", entity: "outlet_plan_prices", entity_id: price.id, details: { outlet_id: data.outletId, plan: data.plan, tier: data.tier, price_kobo: data.priceKobo } });
+    return price;
+  });
+
+export const adminSetOutletPriceEditLock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; locked: boolean; reason: string }) => z.object({ outletId: z.string().uuid(), locked: z.boolean(), reason: z.string().trim().min(1).max(500) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertCentralAdmin(context);
+    const { data: result, error } = await context.supabase.rpc("admin_set_outlet_price_edit_lock", { p_outlet_id: data.outletId, p_locked: data.locked, p_reason: data.reason });
+    if (error) throw new Error(error.message);
+    return result;
   });
 
 type ManagerAccountInput = { email: string; fullName: string; password: string };
