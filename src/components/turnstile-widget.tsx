@@ -23,7 +23,9 @@ declare global {
 
 const TURNSTILE_SCRIPT_ID = "cloudflare-turnstile-script";
 const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-const TURNSTILE_SITE_KEY = import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined;
+// Public Cloudflare Turnstile site key (safe to ship in browser code).
+const TURNSTILE_SITE_KEY =
+  (import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined) || "0x4AAAAAAF094QazO_Cq50Dz";
 
 let turnstileScriptPromise: Promise<void> | undefined;
 
