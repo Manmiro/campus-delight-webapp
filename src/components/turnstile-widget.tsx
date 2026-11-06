@@ -44,8 +44,10 @@ function loadTurnstileScript(): Promise<void> {
     const script = document.createElement("script");
     script.id = TURNSTILE_SCRIPT_ID;
     script.src = TURNSTILE_SCRIPT_URL;
-    script.async = true;
-    script.defer = true;
+    // Dynamically inserted scripts default to async=true, and Cloudflare's
+    // api.js throws a TurnstileError from turnstile.ready() when the script
+    // loads asynchronously — force ordered (non-async) loading.
+    script.async = false;
     script.onload = () => window.turnstile ? resolve() : reject(new Error("Turnstile is unavailable"));
     script.onerror = () => reject(new Error("Turnstile script failed to load"));
     document.head.appendChild(script);
@@ -79,25 +81,32 @@ export function TurnstileWidget({ resetSignal, onToken, onError }: TurnstileWidg
     let disposed = false;
     void loadTurnstileScript().then(() => {
       if (disposed || !containerRef.current || !window.turnstile) return;
-      window.turnstile.ready(() => {
-        if (disposed || !containerRef.current || !window.turnstile) return;
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: TURNSTILE_SITE_KEY,
-          action: "auth",
-          execution: "render",
-          callback: (token) => onTokenRef.current(token),
-          "error-callback": () => {
-            onTokenRef.current(null);
-            onErrorRef.current();
-            return true;
-          },
-          "expired-callback": () => onTokenRef.current(null),
-          "timeout-callback": () => {
-            onTokenRef.current(null);
-            onErrorRef.current();
-          },
+      try {
+        window.turnstile.ready(() => {
+          if (disposed || !containerRef.current || !window.turnstile) return;
+          widgetIdRef.current = window.turnstile.render(containerRef.current, {
+            sitekey: TURNSTILE_SITE_KEY,
+            action: "auth",
+            execution: "render",
+            callback: (token) => onTokenRef.current(token),
+            "error-callback": () => {
+              onTokenRef.current(null);
+              onErrorRef.current();
+              return true;
+            },
+            "expired-callback": () => onTokenRef.current(null),
+            "timeout-callback": () => {
+              onTokenRef.current(null);
+              onErrorRef.current();
+            },
+          });
         });
-      });
+      } catch {
+        if (!disposed) {
+          onTokenRef.current(null);
+          onErrorRef.current();
+        }
+      }
     }).catch(() => {
       if (!disposed) {
         onTokenRef.current(null);
@@ -121,5 +130,5 @@ export function TurnstileWidget({ resetSignal, onToken, onError }: TurnstileWidg
     if (widgetIdRef.current && window.turnstile) window.turnstile.reset(widgetIdRef.current);
   }, [resetSignal]);
 
-  return <div ref={containerRef} aria-hidden="true" className="h-0 overflow-hidden" />;
+  return <div ref={containerRef} className="flex min-h-[65px] justify-center" />;
 }
