@@ -159,6 +159,92 @@ export type Database = {
           },
         ]
       }
+      dashboard_message_reads: {
+        Row: {
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_messages: {
+        Row: {
+          attachment_content_type: string | null
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          body: string
+          created_at: string
+          id: string
+          recipient_scope: string
+          sender_id: string
+          sender_outlet_id: string | null
+          subject: string
+          target_outlet_id: string | null
+        }
+        Insert: {
+          attachment_content_type?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body: string
+          created_at?: string
+          id?: string
+          recipient_scope: string
+          sender_id: string
+          sender_outlet_id?: string | null
+          subject: string
+          target_outlet_id?: string | null
+        }
+        Update: {
+          attachment_content_type?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body?: string
+          created_at?: string
+          id?: string
+          recipient_scope?: string
+          sender_id?: string
+          sender_outlet_id?: string | null
+          subject?: string
+          target_outlet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_messages_sender_outlet_id_fkey"
+            columns: ["sender_outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashboard_messages_target_outlet_id_fkey"
+            columns: ["target_outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_claims: {
         Row: {
           created_at: string
@@ -1377,6 +1463,10 @@ export type Database = {
           p_reference: string
         }
         Returns: undefined
+      }
+      can_read_dashboard_message: {
+        Args: { p_message_id: string }
+        Returns: boolean
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
