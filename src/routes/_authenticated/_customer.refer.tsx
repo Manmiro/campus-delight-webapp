@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Copy, Gift, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { profileQuery, referralsQuery, tokenAccountQuery } from "@/lib/queries";
+import { profileQuery, referralsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { StatCard, StatusBadge } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +15,15 @@ export const Route = createFileRoute("/_authenticated/_customer/refer")({
 });
 
 function ReferPage() {
-  const qc = useQueryClient();
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: referrals } = useSuspenseQuery(referralsQuery);
-  const { data: tk } = useSuspenseQuery(tokenAccountQuery);
 
   const referralLink = `${window.location.origin}/auth?mode=signup&ref=${profile.referral_code}`;
+
+  const copyReferralValue = (value: string, label: string) => {
+    void navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  };
 
   const rewarded = referrals.filter((r) => r.status === "rewarded").length;
   const pending = referrals.filter((r) => r.status === "locked").length;
@@ -34,14 +37,25 @@ function ReferPage() {
       </div>
 
       <Card>
-        <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">Your referral link</p>
-            <p className="max-w-xl truncate font-mono text-sm">{referralLink}</p>
+        <CardContent className="grid gap-5 p-5 md:grid-cols-2 md:gap-6">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:block">
+            <div className="min-w-0">
+              <p className="text-sm text-muted-foreground">Your referral link</p>
+              <p className="max-w-xl truncate font-mono text-sm">{referralLink}</p>
+            </div>
+            <Button className="shrink-0" onClick={() => copyReferralValue(referralLink, "Referral link")}>
+              <Copy className="mr-2 h-4 w-4" /> Copy link
+            </Button>
           </div>
-          <Button className="shrink-0" onClick={() => { void navigator.clipboard.writeText(referralLink); toast.success("Referral link copied"); }}>
-            <Copy className="mr-2 h-4 w-4" /> Copy link
-          </Button>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:block">
+            <div className="min-w-0">
+              <p className="text-sm text-muted-foreground">Your referral code</p>
+              <p className="font-mono text-sm font-semibold tracking-wide">{profile.referral_code}</p>
+            </div>
+            <Button variant="outline" className="shrink-0" onClick={() => copyReferralValue(profile.referral_code, "Referral code")}>
+              <Copy className="mr-2 h-4 w-4" /> Copy code
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
