@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Copy, Gift, Lock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,8 @@ export const Route = createFileRoute("/_authenticated/_customer/refer")({
 });
 
 function ReferPage() {
-  const [copied, setCopied] = useState<"link" | "code" | null>(null);
+  const celebrationSequence = useRef(0);
+  const [copied, setCopied] = useState<{ kind: "link" | "code"; id: number } | null>(null);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: referrals } = useSuspenseQuery(referralsQuery);
 
@@ -25,9 +26,11 @@ function ReferPage() {
 
   const copyReferralValue = (value: string, kind: "link" | "code", label: string) => {
     void navigator.clipboard.writeText(value).then(() => {
-      setCopied(kind);
+      const celebrationId = celebrationSequence.current + 1;
+      celebrationSequence.current = celebrationId;
+      setCopied({ kind, id: celebrationId });
       toast.success(`${label} copied`);
-      window.setTimeout(() => setCopied((current) => current === kind ? null : current), 1500);
+      window.setTimeout(() => setCopied((current) => current?.id === celebrationId ? null : current), 1700);
     }).catch(() => toast.error(`Could not copy the ${label.toLowerCase()}`));
   };
 
@@ -44,15 +47,18 @@ function ReferPage() {
 
       <Card className="relative overflow-visible">
         {copied && (
-          <div key={copied} className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex justify-center" role="status" aria-live="polite">
+          <div key={copied.id} className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex justify-center" role="status" aria-live="polite">
             <div className="animate-copy-success relative flex items-center gap-2 rounded-full bg-gradient-brand px-3 py-2 text-primary-foreground shadow-glow">
+              <span className="absolute -inset-2 rounded-full border border-golden/70 animate-copy-ring" aria-hidden="true" />
+              <span className="absolute -left-5 -top-3 animate-copy-token text-xs font-black text-golden" aria-hidden="true">+1</span>
+              <span className="absolute -right-5 bottom-0 animate-copy-token text-xs font-black text-golden [animation-delay:160ms]" aria-hidden="true">+1</span>
               <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-primary-foreground shadow-sm">
-                <img src={logoImg} alt="" className="h-full w-full object-cover" />
+                <img src={logoImg} alt="" className="h-full w-full animate-copy-logo object-cover" />
               </span>
               <span className="text-xs font-extrabold tracking-wide">Copied!</span>
-              <span className="hidden text-xs opacity-80 sm:inline">{copied === "link" ? "Link ready to share" : "Code ready to share"}</span>
+              <span className="hidden text-xs opacity-80 sm:inline">{copied.kind === "link" ? "Link ready to share" : "Code ready to share"}</span>
               <Sparkles className="h-4 w-4 text-golden" aria-hidden="true" />
-              <span className="absolute -right-3 -top-2 animate-copy-spark text-golden" aria-hidden="true">✦</span>
+              <span className="absolute -right-3 -top-2 animate-copy-spark text-lg text-golden" aria-hidden="true">✦</span>
               <span className="absolute -bottom-2 -left-2 animate-copy-spark text-golden [animation-delay:120ms]" aria-hidden="true">✦</span>
             </div>
           </div>
@@ -63,8 +69,8 @@ function ReferPage() {
               <p className="text-sm text-muted-foreground">Your referral link</p>
               <p className="max-w-xl truncate font-mono text-sm">{referralLink}</p>
             </div>
-            <Button className="shrink-0" onClick={() => copyReferralValue(referralLink, "link", "Referral link")}>
-              {copied === "link" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy link</>}
+            <Button className={`shrink-0 transition-transform active:scale-95 ${copied?.kind === "link" ? "animate-copy-button" : ""}`} onClick={() => copyReferralValue(referralLink, "link", "Referral link")}>
+              {copied?.kind === "link" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy link</>}
             </Button>
           </div>
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:block">
@@ -72,8 +78,8 @@ function ReferPage() {
               <p className="text-sm text-muted-foreground">Your referral code</p>
               <p className="font-mono text-sm font-semibold tracking-wide">{profile.referral_code}</p>
             </div>
-            <Button variant="outline" className="shrink-0" onClick={() => copyReferralValue(profile.referral_code, "code", "Referral code")}>
-              {copied === "code" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy code</>}
+            <Button variant="outline" className={`shrink-0 transition-transform active:scale-95 ${copied?.kind === "code" ? "animate-copy-button" : ""}`} onClick={() => copyReferralValue(profile.referral_code, "code", "Referral code")}>
+              {copied?.kind === "code" ? <><Check className="animate-pop-in" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy code</>}
             </Button>
           </div>
         </CardContent>

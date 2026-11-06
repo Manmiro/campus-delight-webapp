@@ -192,6 +192,10 @@
 @utility animate-cart-out { animation: cd-cart-out 0.34s cubic-bezier(0.5, 0, 0.75, 0) forwards; overflow: hidden; }
 @utility animate-copy-success { animation: cd-copy-success 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @utility animate-copy-spark { animation: cd-copy-spark 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@utility animate-copy-ring { animation: cd-copy-ring 1.2s ease-out forwards; }
+@utility animate-copy-token { animation: cd-copy-token 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@utility animate-copy-logo { animation: cd-copy-logo 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@utility animate-copy-button { animation: cd-copy-button 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 @keyframes cd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
 @keyframes cd-pop-in { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -219,7 +223,26 @@
   0%, 100% { opacity: 0; transform: scale(0.4) rotate(-20deg); }
   25%, 70% { opacity: 1; transform: scale(1) rotate(0); }
 }
+@keyframes cd-copy-ring {
+  0% { opacity: 0.8; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+@keyframes cd-copy-token {
+  0% { opacity: 0; transform: translateY(8px) scale(0.5) rotate(-12deg); }
+  22% { opacity: 1; transform: translateY(0) scale(1.1) rotate(6deg); }
+  100% { opacity: 0; transform: translateY(-24px) scale(0.9) rotate(12deg); }
+}
+@keyframes cd-copy-logo {
+  0% { transform: scale(0.6) rotate(-12deg); }
+  55% { transform: scale(1.18) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes cd-copy-button {
+  0%, 100% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-2px) scale(1.06); }
+  65% { transform: translateY(0) scale(0.98); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-float, .animate-wiggle, .animate-pop-in, .animate-cart-out, .animate-copy-success, .animate-copy-spark { animation: none; }
+  .animate-float, .animate-wiggle, .animate-pop-in, .animate-cart-out, .animate-copy-success, .animate-copy-spark, .animate-copy-ring, .animate-copy-token, .animate-copy-logo, .animate-copy-button { animation: none; }
 }
