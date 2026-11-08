@@ -2,7 +2,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight, ShoppingBag, CalendarDays, Gift, ReceiptText, Trophy } from "lucide-react";
-import heroMeal from "@/assets/hero-meal.jpg";
+import heroMeal from "@/assets/hero-meal.webp.asset.json";
 import { toast } from "sonner";
 import { initializePayment } from "@/lib/payments.functions";
 import {
@@ -17,6 +17,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/_customer/dashboard")({
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...walletQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...tokenAccountQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...subscriptionsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...todayEntitlementsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...creditQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...loansQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...ordersQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...notificationsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...referralsQuery, revalidateIfStale: true }),
+    ]);
+  },
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Dashboard not found.</div>,
   component: Dashboard,
   head: () => ({ meta: [{ title: "My Campus Delight — Meals & Wallet" }, { name: "description", content: "View your meals, wallet, rewards and recent Campus Delight orders." }, { property: "og:title", content: "My Campus Delight — Meals & Wallet" }, { property: "og:description", content: "Your campus meals, wallet and rewards in one place." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
@@ -56,7 +72,7 @@ function Dashboard() {
     <div className="space-y-6">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="relative overflow-hidden rounded-3xl bg-foreground text-background shadow-soft">
-          <img src={heroMeal} alt="Jollof rice with grilled chicken and plantain" width={1200} height={640} className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
+          <img src={heroMeal.url} decoding="async" alt="Jollof rice with grilled chicken and plantain" width={1200} height={640} className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/80 to-transparent" />
           <div className="relative max-w-md p-6 sm:p-8">
             <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>

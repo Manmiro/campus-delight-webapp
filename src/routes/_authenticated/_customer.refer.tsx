@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Copy, Gift, Lock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import logoImg from "@/assets/logo.jpg";
+import logoImg from "@/assets/logo.webp.asset.json";
 import { profileQuery, referralsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { StatCard, StatusBadge } from "@/components/bits";
@@ -53,7 +53,7 @@ function ReferPage() {
               <span className="absolute -left-5 -top-3 animate-copy-token text-xs font-black text-golden" aria-hidden="true">+1</span>
               <span className="absolute -right-5 bottom-0 animate-copy-token text-xs font-black text-golden [animation-delay:160ms]" aria-hidden="true">+1</span>
               <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-primary-foreground shadow-sm">
-                <img src={logoImg} alt="" className="h-full w-full animate-copy-logo object-cover" />
+                <img src={logoImg.url} decoding="async" alt="" className="h-full w-full animate-copy-logo object-cover" />
               </span>
               <span className="text-xs font-extrabold tracking-wide">Copied!</span>
               <span className="hidden text-xs opacity-80 sm:inline">{copied.kind === "link" ? "Link ready to share" : "Code ready to share"}</span>

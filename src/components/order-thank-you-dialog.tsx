@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Bike, CalendarDays, Check, Coins, CreditCard, MapPin, ShoppingBasket, Sparkles, Wallet } from 'lucide-react';
-import logo from '@/assets/logo.jpg';
-import heroMeal from '@/assets/hero-meal.jpg';
+import logo from '@/assets/logo.webp.asset.json';
+import heroMeal from '@/assets/hero-meal.webp.asset.json';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Confetti } from '@/components/fun/confetti';
@@ -39,11 +39,11 @@ export function OrderThankYouDialog({ order, onClose }: { order: PlacedOrder | n
       <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:p-0 motion-reduce:animate-none">
         {order && <>
           <div className="relative shrink-0 overflow-hidden bg-primary px-6 pb-7 pt-6 text-center text-primary-foreground [@media(max-height:640px)]:pb-4 [@media(max-height:640px)]:pt-4">
-            <img src={heroMeal} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
+            <img src={heroMeal.url} decoding="async" alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
             <span aria-hidden className="absolute left-5 top-5 animate-float text-2xl motion-reduce:animate-none">🍛</span>
             <span aria-hidden className="absolute right-14 top-12 animate-float text-2xl [animation-delay:1.2s] motion-reduce:animate-none">🥤</span>
             <div className="relative">
-              <div className="mx-auto flex items-center justify-center gap-2"><img src={logo} alt="Campus Delight" className="h-9 w-9 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
+              <div className="mx-auto flex items-center justify-center gap-2"><img src={logo.url} decoding="async" alt="Campus Delight" className="h-9 w-9 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
               <div className="relative mx-auto mt-4 grid h-20 w-20 place-items-center [@media(max-height:640px)]:h-14 [@media(max-height:640px)]:w-14">
                 <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-golden/40 motion-reduce:hidden" />
                 <span className="relative grid h-full w-full animate-pop-in place-items-center rounded-full bg-golden text-golden-foreground shadow-glow motion-reduce:animate-none">

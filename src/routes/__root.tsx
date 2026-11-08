@@ -14,6 +14,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import soraFont from "@fontsource-variable/sora/files/sora-latin-wght-normal.woff2?url";
+import manropeFont from "@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url";
 
 function NotFoundComponent() {
   return (
@@ -97,12 +99,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap",
-      },
+      { rel: "preload", as: "font", href: soraFont, type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", as: "font", href: manropeFont, type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],

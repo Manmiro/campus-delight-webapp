@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { queryOptions } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, CalendarDays, Coins, Gift, MapPin, Users, Zap } from "lucide-react";
-import { listOutlets } from "@/lib/catalog.functions";
+import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
@@ -11,17 +10,13 @@ import { Reveal } from "@/components/landing/reveal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
-import logoImg from "@/assets/logo.jpg";
-import heroImg from "@/assets/hero-meal.jpg";
-
-const outletsQuery = queryOptions({
-  queryKey: ["public-outlets"],
-  queryFn: () => listOutlets(),
-});
+import logoImg from "@/assets/logo.webp.asset.json";
+import heroImg from "@/assets/hero-meal.webp.asset.json";
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(outletsQuery),
   head: () => ({
+    links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
     meta: [
       { title: "Campus Delight — Affordable campus meals, subscriptions & rewards" },
       {
@@ -36,11 +31,11 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: "https://campus-delight-webapp.lovable.app/og-image.jpg" },
-      { name: "twitter:image", content: "https://campus-delight-webapp.lovable.app/og-image.jpg" },
     ],
   }),
   component: Landing,
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Campus Delight page not found.</div>,
 });
 
 const steps = [
@@ -58,7 +53,8 @@ function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
       <img
-        src={logoImg}
+        src={logoImg.url}
+        width={256} height={256} decoding="async"
         alt="Campus Delight logo"
         className={`shrink-0 rounded-full ${size === "sm" ? "h-8 w-8" : "h-11 w-11"}`}
       />
@@ -105,7 +101,7 @@ function Landing() {
         {/* Hero banner — Eat Now & Pay Later */}
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="relative min-w-0 overflow-hidden rounded-3xl bg-gradient-brand text-primary-foreground shadow-glow">
-            <img src={heroImg} alt="A plate of Nigerian campus meals" className="absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover opacity-90 [mask-image:linear-gradient(to_right,transparent,black_40%)] sm:block" />
+            <picture><source media="(min-width: 640px)" srcSet={heroImg.url} /><img width={1200} height={640} fetchPriority="high" decoding="async" alt="A plate of Nigerian campus meals" className="absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover opacity-90 [mask-image:linear-gradient(to_right,transparent,black_40%)] sm:block" /></picture>
             <div className="relative p-6 sm:max-w-[68%] sm:p-10">
               <Badge className="mb-4 max-w-full whitespace-normal bg-golden text-golden-foreground hover:bg-golden">
                 <Zap className="mr-1 h-3.5 w-3.5" /> New · Eat Now &amp; Pay Later

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
-import { listOutlets } from "@/lib/catalog.functions";
+import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
 import { getMyRole } from "@/lib/roles.functions";
 import { acknowledgeRegistrationRewards } from "@/lib/transactions.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,14 +18,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
-import logoImg from "@/assets/logo.jpg";
-import heroImg from "@/assets/hero-meal.jpg";
+import logoImg from "@/assets/logo.webp.asset.json";
+import heroImg from "@/assets/hero-meal.webp.asset.json";
 import { TurnstileWidget } from "@/components/turnstile-widget";
-
-const outletsQuery = queryOptions({
-  queryKey: ["public-outlets"],
-  queryFn: () => listOutlets(),
-});
 
 const searchSchema = {
   validateSearch: (search: Record<string, unknown>): { mode?: string; ref?: string } => {
@@ -53,6 +48,8 @@ export const Route = createFileRoute("/auth")({
     ],
   }),
   component: AuthPage,
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Campus Delight account page not found.</div>,
 });
 
 function AuthPage() {
@@ -261,10 +258,10 @@ function AuthPage() {
       <div className="fixed top-4 right-4 z-50"><ThemeToggle /></div>
       <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-[2rem] bg-card shadow-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <aside className="relative hidden overflow-hidden bg-gradient-brand p-8 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
-          <img src={heroImg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+          <picture><source media="(min-width: 1024px)" srcSet={heroImg.url} /><img width={1200} height={640} decoding="async" alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" /></picture>
           <div className="relative">
             <Link to="/" className="inline-flex items-center gap-3">
-              <img src={logoImg} alt="Campus Delight logo" className="h-14 w-14 rounded-full ring-4 ring-primary-foreground/30" />
+              <img src={logoImg.url} width={256} height={256} decoding="async" alt="Campus Delight logo" className="h-14 w-14 rounded-full ring-4 ring-primary-foreground/30" />
               <span className="font-display text-xl font-bold">Campus Delight</span>
             </Link>
           </div>
@@ -283,7 +280,7 @@ function AuthPage() {
         </aside>
         <div className="p-6 sm:p-10">
           <Link to="/" className="mb-6 flex flex-col items-center gap-2 lg:hidden">
-            <img src={logoImg} alt="Campus Delight logo" className="h-20 w-20 rounded-full shadow-glow" />
+            <img src={logoImg.url} width={256} height={256} decoding="async" alt="Campus Delight logo" className="h-20 w-20 rounded-full shadow-glow" />
             <span className="font-display text-xl font-bold">Campus Delight</span>
           </Link>
           <h1 className="font-display text-2xl font-bold">{mode === "signin" ? "Welcome back 👋" : "Create your account 🍛"}</h1>

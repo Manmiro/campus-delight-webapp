@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, Bike, Check, MapPin, Pencil, ShoppingBasket, Wallet } from 'lucide-react';
-import logo from '@/assets/logo.jpg';
-import heroMeal from '@/assets/hero-meal.jpg';
+import logo from '@/assets/logo.webp.asset.json';
+import heroMeal from '@/assets/hero-meal.webp.asset.json';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,9 +33,9 @@ export function FulfillmentDialog(p: Props) {
   return <Dialog open={p.open} onOpenChange={(open) => { if (!p.pending) { setDeliveryStep('choice'); p.onOpenChange(open); } }}>
     <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:p-0 motion-reduce:animate-none">
       <div className="relative shrink-0 overflow-hidden bg-primary px-6 pb-6 pt-7 [@media(max-height:640px)]:pb-4 [@media(max-height:640px)]:pt-4 text-primary-foreground">
-        <img src={heroMeal} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
+        <img src={heroMeal.url} decoding="async" alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
         <div className="relative">
-          <div className="flex items-center gap-2"><img src={logo} alt="Campus Delight" className="h-10 w-10 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
+          <div className="flex items-center gap-2"><img src={logo.url} decoding="async" alt="Campus Delight" className="h-10 w-10 rounded-full" /><span className="text-sm font-bold">Campus Delight</span></div>
           <p className="mt-4 text-xs font-semibold uppercase">{p.paymentStep ? 'Almost time to feast' : showAddress ? 'Your delivery address' : showReview ? 'Check your destination' : 'Your cravings, your way'}</p>
           <DialogTitle className="mt-2 font-display text-3xl font-extrabold leading-tight tracking-normal">{p.paymentStep ? 'One last bite-sized step.' : showAddress ? 'Where are we headed?' : showReview ? 'The right place. A great meal.' : 'Bring it to me. Or meet me there.'}</DialogTitle>
           <DialogDescription className="mt-2 text-primary-foreground/90">{p.paymentStep ? 'Review your total and choose how to pay.' : showAddress ? 'Tell us exactly where to bring your order.' : showReview ? 'Confirm your delivery address before payment.' : 'Choose delivery or collect your food at the outlet.'}</DialogDescription>

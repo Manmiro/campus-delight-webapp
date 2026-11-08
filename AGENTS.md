@@ -24,3 +24,5 @@
 - Unapproved database changes live in `drizzle/proposed/` (outside the migration journal) so the migrator never applies them before the business signs off; tests may load them from there.
 - Loan restriction exceptions are per-loan and changed only through an audited HQ-authenticated RPC; customer notices use the same database restriction query so UI and enforcement agree. Exceptions never waive debt or permit new overdue credit.
 - Consolidate overdue processing and warning delivery with the existing loan reminder job; derive enforcement directly from due timestamps so scheduling delay cannot bypass restrictions.
+- Keep long-lived caching limited to the shared public outlet directory; prime customer queries in parallel route loaders without extending financial freshness, and retain server validation and mutation invalidation for prices, balances and restrictions.
+- Serve existing imagery as compressed CDN asset pointers and self-host variable brand fonts; preserve original media and automatic route splitting, and keep unused chart/carousel wrappers outside the imported graph.

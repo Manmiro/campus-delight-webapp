@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import maleAvatar from "@/assets/avatar-male.png";
-import femaleAvatar from "@/assets/avatar-female.png";
+import maleAvatar from "@/assets/avatar-male.webp.asset.json";
+import femaleAvatar from "@/assets/avatar-female.webp.asset.json";
 
 /** Default cartoon avatar matching the gender chosen at registration (falls back to male). */
 export function defaultAvatarFor(gender?: string | null): string {
-  return gender?.toLowerCase() === "female" ? femaleAvatar : maleAvatar;
+  return gender?.toLowerCase() === "female" ? femaleAvatar.url : maleAvatar.url;
 }
 
 /** Avatar values are storage paths like `<uid>/avatar-<ts>.jpg`; anything else is already a URL. */

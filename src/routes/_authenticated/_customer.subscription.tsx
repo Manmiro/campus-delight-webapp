@@ -4,7 +4,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowRight, CalendarDays, Check, Loader2, ReceiptText, Sparkles, UtensilsCrossed, Zap } from "lucide-react";
-import heroMeal from "@/assets/hero-meal.jpg";
+import heroMeal from "@/assets/hero-meal.webp.asset.json";
 import { initializePayment } from "@/lib/payments.functions";
 import { profileQuery, subscriptionsQuery, myPlanPricesQuery } from "@/lib/queries";
 import { getUserId } from "@/lib/queries";
@@ -14,6 +14,16 @@ import { StatusBadge, EmptyState } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/_customer/subscription")({
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData({ ...subscriptionsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }).then(async (profile) => {
+        await queryClient.ensureQueryData(myPlanPricesQuery(profile.outlet_id ?? ""));
+      }),
+    ]);
+  },
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Food plans page not found.</div>,
   component: SubscriptionPage,
   head: () => ({ meta: [{ title: "My Food Plans — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack." }, { property: "og:title", content: "My Food Plans — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
@@ -82,7 +92,7 @@ function SubscriptionPage() {
     <div className="space-y-6">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl bg-foreground text-background shadow-soft">
-        <img src={heroMeal} alt="Plate of jollof rice with chicken and plantain" className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
+        <img src={heroMeal.url} decoding="async" alt="Plate of jollof rice with chicken and plantain" className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/85 to-foreground/20" />
         <div className="relative grid gap-5 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div className="min-w-0 max-w-lg">

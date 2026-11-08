@@ -4,7 +4,7 @@ import type React from "react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowRight, CalendarDays, Coins, CreditCard, Minus, Plus, Search, ShieldCheck, ShoppingBasket, Timer, Trash2, Wallet } from "lucide-react";
-import heroMeal from "@/assets/hero-meal.jpg";
+import heroMeal from "@/assets/hero-meal.webp.asset.json";
 import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, walletQuery, tokenAccountQuery, creditQuery } from "@/lib/queries";
 import { useServerFn } from "@tanstack/react-start";
 import { placeFoodOrder } from "@/lib/transactions.functions";
@@ -19,6 +19,25 @@ import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
 import { outletDeliveryQuery, loanRestrictionsQuery } from '@/lib/queries';
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
+  loader: async ({ context: { queryClient } }) => {
+    const catalog = queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }).then(async (profile) => {
+      await Promise.all([
+        queryClient.ensureQueryData(myMenuQuery(profile.outlet_id ?? "")),
+        queryClient.ensureQueryData(outletDeliveryQuery(profile.outlet_id ?? "")),
+      ]);
+    });
+    await Promise.all([
+      catalog,
+      queryClient.ensureQueryData({ ...subscriptionsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...todayEntitlementsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...walletQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...tokenAccountQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...creditQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...loanRestrictionsQuery, revalidateIfStale: true }),
+    ]);
+  },
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Order page not found.</div>,
   component: OrderPage,
   head: () => ({ meta: [{ title: "Order Food — Campus Delight" }, { name: "description", content: "Order meals at your campus outlet and pay with your wallet or eligible benefits." }, { property: "og:title", content: "Order Food — Campus Delight" }, { property: "og:description", content: "Choose your campus meals and pay securely." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
@@ -334,7 +353,7 @@ function OrderPage() {
       <div className="min-w-0 space-y-5">
         {/* Banner */}
         <section className="relative overflow-hidden rounded-3xl bg-foreground text-background shadow-soft">
-          <img src={heroMeal} alt="Jollof rice with chicken and plantain" className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
+          <img src={heroMeal.url} decoding="async" alt="Jollof rice with chicken and plantain" className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/85 to-foreground/10" />
           <div className="relative max-w-md p-6 sm:p-8">
             <p className="text-sm opacity-80">{profile.outlet?.name ?? "Your outlet"}</p>

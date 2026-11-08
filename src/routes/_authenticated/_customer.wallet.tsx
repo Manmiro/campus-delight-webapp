@@ -10,9 +10,18 @@ import { naira, formatDateTime, statusLabel } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import logo from '@/assets/logo.jpg';
+import logo from '@/assets/logo.webp.asset.json';
 
 export const Route = createFileRoute('/_authenticated/_customer/wallet')({
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData({ ...walletQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...walletLedgerQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }),
+    ]);
+  },
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Wallet page not found.</div>,
   component: WalletPage,
   head: () => ({ meta: [{ title: 'Wallet — Campus Delight' }, { name: 'description', content: 'Top up your Campus Delight wallet with Paystack, pay for meals and track your wallet activity.' }, { property: 'og:title', content: 'Wallet — Campus Delight' }, { property: 'og:description', content: 'Your meal money, secure top-ups and wallet activity in one place.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
 });
@@ -45,7 +54,7 @@ function WalletPage() {
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="space-y-4">
         <section className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-soft sm:p-8" aria-label="Wallet balance">
-          <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-5" />Campus Delight wallet</span><img src={logo} alt="Campus Delight" className="size-11 rounded-full object-cover" /></div>
+          <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-5" />Campus Delight wallet</span><img src={logo.url} decoding="async" alt="Campus Delight" className="size-11 rounded-full object-cover" /></div>
           <p className="mt-8 text-sm opacity-80">Available balance</p>
           <p className="mt-2 break-all font-display text-4xl font-bold sm:text-5xl">{naira(wallet?.balance_kobo)}</p>
           <div className="mt-8 flex flex-wrap items-end justify-between gap-3 border-t border-primary-foreground/20 pt-4"><div><p className="text-xs opacity-80">{profile.outlet?.name ?? 'No outlet assigned'}</p><p className="mt-1 font-mono text-sm">{profile.customer_code}</p></div><span className="flex items-center gap-1 text-xs"><ShieldCheck className="size-4" />Verified top-ups only</span></div>

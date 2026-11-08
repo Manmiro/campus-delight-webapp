@@ -5,9 +5,17 @@ import { tokenAccountQuery, tokenLedgerQuery } from '@/lib/queries';
 import { tokens as fmtTokens, naira, formatDateTime, statusLabel } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import logo from '@/assets/logo.jpg';
+import logo from '@/assets/logo.webp.asset.json';
 
 export const Route = createFileRoute('/_authenticated/_customer/tokens')({
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData({ ...tokenAccountQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...tokenLedgerQuery, revalidateIfStale: true }),
+    ]);
+  },
+  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  notFoundComponent: () => <div className="p-6">Tokens page not found.</div>,
   component: TokensPage,
   head: () => ({ meta: [{ title: 'Tokens — Campus Delight' }, { name: 'description', content: 'Spend Campus Delight tokens on meals, send tokens to friends and track your rewards.' }, { property: 'og:title', content: 'Tokens — Campus Delight' }, { property: 'og:description', content: 'Your rewards, token transfers and activity in one place.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
 });
@@ -20,7 +28,7 @@ function TokensPage() {
     <header><p className="mb-1 text-xs font-semibold uppercase text-golden">Little rewards. Big cravings.</p><h1 className="font-display text-3xl font-bold">My tokens</h1><p className="mt-2 text-sm text-muted-foreground">Earn a little delight. Spend it on something delicious.</p></header>
     <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <section className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-soft sm:p-8" aria-label="Available tokens">
-        <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium"><Coins className="size-5" />Campus Delight rewards</span><img src={logo} alt="Campus Delight" className="size-11 rounded-full object-cover" /></div>
+        <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium"><Coins className="size-5" />Campus Delight rewards</span><img src={logo.url} decoding="async" alt="Campus Delight" className="size-11 rounded-full object-cover" /></div>
         <p className="mt-7 text-sm opacity-80">Ready to spend</p><div className="mt-2 flex flex-wrap items-baseline gap-2"><p className="break-all font-display text-5xl font-bold">{fmtTokens(available)}</p><span className="text-sm">tokens</span></div>
         <p className="mt-2 text-sm opacity-80">{naira(available * 100)} nominal value · 1 token = ₦1</p>
         <Button asChild variant="secondary" className="mt-7 h-12 w-full font-bold sm:w-auto"><Link to="/order"><UtensilsCrossed />Pay for a meal<ArrowUpRight /></Link></Button>
