@@ -90,7 +90,6 @@ function AdminOverview() {
   const onTime = loans.filter((l) => l.status === "fully_repaid_on_time").length;
   const openLoans = loans.filter((l) => ["active", "partially_repaid"].includes(l.status)).length;
   const otherLoans = Math.max(0, loans.length - onTime - openLoans - overdue);
-  const rate = loans.length ? Math.round((onTime / loans.length) * 100) : null;
 
   const kpis = [
     { icon: Building2, label: "Outlets", value: String(outletCount), hint: "Live campus outlets", tone: "bg-primary/10 text-primary" },
@@ -139,8 +138,8 @@ function AdminOverview() {
               <p className="font-display text-xl font-bold">{naira(outstanding)}</p>
             </div>
             <div className="rounded-2xl bg-golden p-4 text-golden-foreground">
-              <p className="text-xs opacity-85">On-time rate</p>
-              <p className="font-display text-xl font-bold">{rate === null ? "—" : `${rate}%`}</p>
+              <p className="text-xs opacity-85">On-time repayments</p>
+              <p className="font-display text-xl font-bold">{loans.length === 0 ? "—" : `${onTime} of ${loans.length} repaid on time`}</p>
             </div>
           </div>
         </div>

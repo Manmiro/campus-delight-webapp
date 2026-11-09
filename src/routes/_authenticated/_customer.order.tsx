@@ -9,7 +9,7 @@ import { profileQuery, myMenuQuery, subscriptionsQuery, todayEntitlementsQuery, 
 import { useServerFn } from "@tanstack/react-start";
 import { placeFoodOrder } from "@/lib/transactions.functions";
 import { naira, planLabel, tierLabel } from "@/lib/format";
-import { DEFAULT_CREDIT_LIMIT_KOBO, orderPaymentOptions, tokensForKobo } from "@/lib/prd-rules";
+import { DEFAULT_CREDIT_LIMIT_KOBO, loanChargeKobo, orderPaymentOptions, tokensForKobo, type LoanTermDays } from "@/lib/prd-rules";
 import { EmptyState } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,11 +44,7 @@ export const Route = createFileRoute("/_authenticated/_customer/order")({
 
 type Cart = Record<string, number>;
 
-const TERMS = [
-  { days: 7, pct: 15 },
-  { days: 14, pct: 25 },
-  { days: 30, pct: 50 },
-] as const;
+const TERMS: LoanTermDays[] = [7, 14, 30];
 
 function OrderPage() {
   const qc = useQueryClient();
@@ -107,12 +103,12 @@ function OrderPage() {
     return sum + (item ? item.price_kobo * qty : 0);
   }, 0);
 
-  const term = TERMS.find((t) => t.days === Number(termDays)) ?? TERMS[0];
+  const term = TERMS.find((days) => days === Number(termDays)) ?? TERMS[0]!;
   const feeKobo = delivery?.delivery_fee_kobo ?? 0;
   const payableKobo = deliveryTotal(totalKobo, feeKobo, fulfillment ?? 'pickup');
   const deliveryFee = fulfillment === 'delivery' ? feeKobo : 0;
   const checkoutTotal = method === 'subscription_entitlement' ? deliveryFee : payableKobo;
-  const creditCharge = Math.ceil((payableKobo * term.pct) / 100);
+  const creditCharge = loanChargeKobo(payableKobo, term);
   const creditTotal = payableKobo + creditCharge;
   const availableCredit = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
 
@@ -486,19 +482,19 @@ function OrderPage() {
           <div className="mt-4 rounded-2xl bg-accent p-3 text-sm">
             <p className="text-xs font-semibold">Repayment term</p>
             <div className="mt-2 grid grid-cols-3 gap-2">
-              {TERMS.map((t) => (
-                <button key={t.days} type="button" onClick={() => setTermDays(String(t.days))}
-                  className={`rounded-xl px-2 py-2 text-center text-xs font-semibold transition-all ${termDays === String(t.days) ? "bg-primary text-primary-foreground shadow-glow" : "bg-card"}`}>
-                  {t.days} days<span className="block font-normal opacity-80">+{t.pct}%</span>
+              {TERMS.map((days) => (
+                <button key={days} type="button" onClick={() => setTermDays(String(days))}
+                  className={`rounded-xl px-2 py-2 text-center text-xs font-semibold transition-all ${termDays === String(days) ? "bg-primary text-primary-foreground shadow-glow" : "bg-card"}`}>
+                  {days} days<span className="block font-normal opacity-80">+{naira(loanChargeKobo(payableKobo, days))}</span>
                 </button>
               ))}
             </div>
             <dl className="mt-3 space-y-1 text-xs">
               <div className="flex justify-between"><dt>Food now</dt><dd>{naira(totalKobo)}</dd></div>
-              <div className="flex justify-between"><dt>Charge ({term.pct}%)</dt><dd>{naira(creditCharge)}</dd></div>
+              <div className="flex justify-between"><dt>Charge</dt><dd>{naira(creditCharge)}</dd></div>
               <div className="flex justify-between font-semibold"><dt>Total repayable</dt><dd>{naira(creditTotal)}</dd></div>
               <p className="pt-1 text-[11px] text-muted-foreground">
-                Due in {term.days} days. Part-payments welcome; settle fully on time and your limit doubles.
+                Due in {term} days. Part-payments welcome; settle fully on time and your limit doubles.
                 Overdue debt adds 10% of the original total due per completed 24 hours, without a ceiling. Wallet top-ups automatically repay open loans.
               </p>
             </dl>

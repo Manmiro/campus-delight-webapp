@@ -9,7 +9,7 @@ import { requestOtp } from "@/lib/credit.functions";
 import { repayFoodLoan } from "@/lib/transactions.functions";
 import { profileQuery, creditQuery, loansQuery, creditHistoryQuery } from "@/lib/queries";
 import { naira, formatDateTime, statusLabel } from "@/lib/format";
-import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
+import { creditLimitAfterLateRepayment, creditLimitAfterTimelyRepayment, DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,8 @@ function CreditPage() {
   });
 
   const limitKobo = credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO;
+  const timelyLimitKobo = creditLimitAfterTimelyRepayment(limitKobo);
+  const lateLimitKobo = creditLimitAfterLateRepayment(limitKobo);
   const usedPct = limitKobo > 0 ? Math.min(100, Math.round(((credit?.outstanding_kobo ?? 0) / limitKobo) * 100)) : 0;
   const availPct = 100 - usedPct;
   const unlockSteps = [
@@ -134,7 +136,7 @@ function CreditPage() {
       {/* Stat tiles */}
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { icon: TrendingUp, label: "Credit limit", value: naira(limitKobo), hint: "Doubles when you repay on time · −30% when late", tone: "bg-primary/10 text-primary" },
+          { icon: TrendingUp, label: "Credit limit", value: naira(limitKobo), hint: `Doubles to ${naira(timelyLimitKobo)} on time · Drops to ${naira(lateLimitKobo)} when late`, tone: "bg-primary/10 text-primary" },
           { icon: Wallet, label: "Available to borrow", value: naira(available), hint: "Maximum principal for your next loan", tone: "bg-golden/15 text-golden" },
           { icon: Receipt, label: "Outstanding", value: naira(credit?.outstanding_kobo ?? 0), hint: "Existing debt stays payable no matter what", tone: "bg-destructive/10 text-destructive" },
         ].map((s) => (

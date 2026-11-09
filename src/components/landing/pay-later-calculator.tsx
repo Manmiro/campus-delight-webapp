@@ -3,7 +3,7 @@ import { Wallet } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import {
   DEFAULT_CREDIT_LIMIT_KOBO,
-  LOAN_TERM_CHARGE_PERCENT,
+  loanChargeKobo,
   loanTotalDueKobo,
   type LoanTermDays,
 } from "@/lib/prd-rules";
@@ -17,6 +17,7 @@ export function PayLaterCalculator() {
   const [amountNaira, setAmountNaira] = useState(DEFAULT_CREDIT_LIMIT_KOBO / 100);
   const principal = amountNaira * 100;
   const total = loanTotalDueKobo(principal, term);
+  const charge = total - principal;
 
   return (
     <div className="rounded-2xl bg-secondary/50 p-6">
@@ -55,15 +56,15 @@ export function PayLaterCalculator() {
             )}
           >
             {t} days
-            <span className="block text-xs font-normal opacity-80">+{LOAN_TERM_CHARGE_PERCENT[t]}%</span>
+            <span className="block text-xs font-normal opacity-80">+{naira(loanChargeKobo(principal, t))}</span>
           </button>
         ))}
       </div>
 
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
-          <span>{term}-day charge ({LOAN_TERM_CHARGE_PERCENT[term]}%)</span>
-          <span className="font-semibold">{naira(total - principal)}</span>
+          <span>{term}-day charge</span>
+          <span className="font-semibold">{naira(charge)}</span>
         </div>
         <div className="flex justify-between border-t border-border pt-2">
           <span>Total repayable</span>

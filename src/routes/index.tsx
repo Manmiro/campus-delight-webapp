@@ -222,7 +222,7 @@ function Landing() {
               </h2>
               <p className="mt-3 text-sm text-muted-foreground">
                 Verified customers get a ₦2,100 starter credit limit. Repay on time and it doubles —
-                repay late and it drops by exactly 30%. Your limit, your record, always visible.
+                repay late and your starter limit drops to ₦1,470. Your limit, your record, always visible.
               </p>
               <ul className="mt-4 space-y-2 text-sm">
                 {["Five-digit OTP verification before your first loan", "Flexible part-payments any time", "₦1 is exactly ₦1 — no rounding games"].map((t) => (

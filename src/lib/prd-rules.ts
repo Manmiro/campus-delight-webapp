@@ -34,7 +34,12 @@ export type LoanTermDays = keyof typeof LOAN_TERM_CHARGE_PERCENT;
 
 /** Total repayable in kobo for a principal on a given term (integer math). */
 export function loanTotalDueKobo(principalKobo: number, termDays: LoanTermDays): number {
-  return principalKobo + Math.round((principalKobo * LOAN_TERM_CHARGE_PERCENT[termDays]) / 100);
+  return principalKobo + loanChargeKobo(principalKobo, termDays);
+}
+
+/** Term charge in kobo, rounded up to match the database checkout RPC. */
+export function loanChargeKobo(principalKobo: number, termDays: LoanTermDays): number {
+  return Math.ceil((principalKobo * LOAN_TERM_CHARGE_PERCENT[termDays]) / 100);
 }
 
 
