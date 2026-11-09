@@ -3,7 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
-- [ ] Optimize image delivery and fonts, intent navigation, safe catalog caching and route bundles; verify signed-in flows and mobile/desktop rendering.
+- [x] Optimize image delivery and fonts, intent navigation, safe catalog caching and route bundles; desktop/mobile checks passed, 129 tests pass.
 - [ ] Finish overdue-loan automation, day-1/day-2 warning emails, auto-repayment receipts and customer notices; add audited headquarters ordering/transfer exceptions per loan and verify them.
 - [x] Add animated delivery/pickup checkout with address, outlet-adjustable ₦600 initial fee in Menu & Pricing, atomic charges, receipts and fulfillment details. Signed-in pickup and adjusted-fee delivery purchases read back in history; both cancelled and tokens restored, outlet fee restored to ₦600. Mobile dialog fits without overflow; fee rules and manager isolation tested.
 - [x] Scaffold and brand all six account email templates with the main logo, meal photo and green/gold design; managed webhook and dashboard previews retained.
