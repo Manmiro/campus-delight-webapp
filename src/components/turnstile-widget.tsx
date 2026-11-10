@@ -1,135 +1,76 @@
 import { useEffect, useRef } from "react";
+import { loadTurnstileScript, turnstileFailure, type TurnstileFailure } from "@/lib/turnstile";
 
-type TurnstileApi = {
-  ready: (callback: () => void) => void;
-  render: (container: HTMLElement, options: {
-    sitekey: string;
-    action: string;
-    execution: "render" | "execute";
-    callback: (token: string) => void;
-    "error-callback": () => boolean;
-    "expired-callback": () => void;
-    "timeout-callback": () => void;
-  }) => string;
-  reset: (widgetId: string) => void;
-  remove: (widgetId: string) => void;
-};
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
-const TURNSTILE_SCRIPT_ID = "cloudflare-turnstile-script";
-const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-// Public Cloudflare Turnstile site key (safe to ship in browser code).
-const TURNSTILE_SITE_KEY =
+// Public site key; the matching secret is validated only on the server.
+const SITE_KEY =
   (import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined) || "0x4AAAAAAF094QazO_Cq50Dz";
-
-let turnstileScriptPromise: Promise<void> | undefined;
-
-function loadTurnstileScript(): Promise<void> {
-  if (window.turnstile) return Promise.resolve();
-  if (turnstileScriptPromise) return turnstileScriptPromise;
-
-  turnstileScriptPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.getElementById(TURNSTILE_SCRIPT_ID);
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Turnstile script failed to load")), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = TURNSTILE_SCRIPT_ID;
-    script.src = TURNSTILE_SCRIPT_URL;
-    // Dynamically inserted scripts default to async=true, and Cloudflare's
-    // api.js throws a TurnstileError from turnstile.ready() when the script
-    // loads asynchronously — force ordered (non-async) loading.
-    script.async = false;
-    script.onload = () => window.turnstile ? resolve() : reject(new Error("Turnstile is unavailable"));
-    script.onerror = () => reject(new Error("Turnstile script failed to load"));
-    document.head.appendChild(script);
-  });
-
-  return turnstileScriptPromise;
-}
-
 type TurnstileWidgetProps = {
   action?: string;
   resetSignal: number;
   onToken: (token: string | null) => void;
-  onError: () => void;
+  onError: (failure: TurnstileFailure) => void;
 };
 
-export function TurnstileWidget({ resetSignal, onToken, onError, action = 'auth' }: TurnstileWidgetProps) {
+export function TurnstileWidget({
+  resetSignal,
+  onToken,
+  onError,
+  action = "auth",
+}: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<string | null>(null);
-  const lastResetSignal = useRef(resetSignal);
-  const onTokenRef = useRef(onToken);
-  const onErrorRef = useRef(onError);
-
-  useEffect(() => { onTokenRef.current = onToken; }, [onToken]);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  const callbacks = useRef({ onToken, onError });
+  useEffect(() => {
+    callbacks.current = { onToken, onError };
+  }, [onToken, onError]);
 
   useEffect(() => {
-    if (!TURNSTILE_SITE_KEY) {
-      onErrorRef.current();
-      return;
-    }
-
     let disposed = false;
-    void loadTurnstileScript().then(() => {
-      if (disposed || !containerRef.current || !window.turnstile) return;
-      try {
-        window.turnstile.ready(() => {
-          if (disposed || !containerRef.current || !window.turnstile) return;
-          widgetIdRef.current = window.turnstile.render(containerRef.current, {
-            sitekey: TURNSTILE_SITE_KEY,
+    let remove: (() => void) | undefined;
+    const fail = (code: string) => {
+      if (disposed) return;
+      callbacks.current.onToken(null);
+      // Preserve the provider's diagnostic code without logging tokens or keys.
+      console.warn("Security verification failed", { code });
+      callbacks.current.onError(turnstileFailure(code));
+    };
+    void loadTurnstileScript()
+      .then((api) => {
+        if (disposed || !containerRef.current) return;
+        try {
+          const widgetId = api.render(containerRef.current, {
+            sitekey: SITE_KEY,
             action,
             execution: "render",
-            callback: (token) => onTokenRef.current(token),
-            "error-callback": () => {
-              onTokenRef.current(null);
-              onErrorRef.current();
+            callback: (token) => {
+              if (!disposed) callbacks.current.onToken(token);
+            },
+            "error-callback": (code) => {
+              fail(code);
               return true;
             },
-            "expired-callback": () => onTokenRef.current(null),
-            "timeout-callback": () => {
-              onTokenRef.current(null);
-              onErrorRef.current();
+            "expired-callback": () => {
+              if (!disposed) callbacks.current.onToken(null);
             },
+            "timeout-callback": () => fail("timeout"),
           });
-        });
-      } catch {
-        if (!disposed) {
-          onTokenRef.current(null);
-          onErrorRef.current();
+          remove = () => api.remove(widgetId);
+        } catch {
+          fail("render");
         }
-      }
-    }).catch(() => {
-      if (!disposed) {
-        onTokenRef.current(null);
-        onErrorRef.current();
-      }
-    });
+      })
+      .catch(() => fail("script-load"));
 
     return () => {
       disposed = true;
-      if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
-        widgetIdRef.current = null;
+      // Cloudflare may already have removed an errored widget.
+      try {
+        remove?.();
+      } catch {
+        /* No live widget remains. */
       }
     };
-  }, []);
-
-  useEffect(() => {
-    if (resetSignal === lastResetSignal.current) return;
-    lastResetSignal.current = resetSignal;
-    onTokenRef.current(null);
-    if (widgetIdRef.current && window.turnstile) window.turnstile.reset(widgetIdRef.current);
-  }, [resetSignal]);
+    // A retry rebuilds the widget, including when its initial script never loaded.
+  }, [action, resetSignal]);
 
   return <div ref={containerRef} className="flex min-h-[65px] justify-center" />;
 }

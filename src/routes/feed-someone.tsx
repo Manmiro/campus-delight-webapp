@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TurnstileWidget } from "@/components/turnstile-widget";
+import type { TurnstileFailure } from "@/lib/turnstile";
 import { LegalLinks } from "@/components/legal-page";
 import logo from "@/assets/logo.webp.asset.json";
 
@@ -87,6 +88,7 @@ function FeedSomeone() {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [securityError, setSecurityError] = useState("");
   const [reset, setReset] = useState(0);
   const attempted = useRef("");
   const [kind, setKind] = useState<"wallet" | "plan" | "meal">("wallet");
@@ -100,6 +102,14 @@ function FeedSomeone() {
   const [sponsorEmail, setSponsorEmail] = useState("");
   const [note, setNote] = useState("");
   const [paying, setPaying] = useState(false);
+  const handleSecurityToken = useCallback((token: string | null) => {
+    setCaptchaToken(token);
+    if (token) setSecurityError("");
+  }, []);
+  const handleSecurityError = useCallback((failure: TurnstileFailure) => {
+    setCaptchaToken(null);
+    setSecurityError(failure.message);
+  }, []);
 
   useEffect(() => {
     if (
@@ -166,6 +176,7 @@ function FeedSomeone() {
   function changeStep(next: number) {
     setStep(next);
     setError("");
+    setSecurityError("");
     setCaptchaToken(null);
     setReset((r) => r + 1);
   }
@@ -175,6 +186,7 @@ function FeedSomeone() {
     setReset((r) => r + 1);
     setChecking(false);
     setError("");
+    setSecurityError("");
   }
   async function pay() {
     if (!recipient || !captchaToken || paying) return;
@@ -349,9 +361,13 @@ function FeedSomeone() {
                       setRecipient(null);
                       setChecking(false);
                       setError("");
+                      // A token is single-use after lookup, but typing before
+                      // lookup must not restart Cloudflare on every keystroke.
+                      if (attempted.current) {
+                        setCaptchaToken(null);
+                        setReset((r) => r + 1);
+                      }
                       attempted.current = "";
-                      setCaptchaToken(null);
-                      setReset((r) => r + 1);
                     }}
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -362,12 +378,8 @@ function FeedSomeone() {
                       key="lookup"
                       action="gift"
                       resetSignal={reset}
-                      onToken={setCaptchaToken}
-                      onError={() =>
-                        setError(
-                          "Security verification is unavailable. Please refresh and try again.",
-                        )
-                      }
+                      onToken={handleSecurityToken}
+                      onError={handleSecurityError}
                     />
                   </div>
                   <div aria-live="polite">
@@ -643,12 +655,8 @@ function FeedSomeone() {
                       key="checkout"
                       action="gift"
                       resetSignal={reset}
-                      onToken={setCaptchaToken}
-                      onError={() =>
-                        setError(
-                          "Security verification is unavailable. Please refresh and try again.",
-                        )
-                      }
+                      onToken={handleSecurityToken}
+                      onError={handleSecurityError}
                     />
                   </div>
                   <p className="mt-5 text-xs leading-5 text-muted-foreground">
@@ -681,6 +689,16 @@ function FeedSomeone() {
                 <p role="alert" className="mt-4 text-sm text-destructive">
                   {error}
                 </p>
+              )}
+              {securityError && (
+                <div className="mt-4 space-y-3">
+                  <p role="alert" className="text-sm text-destructive">
+                    {securityError}
+                  </p>
+                  <Button type="button" variant="outline" disabled={paying} onClick={retryLookup}>
+                    Try security check again
+                  </Button>
+                </div>
               )}
             </section>
             <aside className="min-w-0 space-y-4 lg:sticky lg:top-6">

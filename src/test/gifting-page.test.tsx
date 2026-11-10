@@ -7,6 +7,7 @@ const fixtures = vi.hoisted(() => ({
   checkout: vi.fn(),
   verify: vi.fn(),
   reference: undefined as string | undefined,
+  resets: [] as number[],
 }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => ({
@@ -32,11 +33,30 @@ vi.mock("@/lib/gifting.functions", () => ({
 }));
 vi.mock("@/lib/avatar", () => ({ defaultAvatarFor: () => "/default-avatar.webp" }));
 vi.mock("@/components/turnstile-widget", () => ({
-  TurnstileWidget: ({ onToken }: { onToken: (token: string) => void }) => (
-    <button type="button" onClick={() => onToken("test-captcha")}>
-      Verify security
-    </button>
-  ),
+  TurnstileWidget: ({
+    onToken,
+    onError,
+    resetSignal,
+  }: {
+    onToken: (token: string) => void;
+    onError: (error: { code: string; message: string }) => void;
+    resetSignal: number;
+  }) => {
+    fixtures.resets.push(resetSignal);
+    return (
+      <>
+        <button type="button" onClick={() => onToken("test-captcha")}>
+          Verify security
+        </button>
+        <button
+          type="button"
+          onClick={() => onError({ code: "200500", message: "Security check could not load." })}
+        >
+          Simulate security error
+        </button>
+      </>
+    );
+  },
 }));
 import { Route } from "@/routes/feed-someone";
 const Page = Route.options.component as ComponentType;
@@ -58,6 +78,7 @@ async function findPerson() {
 beforeEach(() => {
   vi.clearAllMocks();
   fixtures.reference = undefined;
+  fixtures.resets = [];
   fixtures.lookup.mockResolvedValue({
     foodieId: "CD050619",
     name: "Chioma E.",
@@ -82,6 +103,26 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("guest gifting page", () => {
+  it("preserves a ready security check while typing the Foodie ID", async () => {
+    show();
+    fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
+    const field = screen.getByLabelText("Student’s Foodie ID");
+    for (const value of ["c", "cd", "cd050", "cd050619"])
+      fireEvent.change(field, { target: { value } });
+    await waitFor(() => expect(fixtures.lookup).toHaveBeenCalledOnce());
+    expect(fixtures.resets.every((value) => value === 0)).toBe(true);
+  });
+  it("clears recovered security errors and permits another attempt without refreshing", async () => {
+    show();
+    fireEvent.click(screen.getByRole("button", { name: "Simulate security error" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Security check could not load.");
+    fireEvent.click(screen.getByRole("button", { name: "Try security check again" }));
+    expect(fixtures.resets.at(-1)).toBe(1);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Simulate security error" }));
+    fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
   it("verifies a recipient live and sends the chosen gift without requiring an account", async () => {
     show();
     await findPerson();
