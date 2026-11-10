@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -8,6 +8,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { claimDailyReward, sendBirthdayGreeting } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fun/confetti";
+import { ScratchFortuneCard } from "@/components/fun/scratch-fortune-card";
+import { getUserId } from "@/lib/queries";
+import { playDelightFeedback, prepareDelightFeedback } from "@/lib/delight-feedback";
 import {
   SPIN_MAX_TOKENS, SPIN_MIN_TOKENS, badgesFor, isBirthday, levelFor, nextStreakMilestone, referralMilestone, streakBonusFor,
 } from "@/lib/fun-rules";
@@ -15,7 +18,9 @@ import {
 export const checkinsQuery = queryOptions({
   queryKey: ["me", "checkins"],
   queryFn: async () => {
+    const id = await getUserId();
     const { data, error } = await supabase.from("daily_checkins").select("checkin_date, streak, spin_tokens, bonus_tokens")
+      .eq("customer_id", id)
       .order("checkin_date", { ascending: false }).limit(60);
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -38,13 +43,22 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
 }) {
   const qc = useQueryClient();
   const claimReward = useServerFn(claimDailyReward);
-  const { data: checkins = [] } = useQuery(checkinsQuery);
+  const { data: checkins = [], isPending: loadingCheckins, isError: checkinsFailed, refetch } = useQuery(checkinsQuery);
   const [fire, setFire] = useState(0);
-  const [result, setResult] = useState<{ spin: number; bonus: number; streak: number } | null>(null);
+  const [result, setResult] = useState<{ spin: number; bonus: number; streak: number; date: string } | null>(null);
+  const claimInFlight = useRef(false);
+  const [today, setToday] = useState(lagosToday);
+  useEffect(() => {
+    const refreshDay = () => setToday(lagosToday());
+    const interval = window.setInterval(refreshDay, 30_000);
+    window.addEventListener("focus", refreshDay);
+    return () => { window.clearInterval(interval); window.removeEventListener("focus", refreshDay); };
+  }, []);
 
-  const today = lagosToday();
   const last = checkins[0];
-  const checkedToday = last?.checkin_date === today;
+  const todayResult = result?.date === today ? result : null;
+  const checkedToday = last?.checkin_date === today || !!todayResult;
+  const prize = todayResult ?? (last?.checkin_date === today ? { spin: last.spin_tokens, bonus: last.bonus_tokens } : null);
   const liveStreak = last && (last.checkin_date === today || last.checkin_date === lagosYesterday()) ? last.streak : 0;
   const bestStreak = checkins.reduce((m, c) => Math.max(m, c.streak), 0);
   const nextMs = nextStreakMilestone(liveStreak);
@@ -54,16 +68,26 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
       return claimReward();
     },
     onSuccess: (r) => {
-      setTimeout(() => {
-        setResult(r);
-        setFire((f) => f + 1);
-        toast.success(`+${r.total} tokens! ${r.bonus ? `Streak bonus +${r.bonus} 🔥` : "See you tomorrow 👋"}`);
-        void qc.invalidateQueries({ queryKey: ["me"] });
-      }, 1600);
+      setResult({ ...r, date: lagosToday() });
+      setFire((f) => f + 1);
+      playDelightFeedback("tokens");
+      toast.success(`+${r.total} tokens! ${r.bonus ? `Streak bonus +${r.bonus} 🔥` : "See you tomorrow 👋"}`);
+      void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not check in"),
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : "Could not check in");
+      void qc.invalidateQueries({ queryKey: ["me", "checkins"] });
+    },
+    onSettled: () => { claimInFlight.current = false; },
   });
-  const spinning = claim.isPending || (claim.isSuccess && !result);
+  const spinning = claim.isPending;
+  const unavailable = checkedToday || loadingCheckins || checkinsFailed;
+  const revealReward = () => {
+    if (unavailable || claimInFlight.current) return;
+    claimInFlight.current = true;
+    prepareDelightFeedback();
+    claim.mutate();
+  };
 
   const counted = orders.filter((o) => o.status !== "cancelled");
   const level = levelFor(counted.length);
@@ -95,7 +119,8 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {checkinsFailed && <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive">Your daily reward could not load.<Button size="sm" variant="outline" onClick={() => void refetch()}>Try again</Button></div>}
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Daily spin + streak */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-brand p-5 text-primary-foreground shadow-glow">
           <div className="flex items-center justify-between">
@@ -103,12 +128,12 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
             <span className="rounded-full bg-primary-foreground/15 px-2.5 py-0.5 text-xs">Best {bestStreak}</span>
           </div>
           <div className="mt-4 flex items-center gap-4">
-            <div className={`grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 border-dashed border-golden bg-primary-foreground/10 ${spinning ? "animate-spin-wheel" : ""}`}>
+            <div className={`grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 border-dashed border-golden bg-primary-foreground/10 ${spinning ? "motion-safe:animate-spin-wheel" : ""}`}>
               <Sparkles className="h-8 w-8 text-golden" />
             </div>
             <div className="min-w-0">
-              {result && checkedToday ? (
-                <p className="animate-pop-in font-display text-2xl font-extrabold">+{result.spin + result.bonus} tokens</p>
+              {prize ? (
+                <p className="motion-safe:animate-pop-in font-display text-2xl font-extrabold">+{prize.spin + prize.bonus} tokens</p>
               ) : (
                 <p className="font-display text-lg font-bold">{checkedToday ? "Done for today ✅" : "Daily spin is ready!"}</p>
               )}
@@ -117,11 +142,14 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
               </p>
             </div>
           </div>
-          <Button variant="secondary" className="mt-4 w-full rounded-full" disabled={checkedToday || spinning} onClick={() => claim.mutate()}>
+          <Button variant="secondary" className="mt-4 w-full rounded-full" disabled={unavailable || spinning} onClick={revealReward}>
             {spinning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
-            {checkedToday ? "Come back tomorrow" : "Spin & check in"}
+            {checkedToday ? "Come back tomorrow" : spinning ? "Claiming…" : loadingCheckins ? "Loading reward…" : "Spin & check in"}
           </Button>
         </div>
+
+        <ScratchFortuneCard key={today} prize={prize} busy={spinning} disabled={unavailable}
+          error={claim.isError} onReveal={revealReward} onPrepare={prepareDelightFeedback} />
 
         {/* Level + badges */}
         <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft">

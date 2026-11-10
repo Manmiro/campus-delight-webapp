@@ -17,6 +17,7 @@ import { FulfillmentDialog } from '@/components/fulfillment-dialog';
 import { OrderThankYouDialog, type PlacedOrder } from '@/components/order-thank-you-dialog';
 import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
 import { outletDeliveryQuery, loanRestrictionsQuery } from '@/lib/queries';
+import { playDelightFeedback, prepareDelightFeedback } from '@/lib/delight-feedback';
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
   loader: async ({ context: { queryClient } }) => {
@@ -114,6 +115,7 @@ function OrderPage() {
 
   const placeOrder = useMutation({
     mutationFn: async () => {
+      prepareDelightFeedback();
       const choice = deliveryChoiceSchema.parse({ fulfillment, address, expectedFeeKobo: feeKobo });
       const items = cartItems.map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
       const snapshot: Omit<PlacedOrder, 'reference' | 'burst'> = {
@@ -142,6 +144,7 @@ function OrderPage() {
       return { ...snapshot, reference: res?.reference ?? null };
     },
     onSuccess: (placed) => {
+      playDelightFeedback("order");
       setCart({});
       setMethod("");
       setCheckoutOpen(false);
@@ -289,7 +292,12 @@ function OrderPage() {
 
   const add = (id: string, d: number, source?: HTMLElement) => {
     setCart((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + d) }));
-    if (d <= 0 || !source || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (d <= 0) return;
+    prepareDelightFeedback();
+    if (!source || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      playDelightFeedback("cart");
+      return;
+    }
     const item = menu.find((m) => m.id === id);
     if (!item) return;
     const art = source.closest("[data-menu-item]")?.querySelector("[data-food-art]") ?? source;
@@ -297,12 +305,18 @@ function OrderPage() {
     const food = emojiFor(item.category, item.name);
     // Wait for the first addition to mount the floating basket before measuring its position.
     requestAnimationFrame(() => {
-      if (!document.getElementById("cart")) return;
+      if (!document.getElementById("cart")) {
+        playDelightFeedback("cart");
+        return;
+      }
       const destination = Array.from(document.querySelectorAll<HTMLElement>("[data-basket-destination]")).find((element) => {
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && rect.top >= 0 && rect.bottom <= window.innerHeight;
       });
-      if (!destination) return;
+      if (!destination) {
+        playDelightFeedback("cart");
+        return;
+      }
       const target = destination.getBoundingClientRect();
       const fromX = origin.left + origin.width / 2;
       const fromY = origin.top + origin.height / 2;
@@ -325,6 +339,7 @@ function OrderPage() {
       const animation = track(flight, frames, 850, true);
       void animation.finished.then(() => {
         if (!destination.isConnected) return;
+        playDelightFeedback("cart");
         track(destination, [
           { transform: "scale(1) rotate(0deg)" },
           { transform: "translateY(7px) scale(1.18, .82) rotate(-10deg)", offset: 0.22 },

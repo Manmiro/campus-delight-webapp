@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.webp.asset.json";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DelightToggle } from "@/components/delight-toggle";
 
 export type NavItem = { to: string; label: string; icon: ReactNode; exact?: boolean };
 
@@ -108,9 +109,12 @@ export function AppShell({
         </aside>
 
         <main className="app-content min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-2 lg:py-2">
-          <div className="mb-6 rounded-3xl bg-card px-5 py-4 shadow-soft sm:px-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-card px-5 py-4 shadow-soft sm:px-6">
+            <div className="min-w-0">
             <h1 className="font-display text-xl font-bold tracking-tight sm:text-2xl">{title}</h1>
             {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
+            </div>
+            {nav.some((item) => item.to === "/order") && <DelightToggle />}
           </div>
           {children}
         </main>
