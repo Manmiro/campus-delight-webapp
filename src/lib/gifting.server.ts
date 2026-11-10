@@ -4,6 +4,7 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { paystackInitialize, paystackVerify } from "./payments.server";
 import { verifiedPaymentMatches } from "./payment-rules";
 import { recipientDisplayName, type GiftInput, type GiftRecipient } from "./gifting-rules";
+import { readServerSecret } from "./server-secret.server";
 
 // Proposed schema stays isolated until approved and generated types are refreshed.
 export type GiftRecord = {
@@ -78,7 +79,7 @@ export function giftOrigin(value: string) {
 }
 
 async function verifyCaptcha(token: string) {
-  const secret = process.env["TURNSTILE_SECRET_KEY"];
+  const secret = readServerSecret("TURNSTILE_SECRET_KEY");
   if (!secret) throw new Error("Gifting security verification is not configured yet.");
   const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
