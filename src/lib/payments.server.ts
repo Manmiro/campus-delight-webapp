@@ -13,8 +13,10 @@ export async function startPayment(input: PaymentInput, customerId: string, emai
   paymentSecret();
   const origin = new URL(input.origin);
   // Only return to this app; never accept an arbitrary external callback.
-  const allowed = ["https://campus-delight-webapp.lovable.app", "https://id-preview--26e23df5-ee2e-4a9c-9175-3fb980bfd92d.lovable.app", process.env["LOVABLE_APP_ORIGIN"]];
-  if (!allowed.includes(origin.origin) && !(origin.hostname === "localhost" && origin.port === "8080")) throw new Error("Invalid payment return address");
+  const allowed = ["https://www.campusdelight.net", "https://campusdelight.net", process.env["LOVABLE_APP_ORIGIN"]];
+  const isLovableOrigin = origin.protocol === "https:" && origin.hostname.endsWith(".lovable.app");
+  const isLocalOrigin = origin.hostname === "localhost" && origin.port === "8080";
+  if (!allowed.includes(origin.origin) && !isLovableOrigin && !isLocalOrigin) throw new Error("Invalid payment return address");
   const reference = `CDPS-${crypto.randomUUID()}`;
   let amountKobo = input.amountKobo ?? 0;
   const relatedId = input.relatedId;
