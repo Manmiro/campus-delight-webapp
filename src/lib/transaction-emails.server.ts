@@ -56,10 +56,13 @@ export async function emailPayment(reference: string) {
   if (!payment) return;
   if (payment.purpose === 'order' && payment.related_id) return emailOrder(payment.related_id);
   if (payment.purpose !== 'wallet_funding' && payment.purpose !== 'subscription') return;
-  const kind: ReceiptKind = payment.purpose === 'subscription' ? 'subscription' : 'funding';
+  const { data: fundingEntry, error: fundingError } = await db.from('wallet_ledger').select('balance_after_kobo').eq('reference', reference).eq('customer_id', payment.customer_id).eq('tx_type', 'funding').maybeSingle();
+  if (fundingError) throw fundingError;
+  const kind: ReceiptKind = payment.purpose === 'subscription' && !fundingEntry ? 'subscription' : 'funding';
   const details: { label: string; value: string }[] = [];
   if (kind === 'funding') {
-    const { data: entry } = await db.from('wallet_ledger').select('balance_after_kobo').eq('reference', reference).eq('customer_id', payment.customer_id).eq('tx_type', 'funding').maybeSingle();
+    const entry = fundingEntry;
+    if (payment.purpose === 'subscription') details.push({ label: 'Payment applied to wallet', value: 'Your plan was already paid, removed, or its price changed before this online payment completed.' });
     if (entry) details.push({ label: 'Wallet balance after funding', value: money(entry.balance_after_kobo) });
     const { data: offsets, error: offsetError } = await db.from('loan_repayments').select('*').eq('customer_id', payment.customer_id).eq('status', 'successful').like('reference', `AUTO-${reference}-%`);
     if (offsetError) throw offsetError;
@@ -78,6 +81,26 @@ export async function emailPayment(reference: string) {
     if (sub) details.push({ label: 'Meal plan', value: `${sub.plan} · ${sub.tier}` }, { label: 'Service dates', value: `${sub.start_date} to ${sub.end_date}` });
   }
   await receipt(payment.customer_id, payment.id, { kind, amount: money(payment.amount_kobo), reference, date: date(payment.verified_at ?? payment.created_at), details });
+}
+
+export async function emailWalletSubscription(subscriptionId: string, reference: string) {
+  const { data: sub, error } = await db.from('subscriptions').select('customer_id,plan,tier,price_kobo,start_date,end_date,payment_reference').eq('id', subscriptionId).eq('payment_reference', reference).single();
+  if (error) throw error;
+  if (!sub || sub.payment_reference !== reference || !sub.start_date || !sub.end_date) return;
+  const { data: entry, error: ledgerError } = await db.from('wallet_ledger').select('*').eq('customer_id', sub.customer_id).eq('reference', reference).eq('tx_type', 'debit').single();
+  if (ledgerError) throw ledgerError;
+  if (!entry || entry.amount_kobo !== -sub.price_kobo) throw new Error('Subscription debit does not match receipt');
+  const duration = Math.round((Date.parse(sub.end_date) - Date.parse(sub.start_date)) / 86400000) + 1;
+  await receipt(sub.customer_id, entry.id, {
+    kind: 'subscription', amount: money(-entry.amount_kobo), reference, date: date(entry.created_at),
+    details: [
+      { label: 'Meal plan', value: `${sub.plan} · ${sub.tier}` },
+      { label: 'Duration', value: `${duration} days · ${sub.start_date} to ${sub.end_date}` },
+      { label: 'Meals per day', value: String(sub.tier === 'basic' ? 1 : sub.tier === 'standard' ? 2 : 3) },
+      { label: 'Payment method', value: 'Campus Delight cash wallet' },
+      { label: 'Remaining wallet balance', value: money(entry.balance_after_kobo) },
+    ],
+  });
 }
 
 export async function emailRepayment(reference: string, customerId: string, outstandingKobo: number) {

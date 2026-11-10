@@ -43,7 +43,9 @@ function PaymentCallback() {
           void qc.invalidateQueries({ queryKey: ["me"] });
           setState("success");
           setMessage(
-            result.purpose === "subscription"
+            result.creditedToWallet
+              ? "Your plan was already paid, removed, or its price changed. This online payment has been credited to your wallet. Any automatic Pay Later repayments appear in your wallet activity."
+              : result.purpose === "subscription"
               ? "Your subscription is now active."
               : result.purpose === "order_payment"
               ? "Your card payment is confirmed and your food order has been placed."

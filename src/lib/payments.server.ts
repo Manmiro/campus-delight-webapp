@@ -20,23 +20,23 @@ export async function startPayment(input: PaymentInput, customerId: string, emai
   const reference = `CDPS-${crypto.randomUUID()}`;
   let amountKobo = input.amountKobo ?? 0;
   const relatedId = input.relatedId;
-    if (input.purpose === "subscription") {
-      const { data: sub, error } = await db.from("subscriptions").select("id,plan,tier,status,outlet_id").eq("id", input.relatedId ?? "").eq("customer_id", customerId).single();
-      if (error || !sub || sub.outlet_id !== outletId || !["awaiting_payment", "renewal_pending"].includes(sub.status)) throw new Error("Subscription is not awaiting payment");
-      const { data: price, error: priceError } = await db.from("outlet_plan_prices").select("price_kobo").eq("outlet_id", outletId).eq("plan", sub.plan).eq("tier", sub.tier).eq("is_active", true).single();
-      if (priceError || !price) throw new Error("This plan is not available at your outlet");
-      amountKobo = price.price_kobo;
-      const { error: updateError } = await db.from("subscriptions").update({ price_kobo: amountKobo }).eq("id", sub.id);
-      if (updateError) throw new Error(updateError.message);
-    }
-    if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0) throw new Error("Invalid amount");
+  if (input.purpose === "subscription") {
+    const { data: price, error } = await db.rpc("prepare_subscription_payment", {
+      p_customer_id: customerId, p_subscription_id: input.relatedId ?? "", p_reference: reference,
+    });
+    if (error) throw new Error(error.message);
+    amountKobo = Number(price);
+  }
+  if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0) throw new Error("Invalid amount");
+  if (input.purpose !== "subscription") {
     const { error } = await db.from("payment_transactions").insert({ customer_id: customerId, purpose: input.purpose, amount_kobo: amountKobo, paystack_reference: reference, status: "pending", related_id: relatedId ?? null });
     if (error) throw new Error(error.message);
+  }
   try {
     const authorizationUrl = await paystackInitialize({ email, amountKobo, reference, callbackUrl: `${origin.origin}/payment/callback` });
     return { authorizationUrl, reference };
   } catch (error) {
-    await db.from("payment_transactions").update({ status: "failed" }).eq("paystack_reference", reference);
+    await db.from("payment_transactions").update({ status: "failed" }).eq("paystack_reference", reference).neq("status", "success");
     throw error;
   }
 }
@@ -70,7 +70,7 @@ export async function applyVerifiedPayment(reference: string) {
   if (!verifiedPaymentMatches({ reference, amountKobo: tx.amount_kobo }, verified)) return { applied: false, status: verified.status === "success" ? "verification_mismatch" : verified.status, purpose: tx.purpose };
   const { data, error: settlementError } = await db.rpc("settle_verified_payment", { p_reference: reference, p_amount_kobo: verified.amount, p_currency: verified.currency, p_payload: verified as Json });
   if (settlementError) throw new Error(settlementError.message);
-  const settlement = data as { applied: boolean; status: string; purpose: string | null; already?: boolean };
+  const settlement = data as { applied: boolean; status: string; purpose: string | null; already?: boolean; creditedToWallet?: boolean };
   // Repeat verifications (redirect refreshes, webhook retries) may retry a failed
   // receipt, but the per-payment send claim guarantees at most one email.
   if (settlement.applied || settlement.already) {

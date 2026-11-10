@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowRight, CalendarDays, Check, Loader2, ReceiptText, Sparkles, UtensilsCrossed, Zap } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Loader2, ReceiptText, Sparkles, Trash2, UtensilsCrossed, Wallet, Zap } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.webp.asset.json";
 import { initializePayment } from "@/lib/payments.functions";
-import { profileQuery, subscriptionsQuery, myPlanPricesQuery } from "@/lib/queries";
+import { paySubscriptionFromWallet, removePendingSubscription } from "@/lib/subscriptions.functions";
+import { profileQuery, subscriptionsQuery, myPlanPricesQuery, walletQuery } from "@/lib/queries";
 import { getUserId } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { naira, planLabel, tierLabel, formatDate } from "@/lib/format";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/_customer/subscription")({
   loader: async ({ context: { queryClient } }) => {
     await Promise.all([
       queryClient.ensureQueryData({ ...subscriptionsQuery, revalidateIfStale: true }),
+      queryClient.ensureQueryData({ ...walletQuery, revalidateIfStale: true }),
       queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }).then(async (profile) => {
         await queryClient.ensureQueryData(myPlanPricesQuery(profile.outlet_id ?? ""));
       }),
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/_customer/subscription")({
   errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
   notFoundComponent: () => <div className="p-6">Food plans page not found.</div>,
   component: SubscriptionPage,
-  head: () => ({ meta: [{ title: "My Food Plans — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack." }, { property: "og:title", content: "My Food Plans — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "My Food Plans — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack or your Campus Delight wallet." }, { property: "og:title", content: "My Food Plans — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 });
 
 const plans = [
@@ -40,16 +42,20 @@ const tierCount: Record<string, number> = { basic: 1, standard: 2, turbo: 3 };
 function SubscriptionPage() {
   const qc = useQueryClient();
   const initPayment = useServerFn(initializePayment);
+  const payWallet = useServerFn(paySubscriptionFromWallet);
+  const removePlan = useServerFn(removePendingSubscription);
   const [selected, setSelected] = useState<(typeof plans)[number]["plan"]>("weekly");
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: subs } = useSuspenseQuery(subscriptionsQuery);
   const { data: prices } = useSuspenseQuery(myPlanPricesQuery(profile.outlet_id ?? ""));
+  const { data: wallet, isError: walletError } = useSuspenseQuery({ ...walletQuery, refetchInterval: 15_000 });
+  const balance = wallet.balance_kobo;
 
   const priceOf = (plan: string, tier: string) =>
     prices.find((p) => p.plan === plan && p.tier === tier && p.is_active)?.price_kobo ?? null;
 
   const buy = useMutation({
-    mutationFn: async ({ plan, tier, subscriptionId }: { plan: string; tier: string; subscriptionId?: string }) => {
+    mutationFn: async ({ plan, tier, subscriptionId, method }: { plan: string; tier: string; subscriptionId?: string; method: "online" | "wallet" }) => {
       const priceKobo = priceOf(plan, tier);
       if (priceKobo == null) throw new Error("This plan is not available at your outlet yet");
       const customerId = await getUserId();
@@ -71,14 +77,53 @@ function SubscriptionPage() {
       if (error) throw new Error(error.message);
       relatedId = sub.id;
       }
+      if (method === "wallet") return payWallet({ data: { subscriptionId: relatedId, priceKobo } });
       const result = await initPayment({ data: { purpose: "subscription", relatedId, origin: window.location.origin } });
       window.location.href = result.authorizationUrl;
+      return undefined;
     },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["me", "subscriptions"] });
+    onSuccess: (_, variables) => {
+      if (variables.method === "wallet") toast.success("Your meal plan is active. Payment made from your wallet.");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not start checkout"),
+    onSettled: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["me"] }),
+        qc.invalidateQueries({ queryKey: ["plan-prices", profile.outlet_id] }),
+      ]);
+    },
   });
+
+  const remove = useMutation({
+    mutationFn: (subscriptionId: string) => removePlan({ data: { subscriptionId } }),
+    onSuccess: () => toast.success("Unpaid plan removed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not remove plan"),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["me", "subscriptions"] }),
+  });
+  const busy = buy.isPending || remove.isPending;
+  const visibleSubs = subs.filter(s => s.status !== "cancelled");
+
+  function paymentActions(plan: string, tier: string, subscriptionId?: string) {
+    const price = priceOf(plan, tier);
+    const insufficient = price != null && balance < price;
+    const unavailable = price == null || price <= 0;
+    const args = { plan, tier, ...(subscriptionId ? { subscriptionId } : {}) };
+    const paying = buy.isPending && buy.variables.plan === plan && buy.variables.tier === tier && buy.variables.subscriptionId === subscriptionId;
+    return <div className="mt-4 space-y-2">
+      <div className="flex flex-col gap-2">
+        <Button variant={tier === "standard" && !subscriptionId ? "secondary" : "default"} className="rounded-full" disabled={unavailable || busy} onClick={() => buy.mutate({ ...args, method: "online" })}>
+          {paying && buy.variables.method === "online" && <Loader2 className="h-4 w-4 animate-spin" />} Pay now
+        </Button>
+        <Button variant="secondary" className="h-auto min-h-10 whitespace-normal rounded-2xl py-2 text-center" disabled={unavailable || insufficient || walletError || busy} onClick={() => buy.mutate({ ...args, method: "wallet" })}>
+          {paying && buy.variables.method === "wallet" ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" /> : <Wallet className="h-4 w-4 shrink-0" />}
+          <span>Pay from wallet · {walletError ? "Balance unavailable" : `${naira(balance)} available`}</span>
+        </Button>
+      </div>
+      {insufficient && <p className="text-xs">Needs {naira(price)} ({naira(price - balance)} more) — <Link to="/wallet" className="font-semibold underline underline-offset-2">Top up wallet</Link></p>}
+      {walletError && <p className="text-xs" role="alert">Could not refresh your wallet balance. Please try again.</p>}
+      {unavailable && <p className="text-xs">This plan is currently unavailable.</p>}
+    </div>;
+  }
 
   if (!profile.outlet_id) {
     return <EmptyState title="No outlet assigned" hint="Contact support to assign your outlet before subscribing." />;
@@ -125,6 +170,7 @@ function SubscriptionPage() {
           <div>
             <h2 className="font-display text-2xl font-bold">Plans at your outlet</h2>
             <p className="text-sm text-muted-foreground">Prices are set by your outlet. Weekends never include Monday–Thursday.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Pay online with Paystack (card, bank transfer or USSD), or instantly from your wallet.</p>
           </div>
           <div className="grid grid-cols-3 gap-1 rounded-full bg-canvas p-1">
             {plans.map((p) => (
@@ -164,18 +210,11 @@ function SubscriptionPage() {
                 <p className="mt-4 font-display text-3xl font-extrabold">{price == null ? "—" : naira(price)}</p>
                 <p className={`text-xs ${popular ? "opacity-80" : "text-muted-foreground"}`}>{price == null ? "Not offered at your outlet yet" : `per ${current.name.toLowerCase()} plan`}</p>
                 <ul className="mt-4 space-y-1.5 text-sm">
-                  {[tierMeals[t], current.desc, "Pay securely with Paystack"].map((f) => (
+                  {[tierMeals[t], current.desc, "Pay with Paystack or your wallet"].map((f) => (
                     <li key={f} className="flex items-start gap-2"><Check className={`mt-0.5 h-4 w-4 shrink-0 ${popular ? "" : "text-primary"}`} /> {f}</li>
                   ))}
                 </ul>
-                <Button
-                  className="mt-5 rounded-full"
-                  variant={popular ? "secondary" : "default"}
-                  disabled={price == null || buy.isPending}
-                  onClick={() => buy.mutate({ plan: current.plan, tier: t })}
-                >
-                  {buy.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Subscribe
-                </Button>
+                {paymentActions(current.plan, t)}
               </div>
             );
           })}
@@ -185,11 +224,11 @@ function SubscriptionPage() {
       {/* Subscriptions */}
       <section className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold"><ReceiptText className="h-5 w-5 text-golden" /> Your subscriptions</h2>
-        {subs.length === 0 ? (
+        {visibleSubs.length === 0 ? (
           <p className="mt-3 rounded-2xl bg-canvas p-4 text-sm text-muted-foreground">No subscriptions yet — pick a plan above. Weekend covers Fridays to Sundays only.</p>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {subs.map((s) => (
+            {visibleSubs.map((s) => (
               <div key={s.id} className={`grid gap-3 rounded-2xl p-4 sm:grid-cols-[auto_minmax(0,1fr)] ${s.status === "active" ? "bg-primary/10 ring-1 ring-primary/40" : "bg-canvas"}`}>
                 <span className="hidden h-11 w-11 place-items-center rounded-2xl bg-card text-primary shadow-soft sm:grid"><CalendarDays className="h-5 w-5" /></span>
                 <div className="min-w-0">
@@ -198,13 +237,12 @@ function SubscriptionPage() {
                     <StatusBadge status={s.status} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {s.start_date ? `${formatDate(s.start_date)} → ${formatDate(s.end_date)}` : "Awaiting payment"} · {naira(s.price_kobo)}
+                    {s.start_date ? `${formatDate(s.start_date)} → ${formatDate(s.end_date)}` : "Awaiting payment"} · {naira(["awaiting_payment", "renewal_pending"].includes(s.status) ? priceOf(s.plan, s.tier) ?? s.price_kobo : s.price_kobo)}
                   </p>
-                  {s.status === "awaiting_payment" && (
-                    <Button size="sm" className="mt-2 rounded-full" onClick={() => buy.mutate({ plan: s.plan, tier: s.tier, subscriptionId: s.id })} disabled={buy.isPending}>
-                      {buy.isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />} Pay now
-                    </Button>
-                  )}
+                  {(s.status === "awaiting_payment" || s.status === "renewal_pending") && paymentActions(s.plan, s.tier, s.id)}
+                  {s.status === "awaiting_payment" && <Button variant="ghost" size="icon" className="mt-2 text-destructive" aria-label={`Remove unpaid ${planLabel(s.plan)} ${tierLabel(s.tier)} plan`} title="Remove unpaid plan" disabled={busy} onClick={() => remove.mutate(s.id)}>
+                    {remove.isPending && remove.variables === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  </Button>}
                 </div>
               </div>
             ))}

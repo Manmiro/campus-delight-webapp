@@ -9,7 +9,7 @@ vi.mock('@/integrations/supabase/client.server', () => ({ supabaseAdmin: {
   },
 } }));
 vi.mock('@/lib/email-templates/send-email', () => ({ sendTemplateEmail: fixtures.sent }));
-import { emailOrder, emailPayment, emailTokenEntry, emailTransfer, tryTransactionEmail } from '@/lib/transaction-emails.server';
+import { emailOrder, emailPayment, emailTokenEntry, emailTransfer, emailWalletSubscription, tryTransactionEmail } from '@/lib/transaction-emails.server';
 
 beforeEach(() => {
   fixtures.sent.mockReset().mockResolvedValue({ sent: true });
@@ -17,6 +17,30 @@ beforeEach(() => {
 });
 
 describe('valid transaction receipts', () => {
+  it('wallet subscription receipt uses committed plan dates and the debit balance', async () => {
+    fixtures.rows['subscriptions'] = { customer_id: 'customer-1', plan: 'weekly', tier: 'standard', price_kobo: 1800000, start_date: '2026-11-10', end_date: '2026-11-16', payment_reference: 'CDWS-1' };
+    fixtures.rows['wallet_ledger'] = { id: 'debit-1', amount_kobo: -1800000, balance_after_kobo: 1200000, created_at: '2026-11-10T15:00:00Z' };
+    await emailWalletSubscription('subscription-1', 'CDWS-1');
+    expect(fixtures.sent).toHaveBeenCalledWith('transaction-receipt', 'customer@example.com', expect.objectContaining({
+      idempotencyKey: 'transaction-receipt:subscription:debit-1:customer-1',
+      templateData: expect.objectContaining({ kind: 'subscription', amount: '₦18,000.00', details: expect.arrayContaining([
+        { label: 'Duration', value: '7 days · 2026-11-10 to 2026-11-16' },
+        { label: 'Meals per day', value: '2' },
+        { label: 'Remaining wallet balance', value: '₦12,000.00' },
+      ]) }),
+    }));
+  });
+  it('does not email a wallet subscription receipt for a different payment reference', async () => {
+    fixtures.rows['subscriptions'] = { payment_reference: 'CDWS-original' };
+    await emailWalletSubscription('subscription-1', 'CDWS-other');
+    expect(fixtures.sent).not.toHaveBeenCalled();
+  });
+  it('late subscription payments credited to the wallet get a funding receipt', async () => {
+    fixtures.rows['payment_transactions'] = { id: 'payment-1', customer_id: 'customer-1', purpose: 'subscription', amount_kobo: 1800000, created_at: '2026-11-10T15:00:00Z' };
+    fixtures.rows['wallet_ledger'] = { balance_after_kobo: 3000000 };
+    await emailPayment('CDPS-late');
+    expect(fixtures.sent.mock.calls[0]?.[2].templateData).toMatchObject({ kind: 'funding', amount: '₦18,000.00', details: expect.arrayContaining([{ label: 'Wallet balance after funding', value: '₦30,000.00' }]) });
+  });
   it('funding uses confirmed payment amount and funding ledger balance', async () => {
     fixtures.rows['payment_transactions'] = { id: 'payment-1', customer_id: 'customer-1', purpose: 'wallet_funding', amount_kobo: 200000, created_at: '2026-10-26T15:00:00Z' };
     fixtures.rows['wallet_ledger'] = { balance_after_kobo: 500000 };
