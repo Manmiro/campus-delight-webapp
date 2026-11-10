@@ -175,6 +175,7 @@
     radial-gradient(circle at 10% 80%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 50%);
   --shadow-glow: 0 30px 60px -20px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 4%, transparent), 0 12px 32px -16px color-mix(in oklab, var(--foreground) 14%, transparent);
+  --shadow-dining-pass: 0 0 0 3px color-mix(in oklab, var(--golden) 12%, transparent), 0 5px 24px -5px color-mix(in oklab, var(--golden) 40%, transparent);
 }
 .dark { --canvas: oklch(0.19 0.025 126.8); }
 
@@ -187,6 +188,10 @@
 @utility bg-gradient-hero { background-image: var(--gradient-hero); }
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
 @utility shadow-soft { box-shadow: var(--shadow-soft); }
+.foodie-pass {
+  box-shadow: var(--shadow-dining-pass);
+  clip-path: polygon(0 0, 100% 0, 100% 40%, calc(100% - 6px) 50%, 100% 60%, 100% 100%, 0 100%, 0 60%, 6px 50%, 0 40%);
+}
 @utility animate-float { animation: cd-float 5s ease-in-out infinite; }
 @utility animate-pop-in { animation: cd-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-block; }
 @utility animate-badge-pop { animation: cd-badge-pop 1.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }

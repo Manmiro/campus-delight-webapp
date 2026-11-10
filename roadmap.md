@@ -3,6 +3,8 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Refine the hero dining pass into a glowing ticket beside the customer name/outlet, share quick-copy feedback with chip-accented wallet IDs; signed-in copying verified on dashboard and wallet, with 320/393px and desktop displays checked.
+- [x] Add the full customer dining pass with profile photo, outlet and copyable ID; Eat Now & Pay Later is fourth and Refer & Earn fifth. Signed-in copying verified; desktop, 320/390px phones, tablet and dark-mode pass checked without overflow or page errors.
 - [x] Optimize image delivery and fonts, intent navigation, safe catalog caching and route bundles; desktop/mobile checks passed, 129 tests pass.
 - [ ] Finish overdue-loan automation, day-1/day-2 warning emails, auto-repayment receipts and customer notices; add audited headquarters ordering/transfer exceptions per loan and verify them.
 - [x] Add animated delivery/pickup checkout with address, outlet-adjustable ₦600 initial fee in Menu & Pricing, atomic charges, receipts and fulfillment details. Signed-in pickup and adjusted-fee delivery purchases read back in history; both cancelled and tokens restored, outlet fee restored to ₦600. Mobile dialog fits without overflow; fee rules and manager isolation tested.
