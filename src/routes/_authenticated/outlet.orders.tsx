@@ -64,6 +64,7 @@ function OutletOrders() {
                 <TableCell className="whitespace-nowrap text-xs">{formatDateTime(o.created_at)}</TableCell>
                 <TableCell className="text-xs">
                   <p className="font-medium">{o.customer?.full_name}</p>
+                  {o.reference.startsWith('CDG-') && <span className="my-1 inline-block rounded-full bg-golden/20 px-2 py-1 text-xs font-semibold text-golden-foreground">🎁 Surprise Gift</span>}
                   <p className="font-mono text-[10px] text-muted-foreground">{o.customer?.customer_code}</p>
                 </TableCell>
                 <TableCell className="max-w-52 text-xs">{o.order_items.map((i: { item_name: string; quantity: number }) => `${i.item_name} ×${i.quantity}`).join(", ")}</TableCell>

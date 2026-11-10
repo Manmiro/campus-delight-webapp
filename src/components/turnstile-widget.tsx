@@ -57,12 +57,13 @@ function loadTurnstileScript(): Promise<void> {
 }
 
 type TurnstileWidgetProps = {
+  action?: string;
   resetSignal: number;
   onToken: (token: string | null) => void;
   onError: () => void;
 };
 
-export function TurnstileWidget({ resetSignal, onToken, onError }: TurnstileWidgetProps) {
+export function TurnstileWidget({ resetSignal, onToken, onError, action = 'auth' }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const lastResetSignal = useRef(resetSignal);
@@ -86,7 +87,7 @@ export function TurnstileWidget({ resetSignal, onToken, onError }: TurnstileWidg
           if (disposed || !containerRef.current || !window.turnstile) return;
           widgetIdRef.current = window.turnstile.render(containerRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
-            action: "auth",
+            action,
             execution: "render",
             callback: (token) => onTokenRef.current(token),
             "error-callback": () => {

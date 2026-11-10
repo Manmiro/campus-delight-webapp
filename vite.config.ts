@@ -14,11 +14,13 @@ Object.assign(process.env, loadEnv(process.env['NODE_ENV'] ?? "development", pro
 export default defineConfig({
   vite: {
     resolve: {
-      alias: {
-        "entities/lib/decode.js": path.resolve("node_modules/entities/lib/decode.js"),
-        "entities/lib/encode.js": path.resolve("node_modules/entities/lib/encode.js"),
-        entities: path.resolve("node_modules/entities"),
-      },
+      alias: [
+        { find: 'entities/lib/decode.js', replacement: path.resolve('node_modules/entities/lib/decode.js') },
+        { find: 'entities/lib/encode.js', replacement: path.resolve('node_modules/entities/lib/encode.js') },
+        // Match the root import only. Prefix matching redirected htmlparser2's
+        // modern entities/decode import into the incompatible legacy package.
+        { find: /^entities$/, replacement: path.resolve('node_modules/entities/lib/esm/index.js') },
+      ],
     },
   },
   tanstackStart: {

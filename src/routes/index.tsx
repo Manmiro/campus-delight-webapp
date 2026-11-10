@@ -135,6 +135,9 @@ function Landing() {
                 <Button size="lg" variant="outline" className="rounded-full border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" asChild>
                   <a href="#pay-later">See what you'd repay</a>
                 </Button>
+                <Button size="lg" className="rounded-full bg-golden text-golden-foreground hover:bg-golden/90" asChild>
+                  <Link to="/feed-someone"><Gift className="mr-2 h-4 w-4" />Feed someone</Link>
+                </Button>
               </div>
               <p className="mt-4 flex items-center gap-1.5 text-xs opacity-85">
                 <Coins className="h-3.5 w-3.5" /> Plus {WELCOME_TOKENS.toLocaleString("en-NG")} free tokens on signup · 1 token = ₦1

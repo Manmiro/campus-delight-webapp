@@ -8,6 +8,10 @@ This project was built with [Lovable](https://lovable.dev).
 
 Set `VITE_TURNSTILE_SITE_KEY` for the browser widget. In Supabase Dashboard, enable Auth CAPTCHA protection, select Cloudflare Turnstile, and save the Turnstile secret key there. Configure the widget for the deployed hostnames; the auth form forwards the single-use token to Supabase for sign-in and sign-up validation.
 
+The public Feed Someone portal also requires server-only `TURNSTILE_SECRET_KEY`.
+Its database changes await business approval in `drizzle/proposed/feed_someone.sql`.
+See [gifting rollout notes](drizzle/proposed/feed_someone.md) before enabling checkout.
+
 **Live app**: https://campus-delight-webapp.lovable.app
 
 ## Build with Lovable

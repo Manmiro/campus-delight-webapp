@@ -19,7 +19,12 @@ export const Route = createFileRoute("/api/public/paystack/webhook")({
           if (event.event === "charge.success" && event.data?.reference) {
             // Verify-then-apply: the reference is confirmed with Paystack again
             // before anything is credited, and application is idempotent.
-            await applyVerifiedPayment(event.data.reference);
+            if (event.data.reference.startsWith('CDG-')) {
+              const { settleGift } = await import('@/lib/gifting.server');
+              await settleGift(event.data.reference, true);
+            } else {
+              await applyVerifiedPayment(event.data.reference);
+            }
           }
           return new Response("OK", { status: 200 });
         } catch (error) {
