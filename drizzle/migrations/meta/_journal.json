@@ -330,6 +330,13 @@
       "when": 1793977200003,
       "tag": "0046_apply_dashboard_messaging",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794302356368,
+      "tag": "0047_bind_dashboard_attachment_delete_to_owner",
+      "breakpoints": true
     }
   ]
 }
