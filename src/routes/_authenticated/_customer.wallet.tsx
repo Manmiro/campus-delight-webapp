@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import logo from '@/assets/logo.webp.asset.json';
+import { FoodieIdBadge } from '@/components/foodie-id-badge';
 
 export const Route = createFileRoute('/_authenticated/_customer/wallet')({
   loader: async ({ context: { queryClient } }) => {
@@ -57,7 +58,7 @@ function WalletPage() {
           <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-5" />Campus Delight wallet</span><img src={logo.url} decoding="async" alt="Campus Delight" className="size-11 rounded-full object-cover" /></div>
           <p className="mt-8 text-sm opacity-80">Available balance</p>
           <p className="mt-2 break-all font-display text-4xl font-bold sm:text-5xl">{naira(wallet?.balance_kobo)}</p>
-          <div className="mt-8 flex flex-wrap items-end justify-between gap-3 border-t border-primary-foreground/20 pt-4"><div><p className="text-xs opacity-80">{profile.outlet?.name ?? 'No outlet assigned'}</p><p className="mt-1 font-mono text-sm">{profile.customer_code}</p></div><span className="flex items-center gap-1 text-xs"><ShieldCheck className="size-4" />Verified top-ups only</span></div>
+          <div className="mt-8 flex flex-wrap items-end justify-between gap-3 border-t border-primary-foreground/20 pt-4"><div className="min-w-0"><p className="mb-2 text-xs opacity-80">{profile.outlet?.name ?? 'No outlet assigned'}</p><FoodieIdBadge customerCode={profile.customer_code} compact /></div><span className="flex items-center gap-1 text-xs"><ShieldCheck className="size-4" />Verified top-ups only</span></div>
         </section>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-xl border bg-card p-4 shadow-soft"><ArrowDownLeft className="mb-3 size-5 text-primary" /><p className="text-xs text-muted-foreground">Credits in activity</p><p className="mt-1 break-all text-xl font-bold">{naira(incoming)}</p></div>

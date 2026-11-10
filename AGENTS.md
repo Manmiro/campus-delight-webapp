@@ -26,4 +26,4 @@
 - Consolidate overdue processing and warning delivery with the existing loan reminder job; derive enforcement directly from due timestamps so scheduling delay cannot bypass restrictions.
 - Keep long-lived caching limited to the shared public outlet directory; prime customer queries in parallel route loaders without extending financial freshness, and retain server validation and mutation invalidation for prices, balances and restrictions.
 - Serve existing imagery as compressed CDN asset pointers and self-host variable brand fonts; preserve original media and automatic route splitting, and keep unused chart/carousel wrappers outside the imported graph.
-- Keep the dashboard dining pass in a focused presentation component using existing private-photo resolution and gender-based defaults; copy only the committed customer code without changing identity or account rules.
+- Keep the hero dining pass in a focused presentation component using existing private-photo resolution and gender-based defaults; share ID copying and optional haptics with wallet cards through FoodieIdBadge so only the committed customer code is copied without changing identity or account rules.

@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries";
 import { FunZone } from "@/components/fun/fun-zone";
 import { DiningPass } from "@/components/dining-pass";
+import { FoodieIdBadge } from "@/components/foodie-id-badge";
 import { naira, tokens as fmtTokens, planLabel, tierLabel, formatDate, formatDateTime } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits";
@@ -75,12 +76,11 @@ function Dashboard() {
         <div className="relative overflow-hidden rounded-3xl bg-foreground text-background shadow-soft">
           <img src={heroMeal.url} decoding="async" alt="Jollof rice with grilled chicken and plantain" width={1200} height={640} className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/80 to-transparent" />
-          <div className="relative max-w-md p-6 sm:p-8">
-            <p className="text-sm opacity-80">Welcome back, {profile.full_name.split(" ")[0]}</p>
+          <div className="relative p-6 sm:p-8">
+            <DiningPass fullName={profile.full_name} customerCode={profile.customer_code} outletName={profile.outlet?.name ?? "No outlet selected"} gender={profile.gender} avatar={profile.avatar_url} />
             <p className="mt-1 font-display text-3xl font-extrabold leading-tight sm:text-4xl">
               Eat well,<br /><span className="text-primary">study better.</span>
             </p>
-            <p className="mt-2 text-sm opacity-80">{profile.outlet?.name ?? "No outlet yet"}</p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild className="h-auto min-h-11 rounded-full px-5 py-2.5">
                 <Link to="/order"><ShoppingBag className="mr-2 h-4 w-4" /> Order food</Link>
@@ -98,8 +98,8 @@ function Dashboard() {
             <div className="mt-3 rounded-2xl bg-gradient-brand p-5 text-primary-foreground shadow-glow">
               <div className="flex items-center justify-between text-xs opacity-85"><span>Cash wallet</span><Wallet className="h-4 w-4" /></div>
               <p className="mt-2 break-words font-display text-3xl font-extrabold">{naira(wallet?.balance_kobo)}</p>
-              <div className="mt-4 flex items-end justify-between gap-2 font-mono text-xs opacity-90">
-                <span>{profile.customer_code}</span>
+              <div className="mt-4 flex flex-wrap items-end justify-between gap-2 font-mono text-xs">
+                <FoodieIdBadge customerCode={profile.customer_code} compact />
                 <span className="text-right">{fmtTokens(tk?.available_tokens)} tokens</span>
               </div>
             </div>
@@ -112,8 +112,6 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
-      <DiningPass fullName={profile.full_name} customerCode={profile.customer_code} outletName={profile.outlet?.name ?? "No outlet selected"} gender={profile.gender} avatar={profile.avatar_url} />
 
       <FunZone orders={orders} loans={loans} referrals={referrals} dob={profile.date_of_birth} firstName={profile.full_name.split(" ")[0] ?? ""} />
 
