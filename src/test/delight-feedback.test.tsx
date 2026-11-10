@@ -6,6 +6,7 @@ import { playDelightFeedback, setDelightFeedback } from "@/lib/delight-feedback"
 const vibrate = vi.fn();
 const createOscillator = vi.fn();
 const stop = vi.fn();
+const linearRampToValueAtTime = vi.fn();
 const saved = new Map<string, string>();
 const storage = {
   getItem: (key: string) => saved.get(key) ?? null,
@@ -35,7 +36,7 @@ beforeEach(() => {
       createGain = () => ({
         gain: {
           setValueAtTime: vi.fn(),
-          linearRampToValueAtTime: vi.fn(),
+          linearRampToValueAtTime,
           exponentialRampToValueAtTime: vi.fn(),
         },
         connect: vi.fn(),
@@ -46,34 +47,52 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  setDelightFeedback(false);
+  setDelightFeedback(true);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 describe("optional delight feedback", () => {
-  it("defaults to silent and syncs the saved toggle across mounted controls", () => {
+  it("defaults to on and syncs the saved toggle across mounted controls", () => {
     render(
       <>
         <DelightToggle />
         <DelightToggle />
       </>,
     );
-    playDelightFeedback("tokens");
-    expect(createOscillator).not.toHaveBeenCalled();
-    expect(vibrate).not.toHaveBeenCalled();
-    fireEvent.click(screen.getAllByRole("button", { name: "Sound and haptics: off" })[0]!);
-    expect(localStorage.getItem("campus-delight-feedback")).toBe("on");
     expect(screen.getAllByRole("button", { name: "Sound and haptics: on" })).toHaveLength(2);
     playDelightFeedback("cart");
     expect(createOscillator).toHaveBeenCalled();
     expect(vibrate).toHaveBeenCalledWith(8);
     fireEvent.click(screen.getAllByRole("button", { name: "Sound and haptics: on" })[1]!);
+    expect(localStorage.getItem("campus-delight-feedback")).toBe("off");
+    expect(screen.getAllByRole("button", { name: "Sound and haptics: off" })).toHaveLength(2);
     createOscillator.mockClear();
     vibrate.mockClear();
     playDelightFeedback("order");
     expect(createOscillator).not.toHaveBeenCalled();
     expect(vibrate).not.toHaveBeenCalled();
+  });
+
+  it("honors a previously saved off preference", () => {
+    saved.set("campus-delight-feedback", "off");
+    render(<DelightToggle />);
+    expect(screen.getByRole("button", { name: "Sound and haptics: off" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    playDelightFeedback("tokens");
+    expect(createOscillator).not.toHaveBeenCalled();
+    expect(vibrate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["tokens", [0.07, 0.035, 0.07 / 3, 0.05]],
+    ["cart", [0.11, 0.032]],
+    ["order", [0.09, 0.09, 0.09, 0.09]],
+  ] as const)("doubles the audio levels for the %s cue", (cue, levels) => {
+    playDelightFeedback(cue);
+    expect(linearRampToValueAtTime.mock.calls.map(([level]) => level)).toEqual(levels);
   });
 
   it("keeps cues optional on devices that reject haptics and respects reduced motion", () => {
@@ -97,10 +116,14 @@ describe("optional delight feedback", () => {
       throw new Error("Denied");
     });
     render(<DelightToggle />);
-    fireEvent.click(screen.getByRole("button", { name: "Sound and haptics: off" }));
     expect(screen.getByRole("button", { name: "Sound and haptics: on" })).toHaveAttribute(
       "aria-pressed",
       "true",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Sound and haptics: on" }));
+    expect(screen.getByRole("button", { name: "Sound and haptics: off" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
     );
   });
 });

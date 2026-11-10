@@ -2,14 +2,14 @@ import { useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "campus-delight-feedback";
 const CHANGE_EVENT = "campus-delight-feedback-change";
-let enabled = false;
+let enabled = true;
 let context: AudioContext | undefined;
 const voices = new Set<OscillatorNode>();
 
 function readPreference() {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return true;
   try {
-    enabled = window.localStorage.getItem(STORAGE_KEY) === "on";
+    enabled = window.localStorage.getItem(STORAGE_KEY) !== "off";
   } catch {
     /* Keep the session preference when storage is unavailable. */
   }
@@ -30,7 +30,7 @@ function subscribe(listener: () => void) {
 }
 
 export function useDelightFeedback() {
-  return useSyncExternalStore(subscribe, readPreference, () => false);
+  return useSyncExternalStore(subscribe, readPreference, () => true);
 }
 
 function silence() {
@@ -106,7 +106,7 @@ export function playDelightFeedback(cue: DelightCue) {
       oscillator.frequency.setValueAtTime(frequency, start);
       oscillator.frequency.exponentialRampToValueAtTime(endFrequency, start + duration);
       gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(volume, start + 0.004);
+      gain.gain.linearRampToValueAtTime(volume * 2, start + 0.004);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       oscillator.connect(gain);
       gain.connect(audio.destination);
