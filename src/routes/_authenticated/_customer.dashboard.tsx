@@ -10,6 +10,7 @@ import {
   creditQuery, loansQuery, ordersQuery, notificationsQuery, referralsQuery,
 } from "@/lib/queries";
 import { FunZone } from "@/components/fun/fun-zone";
+import { DiningPass } from "@/components/dining-pass";
 import { naira, tokens as fmtTokens, planLabel, tierLabel, formatDate, formatDateTime } from "@/lib/format";
 import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits";
@@ -111,6 +112,8 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <DiningPass fullName={profile.full_name} customerCode={profile.customer_code} outletName={profile.outlet?.name ?? "No outlet selected"} gender={profile.gender} avatar={profile.avatar_url} />
 
       <FunZone orders={orders} loans={loans} referrals={referrals} dob={profile.date_of_birth} firstName={profile.full_name.split(" ")[0] ?? ""} />
 
