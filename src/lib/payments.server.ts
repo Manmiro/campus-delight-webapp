@@ -21,7 +21,7 @@ export async function startPayment(input: PaymentInput, customerId: string, emai
   let amountKobo = input.amountKobo ?? 0;
   const relatedId = input.relatedId;
   if (input.purpose === "subscription") {
-    const { data: price, error } = await db.rpc("prepare_subscription_payment", {
+    const { data: price, error } = await (await import("./subscriptions.server")).pendingRpc("prepare_subscription_payment", {
       p_customer_id: customerId, p_subscription_id: input.relatedId ?? "", p_reference: reference,
     });
     if (error) throw new Error(error.message);
