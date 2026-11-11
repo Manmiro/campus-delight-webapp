@@ -1,1 +1,4 @@
 project_id = "raaqfsyfwfhazubffshd"
+
+[auth.captcha]
+enabled = false

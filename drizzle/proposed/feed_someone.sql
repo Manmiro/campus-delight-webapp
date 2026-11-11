@@ -1,6 +1,6 @@
 -- PROPOSED: business approval required before adding to the migration journal.
 -- Requires the existing wallet funding, fulfillment and loan restriction migrations.
--- No anonymous database access: public feature handlers validate CAPTCHA first.
+-- No anonymous database access: public feature handlers validate inputs first.
 CREATE TABLE public.gift_payments (
   reference text PRIMARY KEY CHECK (reference ~ '^CDG-[a-f0-9-]{36}$'),
   customer_id uuid NOT NULL REFERENCES public.profiles(id),

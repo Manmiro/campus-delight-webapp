@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -30,8 +30,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TurnstileWidget } from "@/components/turnstile-widget";
-import type { TurnstileFailure } from "@/lib/turnstile";
 import { LegalLinks } from "@/components/legal-page";
 import logo from "@/assets/logo.webp.asset.json";
 
@@ -87,10 +85,7 @@ function FeedSomeone() {
   const [recipient, setRecipient] = useState<GiftRecipient | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [securityError, setSecurityError] = useState("");
-  const [reset, setReset] = useState(0);
-  const attempted = useRef("");
+  const [lookupAttempt, setLookupAttempt] = useState(0);
   const [kind, setKind] = useState<"wallet" | "plan" | "meal">("wallet");
   const [amount, setAmount] = useState("5000");
   const [plan, setPlan] = useState<"weekend" | "weekly" | "monthly">("weekly");
@@ -102,50 +97,32 @@ function FeedSomeone() {
   const [sponsorEmail, setSponsorEmail] = useState("");
   const [note, setNote] = useState("");
   const [paying, setPaying] = useState(false);
-  const handleSecurityToken = useCallback((token: string | null) => {
-    setCaptchaToken(token);
-    if (token) setSecurityError("");
-  }, []);
-  const handleSecurityError = useCallback((failure: TurnstileFailure) => {
-    setCaptchaToken(null);
-    setSecurityError(failure.message);
-  }, []);
 
   useEffect(() => {
-    if (
-      reference ||
-      step !== 1 ||
-      !/^CD\d{6}$/.test(foodieId) ||
-      !captchaToken ||
-      attempted.current === foodieId
-    )
-      return;
+    if (reference || step !== 1 || !/^CD\d{6}$/.test(foodieId)) return;
     let cancelled = false;
-    const timer = setTimeout(() => {
-      attempted.current = foodieId;
-      setChecking(true);
-      setError("");
-      void lookup({ data: { foodieId, captchaToken } })
-        .then((result) => {
-          if (cancelled) return;
-          setRecipient(result);
-          if (!result)
-            setError(
-              "We couldn’t find an active student with that Foodie ID. Check the ID with them and try again.",
-            );
-        })
-        .catch((e) => {
-          if (!cancelled) setError(errorText(e));
-        })
-        .finally(() => {
-          if (!cancelled) setChecking(false);
-        });
-    }, 400);
+    setChecking(true);
+    setRecipient(null);
+    setError("");
+    void lookup({ data: { foodieId } })
+      .then((result) => {
+        if (cancelled) return;
+        setRecipient(result);
+        if (!result)
+          setError(
+            "We couldn’t find an active student with that Foodie ID. Check the ID with them and try again.",
+          );
+      })
+      .catch((e) => {
+        if (!cancelled) setError(errorText(e));
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, [foodieId, captchaToken, step, reference, lookup]);
+  }, [foodieId, step, reference, lookup, lookupAttempt]);
 
   const receipt = useQuery({
     queryKey: ["gift-receipt", reference],
@@ -176,20 +153,12 @@ function FeedSomeone() {
   function changeStep(next: number) {
     setStep(next);
     setError("");
-    setSecurityError("");
-    setCaptchaToken(null);
-    setReset((r) => r + 1);
   }
   function retryLookup() {
-    attempted.current = "";
-    setCaptchaToken(null);
-    setReset((r) => r + 1);
-    setChecking(false);
-    setError("");
-    setSecurityError("");
+    setLookupAttempt((attempt) => attempt + 1);
   }
   async function pay() {
-    if (!recipient || !captchaToken || paying) return;
+    if (!recipient || paying) return;
     setError("");
     const parsed = giftInputSchema.safeParse({
       foodieId,
@@ -205,7 +174,6 @@ function FeedSomeone() {
       sponsorEmail,
       note,
       origin: window.location.origin,
-      captchaToken,
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Please check your gift details");
@@ -217,8 +185,6 @@ function FeedSomeone() {
       window.location.assign(result.authorizationUrl);
     } catch (e) {
       setError(errorText(e));
-      setCaptchaToken(null);
-      setReset((r) => r + 1);
       setPaying(false);
     }
   }
@@ -357,31 +323,17 @@ function FeedSomeone() {
                     placeholder="CD050619"
                     className="mt-2 h-14 font-mono text-xl uppercase tracking-widest"
                     onChange={(e) => {
-                      setFoodieId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
+                      const next = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                      if (next === foodieId) return;
+                      setFoodieId(next);
                       setRecipient(null);
                       setChecking(false);
                       setError("");
-                      // A token is single-use after lookup, but typing before
-                      // lookup must not restart Cloudflare on every keystroke.
-                      if (attempted.current) {
-                        setCaptchaToken(null);
-                        setReset((r) => r + 1);
-                      }
-                      attempted.current = "";
                     }}
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
                     8 characters · starts with CD
                   </p>
-                  <div className="mt-5">
-                    <TurnstileWidget
-                      key="lookup"
-                      action="gift"
-                      resetSignal={reset}
-                      onToken={handleSecurityToken}
-                      onError={handleSecurityError}
-                    />
-                  </div>
                   <div aria-live="polite">
                     {checking && (
                       <p className="mt-4 flex items-center gap-2 text-sm">
@@ -418,7 +370,7 @@ function FeedSomeone() {
                   </div>
                   {error && (
                     <Button variant="ghost" onClick={retryLookup} className="mt-2">
-                      Try verification again
+                      Try lookup again
                     </Button>
                   )}
                   <Button
@@ -651,13 +603,6 @@ function FeedSomeone() {
                         className="mt-2"
                       />
                     </div>
-                    <TurnstileWidget
-                      key="checkout"
-                      action="gift"
-                      resetSignal={reset}
-                      onToken={handleSecurityToken}
-                      onError={handleSecurityError}
-                    />
                   </div>
                   <p className="mt-5 text-xs leading-5 text-muted-foreground">
                     You’ll pay securely with Paystack in Naira. If the gift cannot be fulfilled
@@ -676,7 +621,7 @@ function FeedSomeone() {
                     <Button
                       type="submit"
                       size="lg"
-                      disabled={!captchaToken || !validGift || paying}
+                      disabled={!validGift || paying}
                       className="flex-1 rounded-xl bg-golden text-golden-foreground hover:bg-golden/90"
                     >
                       {paying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart size={18} />}
@@ -689,16 +634,6 @@ function FeedSomeone() {
                 <p role="alert" className="mt-4 text-sm text-destructive">
                   {error}
                 </p>
-              )}
-              {securityError && (
-                <div className="mt-4 space-y-3">
-                  <p role="alert" className="text-sm text-destructive">
-                    {securityError}
-                  </p>
-                  <Button type="button" variant="outline" disabled={paying} onClick={retryLookup}>
-                    Try security check again
-                  </Button>
-                </div>
               )}
             </section>
             <aside className="min-w-0 space-y-4 lg:sticky lg:top-6">

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   rows: {} as Record<string, unknown>,
   rpc: vi.fn(),
@@ -8,9 +8,7 @@ const mocks = vi.hoisted(() => ({
   email: vi.fn(),
   sign: vi.fn(),
   fetch: vi.fn(),
-  request: vi.fn(),
 }));
-vi.mock("@tanstack/react-start/server", () => ({ getRequest: mocks.request }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: (table: string) => {
@@ -38,14 +36,8 @@ import { giftOrigin, lookupRecipient, settleGift, startGift } from "@/lib/giftin
 const reference = "CDG-00000000-0000-0000-0000-000000000005";
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.request.mockReturnValue(new Request("https://campusdelight.net/feed-someone"));
-  vi.stubEnv("TURNSTILE_SECRET_KEY", "test-captcha-secret");
   vi.stubEnv("PAYSTACK_SECRET_KEY", "test-payment-secret");
   vi.stubGlobal("fetch", mocks.fetch);
-  mocks.fetch.mockResolvedValue({
-    ok: true,
-    json: async () => ({ success: true, action: "gift", hostname: "campusdelight.net" }),
-  });
   mocks.rows = {
     gift_payments: {
       amount_kobo: 200000,
@@ -61,26 +53,14 @@ beforeEach(() => {
   mocks.verify.mockResolvedValue({ reference, amount: 200000, currency: "NGN", status: "success" });
   mocks.email.mockResolvedValue(undefined);
 });
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 describe("public gift server boundary", () => {
-  it("verifies CAPTCHA using the current Worker binding when process.env is missing it", async () => {
-    vi.stubEnv("TURNSTILE_SECRET_KEY", "");
-    mocks.request.mockReturnValue({
-      runtime: { cloudflare: { env: { TURNSTILE_SECRET_KEY: "worker-test-secret" } } },
-    });
+  it("looks up recipients directly without an external verification request", async () => {
     mocks.rows["profiles"] = null;
-    await expect(lookupRecipient("CD000000", "browser-test-token")).resolves.toBeNull();
-    expect(mocks.fetch).toHaveBeenCalledWith(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      expect.objectContaining({
-        body: new URLSearchParams({ secret: "worker-test-secret", response: "browser-test-token" }),
-      }),
-    );
-  });
-  it("never calls Cloudflare or accesses recipients without a configured secret", async () => {
-    vi.stubEnv("TURNSTILE_SECRET_KEY", "");
-    await expect(lookupRecipient("CD000000", "browser-test-token")).rejects.toThrow(
-      "not configured yet",
-    );
+    await expect(lookupRecipient("CD000000")).resolves.toBeNull();
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
   it("verifies Paystack before service-only settlement and emails only committed gifts", async () => {
@@ -149,7 +129,7 @@ describe("public gift server boundary", () => {
       menu_items: [],
     };
     mocks.sign.mockResolvedValue({ data: { signedUrl: "https://images.example/avatar" } });
-    const found = await lookupRecipient("CD050619", "captcha");
+    const found = await lookupRecipient("CD050619");
     expect(found).toEqual({
       foodieId: "CD050619",
       name: "Chioma E.",
@@ -160,22 +140,6 @@ describe("public gift server boundary", () => {
       menu: [],
     });
     expect(JSON.stringify(found)).not.toContain("private");
-  });
-  it("rejects invalid CAPTCHA actions and untrusted hostnames before accessing recipients", async () => {
-    mocks.fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, action: "auth", hostname: "campusdelight.net" }),
-    });
-    await expect(lookupRecipient("CD050619", "captcha")).rejects.toThrow(
-      "Security verification expired",
-    );
-    mocks.fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, action: "gift", hostname: "attacker.example" }),
-    });
-    await expect(lookupRecipient("CD050619", "captcha")).rejects.toThrow(
-      "Invalid payment return address",
-    );
   });
   it("uses the database quote and the sponsor receipt email for checkout", async () => {
     mocks.rpc.mockResolvedValue({ data: 200000, error: null });
@@ -191,7 +155,6 @@ describe("public gift server boundary", () => {
       fulfillment: "pickup",
       address: "",
       origin: "https://campusdelight.net",
-      captchaToken: "captcha",
     });
     expect(mocks.initialize).toHaveBeenCalledWith({
       email: "mum@example.com",
@@ -199,7 +162,7 @@ describe("public gift server boundary", () => {
       reference: result.reference,
       callbackUrl: `https://campusdelight.net/feed-someone?reference=${result.reference}`,
     });
-    expect(JSON.stringify(mocks.rpc.mock.calls)).not.toContain("captcha");
+    expect(mocks.fetch).not.toHaveBeenCalled();
   });
   it("rejects external return origins", () => {
     expect(() => giftOrigin("https://campusdelight.net.attacker.example")).toThrow();

@@ -21,7 +21,6 @@ export const giftInputSchema = z
     sponsorEmail: z.string().trim().email().max(254),
     note: z.string().trim().max(500).default(""),
     origin: z.string().url(),
-    captchaToken: z.string().min(1).max(2048),
   })
   .superRefine((v, ctx) => {
     if (v.kind === "plan" && (!v.plan || !v.tier))

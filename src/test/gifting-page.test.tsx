@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentType, ComponentProps } from "react";
 const fixtures = vi.hoisted(() => ({
@@ -7,7 +7,6 @@ const fixtures = vi.hoisted(() => ({
   checkout: vi.fn(),
   verify: vi.fn(),
   reference: undefined as string | undefined,
-  resets: [] as number[],
 }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => ({
@@ -32,32 +31,6 @@ vi.mock("@/lib/gifting.functions", () => ({
   verifyGift: fixtures.verify,
 }));
 vi.mock("@/lib/avatar", () => ({ defaultAvatarFor: () => "/default-avatar.webp" }));
-vi.mock("@/components/turnstile-widget", () => ({
-  TurnstileWidget: ({
-    onToken,
-    onError,
-    resetSignal,
-  }: {
-    onToken: (token: string) => void;
-    onError: (error: { code: string; message: string }) => void;
-    resetSignal: number;
-  }) => {
-    fixtures.resets.push(resetSignal);
-    return (
-      <>
-        <button type="button" onClick={() => onToken("test-captcha")}>
-          Verify security
-        </button>
-        <button
-          type="button"
-          onClick={() => onError({ code: "200500", message: "Security check could not load." })}
-        >
-          Simulate security error
-        </button>
-      </>
-    );
-  },
-}));
 import { Route } from "@/routes/feed-someone";
 const Page = Route.options.component as ComponentType;
 function show() {
@@ -71,14 +44,12 @@ function show() {
 }
 async function findPerson() {
   fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), { target: { value: "cd050619" } });
-  fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
   await waitFor(() => expect(screen.getByText("Chioma E.")).toBeInTheDocument());
   fireEvent.click(screen.getByRole("button", { name: /Yes, that’s my person/ }));
 }
 beforeEach(() => {
   vi.clearAllMocks();
   fixtures.reference = undefined;
-  fixtures.resets = [];
   fixtures.lookup.mockResolvedValue({
     foodieId: "CD050619",
     name: "Chioma E.",
@@ -103,25 +74,49 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("guest gifting page", () => {
-  it("preserves a ready security check while typing the Foodie ID", async () => {
+  it("starts lookup on the eighth character without waiting for a timer or extra action", async () => {
     show();
-    fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
     const field = screen.getByLabelText("Student’s Foodie ID");
-    for (const value of ["c", "cd", "cd050", "cd050619"])
+    for (const value of ["c", "cd", "cd050", "cd05061"])
       fireEvent.change(field, { target: { value } });
-    await waitFor(() => expect(fixtures.lookup).toHaveBeenCalledOnce());
-    expect(fixtures.resets.every((value) => value === 0)).toBe(true);
+    expect(fixtures.lookup).not.toHaveBeenCalled();
+    fireEvent.change(field, { target: { value: "cd050619" } });
+    expect(fixtures.lookup).toHaveBeenCalledExactlyOnceWith({ data: { foodieId: "CD050619" } });
+    await screen.findByText("Chioma E.");
   });
-  it("clears recovered security errors and permits another attempt without refreshing", async () => {
+  it("retries a failed lookup immediately without refreshing", async () => {
+    fixtures.lookup.mockRejectedValueOnce(new Error("Lookup unavailable"));
     show();
-    fireEvent.click(screen.getByRole("button", { name: "Simulate security error" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Security check could not load.");
-    fireEvent.click(screen.getByRole("button", { name: "Try security check again" }));
-    expect(fixtures.resets.at(-1)).toBe(1);
+    fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), {
+      target: { value: "CD050619" },
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Lookup unavailable");
+    fireEvent.click(screen.getByRole("button", { name: "Try lookup again" }));
+    expect(fixtures.lookup).toHaveBeenCalledTimes(2);
+    await screen.findByText("Chioma E.");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Simulate security error" }));
-    fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
+  });
+  it("ignores an older lookup when the donor changes or clears the ID", async () => {
+    let resolveOld!: (value: unknown) => void;
+    fixtures.lookup.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    show();
+    const field = screen.getByLabelText("Student’s Foodie ID");
+    fireEvent.change(field, { target: { value: "CD000001" } });
+    fireEvent.change(field, { target: { value: "CD050619" } });
+    await screen.findByText("Chioma E.");
+    await act(async () => {
+      resolveOld(null);
+    });
+    expect(screen.getByText("Chioma E.")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.change(field, { target: { value: "" } });
+    expect(screen.queryByText("Chioma E.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Yes, that’s my person/ })).toBeDisabled();
   });
   it("verifies a recipient live and sends the chosen gift without requiring an account", async () => {
     show();
@@ -137,7 +132,6 @@ describe("guest gifting page", () => {
     fireEvent.change(screen.getByLabelText(/A personal note/), {
       target: { value: "Good luck ❤️" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Verify security" }));
     fireEvent.click(screen.getByRole("button", { name: /Send gift/ }));
     await waitFor(() =>
       expect(fixtures.checkout).toHaveBeenCalledWith({
@@ -152,6 +146,11 @@ describe("guest gifting page", () => {
       }),
     );
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Gateway unavailable"));
+    const send = screen.getByRole("button", { name: /Send gift/ });
+    expect(send).toBeEnabled();
+    fireEvent.click(send);
+    await waitFor(() => expect(fixtures.checkout).toHaveBeenCalledTimes(2));
+    await screen.findByRole("alert");
   });
   it("uses live outlet plan pricing and prevents unavailable combinations", async () => {
     show();

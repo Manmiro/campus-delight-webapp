@@ -9,7 +9,6 @@ const input = {
   sponsorName: "Mum",
   sponsorEmail: "mum@example.com",
   origin: "https://campusdelight.net",
-  captchaToken: "verified",
 };
 describe("public gift rules", () => {
   it("normalizes exact Foodie IDs and abbreviates the recipient name", () => {

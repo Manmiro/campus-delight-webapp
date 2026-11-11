@@ -4,7 +4,6 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { paystackInitialize, paystackVerify } from "./payments.server";
 import { verifiedPaymentMatches } from "./payment-rules";
 import { recipientDisplayName, type GiftInput, type GiftRecipient } from "./gifting-rules";
-import { readServerSecret } from "./server-secret.server";
 
 // Proposed schema stays isolated until approved and generated types are refreshed.
 export type GiftRecord = {
@@ -78,29 +77,7 @@ export function giftOrigin(value: string) {
   throw new Error("Invalid payment return address");
 }
 
-async function verifyCaptcha(token: string) {
-  const secret = readServerSecret("TURNSTILE_SECRET_KEY");
-  if (!secret) throw new Error("Gifting security verification is not configured yet.");
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: new URLSearchParams({ secret, response: token }),
-    signal: AbortSignal.timeout(10000),
-  });
-  const result = (await response.json()) as {
-    success?: boolean;
-    action?: string;
-    hostname?: string;
-  };
-  if (!response.ok || !result.success || result.action !== "gift" || !result.hostname)
-    throw new Error("Security verification expired. Please try again.");
-  giftOrigin(`https://${result.hostname}`);
-}
-
-export async function lookupRecipient(
-  foodieId: string,
-  captchaToken: string,
-): Promise<GiftRecipient | null> {
-  await verifyCaptcha(captchaToken);
+export async function lookupRecipient(foodieId: string): Promise<GiftRecipient | null> {
   const { data: p, error } = await supabaseAdmin
     .from("profiles")
     .select("id,full_name,gender,avatar_url,outlet_id")
@@ -161,12 +138,11 @@ export async function lookupRecipient(
 
 export async function startGift(input: GiftInput) {
   const origin = giftOrigin(input.origin);
-  await verifyCaptcha(input.captchaToken);
   // Check configuration before persisting a payment intent.
   if (!process.env["PAYSTACK_SECRET_KEY"])
     throw new Error("Paystack payments are not configured yet");
   const reference = `CDG-${crypto.randomUUID()}`;
-  const { captchaToken: _token, origin: _origin, ...selection } = input;
+  const { origin: _origin, ...selection } = input;
   const { data: amount, error } = await giftDb.rpc("prepare_gift_payment", {
     p_reference: reference,
     p_input: selection as Json,

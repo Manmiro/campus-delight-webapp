@@ -4,11 +4,11 @@ I'm building a web app for a special kind of restaurant called Campus Delight. K
 
 This project was built with [Lovable](https://lovable.dev).
 
-## Turnstile configuration
+## Authentication configuration
 
-Set `VITE_TURNSTILE_SITE_KEY` for the browser widget. In Supabase Dashboard, enable Auth CAPTCHA protection, select Cloudflare Turnstile, and save the Turnstile secret key there. Configure the widget for the deployed hostnames; the auth form forwards the single-use token to Supabase for sign-in and sign-up validation.
+Keep Auth CAPTCHA protection disabled in the hosted Supabase project's Authentication settings. Sign-in and sign-up submit directly to Supabase; email confirmation and account validation still apply. The local configuration also disables CAPTCHA. Hosted settings must be updated separately before deploying this version.
 
-The public Feed Someone portal also requires server-only `TURNSTILE_SECRET_KEY`.
+Feed Someone looks up a complete Foodie ID immediately and uses Paystack for checkout.
 Its database changes await business approval in `drizzle/proposed/feed_someone.sql`.
 See [gifting rollout notes](drizzle/proposed/feed_someone.md) before enabling checkout.
 

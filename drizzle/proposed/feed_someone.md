@@ -29,11 +29,9 @@ Deployment configuration:
 
 - Existing server secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
   `PAYSTACK_SECRET_KEY`, and `PINGRAM_API_KEY`.
-- Set server-only `TURNSTILE_SECRET_KEY` to the secret for the existing browser
-  `VITE_TURNSTILE_SITE_KEY`. Auth stores its secret in Supabase; this separate
-  server setting is necessary for unauthenticated gifting verification. Add
-  the deployed hostname to the Turnstile widget. Both lookup and checkout
-  require a fresh single-use CAPTCHA token with action `gift`.
+- Lookup and checkout accept validated gift details directly, with no browser
+  challenge or expiring verification token. Keep hosted Supabase Auth CAPTCHA
+  protection disabled for the account forms as documented in the README.
 - Set `LOVABLE_APP_ORIGIN` for an additional canonical deployed origin if needed.
 - Keep Paystack's signed webhook pointed to `/api/public/paystack/webhook`.
   The existing webhook dispatches `CDG-` references to gift settlement while

@@ -8,12 +8,12 @@ import {
 } from "./gifting-rules";
 
 export const lookupGiftRecipient = createServerFn({ method: "POST" })
-  .inputValidator((input: { foodieId: string; captchaToken: string }) =>
-    z.object({ foodieId: foodieIdSchema, captchaToken: z.string().min(1).max(2048) }).parse(input),
+  .inputValidator((input: { foodieId: string }) =>
+    z.object({ foodieId: foodieIdSchema }).parse(input),
   )
   .handler(async ({ data }) => {
     const { lookupRecipient } = await import("./gifting.server");
-    return lookupRecipient(data.foodieId, data.captchaToken);
+    return lookupRecipient(data.foodieId);
   });
 
 export const initializeGift = createServerFn({ method: "POST" })
