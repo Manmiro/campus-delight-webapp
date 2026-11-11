@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, type PointerEvent } from "react";
 import { Coins, Loader2, Ticket } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export type DailyPrize = { spin: number; bonus: number };
 
@@ -23,8 +22,6 @@ export function ScratchFortuneCard({
   const pointer = useRef<number | null>(null);
   const previous = useRef<{ x: number; y: number } | null>(null);
   const requested = useRef(false);
-  const [started, setStarted] = useState(false);
-  const [canvasReady, setCanvasReady] = useState(false);
 
   useEffect(() => {
     const ctx = canvas.current?.getContext("2d");
@@ -44,10 +41,9 @@ export function ScratchFortuneCard({
     ctx.fillText("YOUR GOLDEN TICKET", 320, 140);
     ctx.font = "23px sans-serif";
     ctx.fillText("Rub here to reveal", 320, 186);
-    setCanvasReady(true);
   }, []);
 
-  // A failed server claim can be retried using the accessible reveal button.
+  // A failed server claim can be retried by rubbing again or using the retry link.
   useEffect(() => {
     if (error) requested.current = false;
   }, [error]);
@@ -103,7 +99,7 @@ export function ScratchFortuneCard({
         if ((pixels[(y * 640 + x) * 4 + 3] ?? 255) < 128) clear++;
       }
     }
-    if (clear / samples >= 0.4) reveal();
+    if (clear / samples >= 0.38) reveal();
   };
 
   return (
@@ -149,7 +145,6 @@ export function ScratchFortuneCard({
             pointer.current = event.pointerId;
             previous.current = null;
             event.currentTarget.setPointerCapture(event.pointerId);
-            setStarted(true);
             onPrepare();
             scratch(event);
           }}
@@ -165,29 +160,23 @@ export function ScratchFortuneCard({
           }}
         />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-4 w-full rounded-full border-golden/50"
-        disabled={disabled || busy || !!prize}
-        onClick={reveal}
-      >
-        {prize
-          ? "Come back tomorrow"
-          : busy
-            ? "Revealing…"
-            : error
-              ? "Try reveal again"
-              : "Reveal my fortune"}
-      </Button>
+      {error && !busy && !prize && (
+        <p className="mt-2 text-center text-xs text-muted-foreground" role="alert">
+          Could not uncover your coins.{" "}
+          <button
+            type="button"
+            className="cursor-pointer underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            disabled={disabled}
+            onClick={reveal}
+          >
+            Tap to retry
+          </button>
+        </p>
+      )}
       <p className="mt-2 text-center text-xs text-muted-foreground">
         {prize
           ? "A fresh ticket arrives at midnight, Lagos time."
-          : started
-            ? "Keep rubbing, then lift to reveal. Or use the button."
-            : canvasReady
-              ? "Scratch with your finger or cursor, or use the button."
-              : "Use the button to uncover your daily prize."}
+          : "Rub the golden ticket with your finger or cursor to uncover your daily coins."}
       </p>
     </section>
   );
