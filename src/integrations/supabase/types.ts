@@ -1376,18 +1376,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      pay_subscription_from_wallet: {
-        Args: { p_customer_id: string; p_subscription_id: string; p_price_kobo: number }
-        Returns: Json
-      }
-      prepare_subscription_payment: {
-        Args: { p_customer_id: string; p_subscription_id: string; p_reference: string }
-        Returns: number
-      }
-      remove_pending_subscription: {
-        Args: { p_customer_id: string; p_subscription_id: string }
-        Returns: undefined
-      }
       accrue_loan_overdue: { Args: { p_loan_id: string }; Returns: number }
       activate_subscription: {
         Args: { p_reference: string; p_subscription_id: string }
