@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
 import {
   Building2, CalendarDays, Store, Coins, CreditCard, Gift, Home, Trophy, ReceiptText, Send, ShoppingBag, ArrowLeftRight, UserRound, Wallet,
 } from "lucide-react";
@@ -34,6 +34,9 @@ const nav: NavItem[] = [
 ];
 
 function CustomerLayout() {
+  const isDashboard = useLocation({
+    select: (location) => location.pathname.replace(/\/$/, "") === "/dashboard",
+  });
   const { data: role } = useQuery({ queryKey: ["my-role"], queryFn: () => getMyRole() });
   const hq = role ? headquartersLink(role) : null;
   const outlet = role ? outletConsoleLink(role) : null;
@@ -45,7 +48,12 @@ function CustomerLayout() {
   ];
 
   return (
-    <AppShell nav={navList} title="My Campus Delight" subtitle="Your outlet, meals, wallet and rewards in one place.">
+    <AppShell
+      nav={navList}
+      title="My Campus Delight"
+      subtitle="Your outlet, meals, wallet and rewards in one place."
+      showHeader={!isDashboard}
+    >
       <Outlet />
     </AppShell>
   );

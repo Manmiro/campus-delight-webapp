@@ -8,15 +8,18 @@ export function DelightToggle() {
     <Button
       type="button"
       variant="outline"
-      size="sm"
-      className="shrink-0 rounded-full"
+      size="icon"
+      className="shrink-0"
       aria-pressed={enabled}
       aria-label={`Sound and haptics: ${enabled ? "on" : "off"}`}
+      title={`Sound and haptics: ${enabled ? "on" : "off"}`}
       onClick={() => setDelightFeedback(!enabled)}
     >
-      {enabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
-      Sound & haptics{" "}
-      <span className="text-xs text-muted-foreground">{enabled ? "On" : "Off"}</span>
+      {enabled ? (
+        <Volume2 className="h-5 w-5" />
+      ) : (
+        <VolumeX className="h-5 w-5 text-muted-foreground" />
+      )}
     </Button>
   );
 }
