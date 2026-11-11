@@ -337,6 +337,20 @@
       "when": 1794302356368,
       "tag": "0047_bind_dashboard_attachment_delete_to_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794384172134,
+      "tag": "0048_subscription_wallet_checkout",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1794384205841,
+      "tag": "0049_feed_someone_gifting",
+      "breakpoints": true
     }
   ]
 }

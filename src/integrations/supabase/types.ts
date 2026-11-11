@@ -263,6 +263,75 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_payments: {
+        Row: {
+          amount_kobo: number
+          created_at: string
+          customer_id: string
+          kind: string
+          note: string
+          outlet_id: string
+          payload: Json | null
+          reference: string
+          related_id: string | null
+          selection: Json
+          sponsor_email: string
+          sponsor_name: string
+          status: string
+          verified_at: string | null
+          wallet_fallback: boolean
+        }
+        Insert: {
+          amount_kobo: number
+          created_at?: string
+          customer_id: string
+          kind: string
+          note?: string
+          outlet_id: string
+          payload?: Json | null
+          reference: string
+          related_id?: string | null
+          selection: Json
+          sponsor_email: string
+          sponsor_name: string
+          status?: string
+          verified_at?: string | null
+          wallet_fallback?: boolean
+        }
+        Update: {
+          amount_kobo?: number
+          created_at?: string
+          customer_id?: string
+          kind?: string
+          note?: string
+          outlet_id?: string
+          payload?: Json | null
+          reference?: string
+          related_id?: string | null
+          selection?: Json
+          sponsor_email?: string
+          sponsor_name?: string
+          status?: string
+          verified_at?: string | null
+          wallet_fallback?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_payments_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_reminder_sends: {
         Row: {
           days_left: number
@@ -1528,6 +1597,14 @@ export type Database = {
           total_due_kobo: number
         }[]
       }
+      pay_subscription_from_wallet: {
+        Args: {
+          p_customer_id: string
+          p_price_kobo: number
+          p_subscription_id: string
+        }
+        Returns: Json
+      }
       place_order: {
         Args: {
           p_items: Json
@@ -1553,10 +1630,26 @@ export type Database = {
         Args: { p_customer_id: string; p_items: Json; p_reference: string }
         Returns: string
       }
+      prepare_gift_payment: {
+        Args: { p_input: Json; p_reference: string }
+        Returns: number
+      }
+      prepare_subscription_payment: {
+        Args: {
+          p_customer_id: string
+          p_reference: string
+          p_subscription_id: string
+        }
+        Returns: number
+      }
       process_overdue_loans: { Args: never; Returns: Json }
       refresh_customer_outstanding: {
         Args: { p_customer: string }
         Returns: number
+      }
+      remove_pending_subscription: {
+        Args: { p_customer_id: string; p_subscription_id: string }
+        Returns: undefined
       }
       repay_loan: {
         Args: { p_amount_kobo: number; p_loan_id: string }
@@ -1566,6 +1659,15 @@ export type Database = {
       set_outlet_delivery_fee: {
         Args: { p_fee_kobo: number; p_outlet_id: string }
         Returns: undefined
+      }
+      settle_verified_gift: {
+        Args: {
+          p_amount_kobo: number
+          p_currency: string
+          p_payload: Json
+          p_reference: string
+        }
+        Returns: Json
       }
       settle_verified_payment: {
         Args: {

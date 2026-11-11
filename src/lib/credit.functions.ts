@@ -20,7 +20,15 @@ export const requestOtp = createServerFn({ method: "POST" })
       await sendVerificationSms(key, data["phone"], data["code"]);
     } catch (error) {
       await supabaseAdmin.from("otp_codes").update({ consumed: true }).eq("id", data["id"]).eq("customer_id", context.userId);
-      throw error;
+      // Provider details are already logged server-side; customers get a plain explanation.
+      throw new Error(customerSmsError(error));
     }
     return { accepted: true };
   });
+
+export function customerSmsError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/usage_limit_reached|\[402\]/.test(message)) return "Verification texts are paused for now. Please try again later.";
+  if (message.startsWith("Enter a valid")) return message;
+  return "We couldn't send your verification text right now. Please try again in a few minutes.";
+}
