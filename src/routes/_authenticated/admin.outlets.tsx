@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";
+import { MealCapField } from "@/components/meal-cap-field";
+import { formatMealCap, parseMealCap } from "@/lib/meal-cap-rules";
 
 type ManagerAssignment = {
   id: string;
@@ -32,6 +34,7 @@ type OutletForm = {
   address: string;
   contactPhone: string;
   contactEmail: string;
+  mealCap: string;
 };
 
 export const Route = createFileRoute("/_authenticated/admin/outlets")({
@@ -74,7 +77,7 @@ function AdminOutlets() {
   const { data: managers } = useQuery(managersQuery);
   const [form, setForm] = useState({ name: "", code: "", location: "" });
   const [editOutlet, setEditOutlet] = useState<(typeof outlets)[number] | null>(null);
-  const [editForm, setEditForm] = useState<OutletForm>({ name: "", code: "", location: "", address: "", contactPhone: "", contactEmail: "" });
+  const [editForm, setEditForm] = useState<OutletForm>({ name: "", code: "", location: "", address: "", contactPhone: "", contactEmail: "", mealCap: "" });
   const [deleteTarget, setDeleteTarget] = useState<(typeof outlets)[number] | null>(null);
   const [mgrForm, setMgrForm] = useState({ outletId: "", email: "", fullName: "", password: "", reason: "" });
   const [managerMode, setManagerMode] = useState<"assign" | "replace">("assign");
@@ -101,11 +104,16 @@ function AdminOutlets() {
   });
 
   const saveEdit = useMutation({
-    mutationFn: (input: OutletForm & { outletId: string }) => updateOutlet({ data: input }),
+    mutationFn: ({ mealCap, ...input }: OutletForm & { outletId: string }) => {
+      const mealCapKobo = parseMealCap(mealCap);
+      if (mealCapKobo === null) throw new Error("Enter a valid positive meal cap in naira");
+      return updateOutlet({ data: { ...input, mealCapKobo } });
+    },
     onSuccess: () => {
       toast.success("Outlet details updated");
       setEditOutlet(null);
       void qc.invalidateQueries({ queryKey: ["admin"] });
+      void qc.invalidateQueries({ queryKey: ["delivery-fee"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update outlet"),
   });
@@ -167,6 +175,7 @@ function AdminOutlets() {
       address: outlet.address ?? "",
       contactPhone: outlet.contact_phone ?? "",
       contactEmail: outlet.contact_email ?? "",
+      mealCap: formatMealCap(outlet.meal_cap_kobo),
     });
   };
 
@@ -251,6 +260,7 @@ function AdminOutlets() {
                   <TableHead>Outlet</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Location</TableHead>
+                  <TableHead className="text-right">Meal Cap (₦)</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -261,6 +271,7 @@ function AdminOutlets() {
                     <TableCell className="text-sm font-medium">{o.name}</TableCell>
                     <TableCell className="font-mono text-xs">{o.code}</TableCell>
                     <TableCell className="text-xs">{o.location}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right">₦{formatMealCap(o.meal_cap_kobo)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-[10px] capitalize">{o.status}</Badge>
                     </TableCell>
@@ -332,7 +343,7 @@ function AdminOutlets() {
 
       <Dialog open={Boolean(editOutlet)} onOpenChange={(open) => { if (!open && !saveEdit.isPending) setEditOutlet(null); }}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Edit outlet</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Edit Outlet Details</DialogTitle></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="edit-outlet-name">Outlet name</Label>
@@ -358,8 +369,11 @@ function AdminOutlets() {
               <Label htmlFor="edit-outlet-email">Contact email</Label>
               <Input id="edit-outlet-email" type="email" className="mt-1" value={editForm.contactEmail} onChange={(e) => setEditForm((f) => ({ ...f, contactEmail: e.target.value }))} />
             </div>
+            <div className="sm:col-span-2">
+              <MealCapField id="edit-outlet-meal-cap" value={editForm.mealCap} onChange={(mealCap) => setEditForm((f) => ({ ...f, mealCap }))} disabled={saveEdit.isPending} />
+            </div>
           </div>
-          <Button className="w-full" disabled={!editForm.name.trim() || !editForm.code.trim() || saveEdit.isPending} onClick={() => editOutlet && saveEdit.mutate({ outletId: editOutlet.id, ...editForm })}>
+          <Button className="w-full" disabled={!editForm.name.trim() || !editForm.code.trim() || parseMealCap(editForm.mealCap) === null || saveEdit.isPending} onClick={() => editOutlet && saveEdit.mutate({ outletId: editOutlet.id, ...editForm })}>
             {saveEdit.isPending ? "Saving…" : "Save changes"}
           </Button>
         </DialogContent>

@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Json } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { isDisposableEmailAddress, normalizeEmailAddress } from "@/lib/auth-rules";
 import { mealCapSchema } from "@/lib/meal-cap-rules";
 
-async function assertCentralAdmin(context: { supabase: any; userId: string }) {
+async function assertCentralAdmin(context: { supabase: SupabaseClient<Database>; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "central_admin",
@@ -21,7 +22,7 @@ export const adminListOutlets = createServerFn({ method: "GET" })
     const db = await assertCentralAdmin(context);
     const { data, error } = await db
       .from("outlets")
-      .select("id, name, code, location, address, contact_phone, contact_email, status, price_edit_locked, subscription_meal_cap_kobo, created_at")
+      .select("id, name, code, location, address, contact_phone, contact_email, status, meal_cap_kobo, price_edit_locked, created_at")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -37,7 +38,7 @@ export const adminListOutletCatalog = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const [{ data: outlet, error: outletError }, { data: menu, error: menuError }, { data: prices, error: priceError }] = await Promise.all([
-      db.from("outlets").select("id, name, code, price_edit_locked, subscription_meal_cap_kobo").eq("id", data.outletId).single(),
+      db.from("outlets").select("id, name, code, meal_cap_kobo, price_edit_locked").eq("id", data.outletId).single(),
       db.from("menu_items").select("id, outlet_id, name, category, price_kobo, is_available, is_credit_eligible").eq("outlet_id", data.outletId).order("category").order("name"),
       db.from("outlet_plan_prices").select("id, outlet_id, plan, tier, price_kobo, is_active").eq("outlet_id", data.outletId).order("plan").order("tier"),
     ]);
@@ -138,17 +139,20 @@ export const adminSetOutletPriceEditLock = createServerFn({ method: "POST" })
     return result;
   });
 
+type ManagerAccountInput = { email: string; fullName: string; password: string };
+
+// Preserve the existing server action while sharing the audited cap update.
 export const adminSetOutletMealCap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { outletId: string; capKobo: number }) => mealCapSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertCentralAdmin(context);
-    const { data: result, error } = await context.supabase.rpc("admin_set_outlet_meal_cap", { p_outlet_id: data.outletId, p_cap_kobo: data.capKobo });
+    const { data: result, error } = await context.supabase.rpc("admin_update_outlet_details", {
+      p_outlet_id: data.outletId, p_patch: { meal_cap_kobo: data.capKobo },
+    });
     if (error) throw new Error(error.message);
     return result;
   });
-
-type ManagerAccountInput = { email: string; fullName: string; password: string };
 
 export const adminRestoreLoanAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -162,7 +166,7 @@ export const adminRestoreLoanAccess = createServerFn({ method: "POST" })
     return result;
   });
 
-async function ensureManagerAccount(db: any, data: ManagerAccountInput): Promise<string> {
+async function ensureManagerAccount(db: SupabaseClient<Database>, data: ManagerAccountInput): Promise<string> {
   const email = normalizeEmailAddress(data.email);
   if (isDisposableEmailAddress(email)) throw new Error("Temporary email addresses are not accepted. Use a permanent email address.");
   const { data: users, error: listErr } = await db.auth.admin.listUsers();
@@ -227,6 +231,7 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
     address?: string;
     contactPhone?: string;
     contactEmail?: string;
+    mealCapKobo?: number;
   }) => z.object({
     outletId: z.string().uuid(),
     status: z.enum(["active", "suspended", "inactive"]).optional(),
@@ -236,9 +241,10 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
     address: z.string().trim().max(500).optional(),
     contactPhone: z.string().trim().max(50).optional(),
     contactEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
+    mealCapKobo: z.number().int().positive().safe().optional(),
   }).parse(input))
   .handler(async ({ data, context }) => {
-    const db = await assertCentralAdmin(context);
+    await assertCentralAdmin(context);
     const patch: {
       status?: string;
       name?: string;
@@ -247,6 +253,7 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
       address?: string | null;
       contact_phone?: string | null;
       contact_email?: string | null;
+      meal_cap_kobo?: number;
     } = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.name !== undefined) patch.name = data.name;
@@ -255,21 +262,12 @@ export const adminUpdateOutlet = createServerFn({ method: "POST" })
     if (data.address !== undefined) patch.address = data.address || null;
     if (data.contactPhone !== undefined) patch.contact_phone = data.contactPhone || null;
     if (data.contactEmail !== undefined) patch.contact_email = data.contactEmail || null;
+    if (data.mealCapKobo !== undefined) patch.meal_cap_kobo = data.mealCapKobo;
     if (Object.keys(patch).length === 0) throw new Error("No outlet changes provided");
-    const { data: outlet, error } = await db
-      .from("outlets")
-      .update(patch)
-      .eq("id", data.outletId)
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    await db.from("audit_logs").insert({
-      actor_id: context.userId,
-      action: "update_outlet",
-      entity: "outlets",
-      entity_id: data.outletId,
-      details: patch,
+    const { data: outlet, error } = await context.supabase.rpc("admin_update_outlet_details", {
+      p_outlet_id: data.outletId, p_patch: patch,
     });
+    if (error) throw new Error(error.message);
     return outlet;
   });
 
@@ -468,7 +466,7 @@ export const adminUpdateConfig = createServerFn({ method: "POST" })
       action: "update_config",
       entity: "system_config",
       entity_id: data.key,
-      details: { value: data.value as any },
+      details: { value: data.value as Json },
     });
     return { ok: true };
   });

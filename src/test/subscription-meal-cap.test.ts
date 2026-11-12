@@ -8,7 +8,7 @@ describe('meal plan charge split', () => {
   it('defaults each outlet to ₦2,000 per meal', () => expect(DEFAULT_SUBSCRIPTION_MEAL_CAP_KOBO).toBe(200_000));
   it('charges nothing extra when food is within the limit', () => expect(mealPlanCharge(150_000, 200_000, 0).walletChargeKobo).toBe(0));
   it('charges only the amount above the limit plus delivery', () =>
-    expect(mealPlanCharge(260_000, 200_000, 60_000)).toEqual({ coveredKobo: 200_000, copayKobo: 60_000, deliveryFeeKobo: 60_000, walletChargeKobo: 120_000 }));
+    expect(mealPlanCharge(260_000, 200_000, 60_000)).toMatchObject({ coveredKobo: 200_000, copayKobo: 60_000, deliveryFeeKobo: 60_000, walletChargeKobo: 120_000 }));
   it('rejects a negative limit', () => expect(mealCapSchema.safeParse({ outletId: '5b9e7af9-16ed-47b8-8d2f-e7ac8c2362b3', capKobo: -1 }).success).toBe(false));
 });
 

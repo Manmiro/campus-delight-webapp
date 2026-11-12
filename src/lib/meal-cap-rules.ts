@@ -1,16 +1,35 @@
-import { z } from 'zod';
+import { z } from "zod";
+import { naira } from "./format";
 
-/** Default most food value one meal-plan meal covers (₦2,000), until headquarters changes it per outlet. */
+export const MEAL_CAP_HELP =
+  "The maximum food value covered by 1 meal entitlement at this outlet. Any food total above this amount is automatically debited from the student's cash wallet as a co-pay.";
 export const DEFAULT_SUBSCRIPTION_MEAL_CAP_KOBO = 200_000;
+export const mealCapSchema = z.object({ outletId: z.string().uuid(), capKobo: z.number().int().nonnegative().safe() });
+export const mealCapValueSchema = z.number().int().positive().safe();
 
-export const mealCapSchema = z.object({
-  outletId: z.string().uuid(),
-  capKobo: z.number().int().nonnegative().safe(),
-});
+export function parseMealCap(value: string): number | null {
+  const trimmed = value.trim();
+  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/.test(trimmed)) return null;
+  const [whole = "", fraction = ""] = trimmed.replaceAll(",", "").split(".");
+  const exactKobo = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
+  if (exactKobo > BigInt(Number.MAX_SAFE_INTEGER)) return null;
+  const kobo = Number(exactKobo);
+  return mealCapValueSchema.safeParse(kobo).success ? kobo : null;
+}
 
-/** Splits a meal-plan order: the plan covers food up to the cap; the wallet pays any extra plus delivery. */
-export function mealPlanCharge(foodKobo: number, capKobo: number, deliveryFeeKobo: number) {
+export function formatMealCap(kobo: number): string {
+  return (kobo / 100).toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+export function mealPlanCharge(foodKobo: number, capKobo: number, deliveryKobo: number) {
   const coveredKobo = Math.min(foodKobo, capKobo);
-  const copayKobo = Math.max(foodKobo - capKobo, 0);
-  return { coveredKobo, copayKobo, deliveryFeeKobo, walletChargeKobo: copayKobo + deliveryFeeKobo };
+  const copayKobo = Math.max(0, foodKobo - capKobo);
+  return { coveredKobo, copayKobo, deliveryFeeKobo: deliveryKobo, walletChargeKobo: copayKobo + deliveryKobo, walletKobo: copayKobo + deliveryKobo };
+}
+
+export function mealWalletMessage(walletKobo: number): string {
+  return `Your cash wallet needs ${naira(walletKobo)} to cover the meal co-pay and delivery fee. Please top up your wallet to complete this order.`;
 }

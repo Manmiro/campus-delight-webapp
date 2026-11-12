@@ -1,10 +1,10 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const fixtures = vi.hoisted(() => ({ rows: {} as Record<string, any>, sent: vi.fn() }));
+const fixtures = vi.hoisted(() => ({ rows: {} as Record<string, unknown>, sent: vi.fn() }));
 vi.mock('@/integrations/supabase/client.server', () => ({ supabaseAdmin: {
   from: (table: string) => {
-    const query: any = { select: () => query, eq: () => query, like: () => query, order: () => query, limit: () => query, single: async () => ({ data: fixtures.rows[table], error: null }), maybeSingle: async () => ({ data: fixtures.rows[table], error: null }) };
+    const query = { select: (): unknown => query, eq: (): unknown => query, like: (): unknown => query, order: (): unknown => query, limit: (): unknown => query, single: async () => ({ data: fixtures.rows[table], error: null }), maybeSingle: async () => ({ data: fixtures.rows[table], error: null }) };
     return query;
   },
 } }));
@@ -17,6 +17,19 @@ beforeEach(() => {
 });
 
 describe('valid transaction receipts', () => {
+  it.each(['order', 'cancelled'] as const)('uses committed cap and co-pay facts for the %s receipt', async kind => {
+    fixtures.rows['orders'] = { id: 'order-1', customer_id: 'customer-1', status: kind === 'cancelled' ? 'cancelled' : 'confirmed',
+      payment_method: 'subscription_entitlement', meal_cap_kobo: 200000, meal_plan_covered_kobo: 200000, meal_copay_kobo: 60000,
+      delivery_fee_kobo: 60000, total_kobo: 120000, fulfillment_method: 'delivery', reference: 'ORD-1', created_at: '2026-11-12T08:00:00Z',
+      order_items: [{ item_name: 'Rice', quantity: 1 }] };
+    await emailOrder('order-1', kind);
+    expect(fixtures.sent.mock.calls[0]?.[2].templateData).toMatchObject({ amount: '₦1,200.00', details: expect.arrayContaining([
+      { label: 'Meal cap per meal', value: '₦2,000.00' },
+      { label: 'Meal plan covers (1 meal)', value: '₦2,000.00' },
+      { label: kind === 'cancelled' ? 'Meal co-pay refunded to wallet' : 'Meal co-pay paid from wallet', value: '₦600.00' },
+      { label: kind === 'cancelled' ? 'Total refunded to wallet' : 'Total wallet debit', value: '₦1,200.00' },
+    ]) });
+  });
   it('wallet subscription receipt uses committed plan dates and the debit balance', async () => {
     fixtures.rows['subscriptions'] = { customer_id: 'customer-1', plan: 'weekly', tier: 'standard', price_kobo: 1800000, start_date: '2026-11-10', end_date: '2026-11-16', payment_reference: 'CDWS-1' };
     fixtures.rows['wallet_ledger'] = { id: 'debit-1', amount_kobo: -1800000, balance_after_kobo: 1200000, created_at: '2026-11-10T15:00:00Z' };
