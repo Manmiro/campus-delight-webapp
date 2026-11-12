@@ -29,6 +29,30 @@ export async function checkRequestSize(
 
 export function withSecurityHeaders(response: Response, request: Request): Response {
   const headers = new Headers(response.headers);
+  const connectionSources = [
+    "'self'",
+    "https://*.supabase.co",
+    "wss://*.supabase.co",
+    "https://*.lovable.dev",
+    "https://*.lovable.app",
+    "https://*.lovableproject.com",
+  ];
+  // Lovable Cloud can expose Supabase through a project-specific lovable.cloud
+  // host. Allow the configured public backend, including its realtime transport.
+  // Parse it so paths, credentials and untrusted CSP syntax cannot become sources.
+  const configuredBackend = import.meta.env["VITE_SUPABASE_URL"];
+  if (configuredBackend) {
+    try {
+      const backend = new URL(configuredBackend);
+      if (backend.protocol === "https:" || backend.protocol === "http:") {
+        connectionSources.push(backend.origin);
+        backend.protocol = backend.protocol === "https:" ? "wss:" : "ws:";
+        connectionSources.push(backend.origin);
+      }
+    } catch {
+      // Invalid configuration must not broaden the connection policy.
+    }
+  }
   headers.set(
     "Content-Security-Policy",
     [
@@ -37,7 +61,7 @@ export function withSecurityHeaders(response: Response, request: Request): Respo
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lovable.dev https://*.lovable.app https://*.lovableproject.com",
+      `connect-src ${connectionSources.join(" ")}`,
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self' https://checkout.paystack.com",
