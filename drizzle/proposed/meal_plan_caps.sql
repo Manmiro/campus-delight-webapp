@@ -5,6 +5,13 @@ ALTER TABLE public.outlets ADD COLUMN meal_cap_kobo bigint NOT NULL DEFAULT 2000
   CONSTRAINT outlets_meal_cap_valid CHECK (meal_cap_kobo > 0 AND meal_cap_kobo <= 9007199254740991);
 GRANT SELECT (meal_cap_kobo) ON public.outlets TO authenticated;
 
+-- Preserve caps configured by the earlier hosted implementation.
+DO $$ BEGIN
+  IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='outlets' AND column_name='subscription_meal_cap_kobo') THEN
+    EXECUTE 'UPDATE public.outlets SET meal_cap_kobo=subscription_meal_cap_kobo WHERE subscription_meal_cap_kobo>0';
+  END IF;
+END; $$;
+
 ALTER TABLE public.orders
   ADD COLUMN meal_cap_kobo bigint,
   ADD COLUMN meal_plan_covered_kobo bigint NOT NULL DEFAULT 0 CHECK (meal_plan_covered_kobo >= 0),
@@ -67,7 +74,7 @@ GRANT EXECUTE ON FUNCTION public.admin_update_outlet_details(uuid,jsonb) TO auth
 DROP FUNCTION public.place_order_with_fulfillment(jsonb,text,text,text,bigint,uuid,integer);
 CREATE OR REPLACE FUNCTION public.place_order_with_fulfillment(p_items jsonb,p_payment_method text,p_fulfillment_method text,p_delivery_address text DEFAULT NULL,p_expected_fee_kobo bigint DEFAULT NULL,p_subscription_id uuid DEFAULT NULL,p_loan_term_days integer DEFAULT NULL,p_expected_meal_cap_kobo bigint DEFAULT NULL) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE
- v_cap bigint; v_copay bigint:=0; v_covered bigint:=0; v_wallet_charge bigint; v_required text; v_customer uuid:=auth.uid(); v_outlet uuid; v_total bigint:=0; v_food bigint; v_fee bigint:=0; v_order_id uuid; v_ref text; item jsonb; mi record; v_ent record; v_balance bigint; v_avail bigint; v_locked bigint; v_loan_id uuid; v_charge_pct int; v_charge bigint; v_limit bigint; v_reg timestamptz; v_verified text; v_tokens bigint; v_qty int;
+ v_wallet_debit bigint:=0; v_wallet_description text; v_cap bigint; v_copay bigint:=0; v_covered bigint:=0; v_wallet_charge bigint; v_required text; v_customer uuid:=auth.uid(); v_outlet uuid; v_total bigint:=0; v_food bigint; v_fee bigint:=0; v_order_id uuid; v_ref text; item jsonb; mi record; v_ent record; v_balance bigint; v_avail bigint; v_locked bigint; v_loan_id uuid; v_charge_pct int; v_charge bigint; v_limit bigint; v_reg timestamptz; v_verified text; v_tokens bigint; v_qty int;
 BEGIN
  IF v_customer IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
  IF p_payment_method IS NULL OR p_payment_method NOT IN ('cash_wallet','tokens','subscription_entitlement','food_credit') THEN RAISE EXCEPTION 'Invalid payment method'; END IF;
@@ -97,7 +104,7 @@ BEGIN
   SELECT balance_kobo INTO v_balance FROM public.wallets WHERE customer_id=v_customer FOR UPDATE;
   IF v_balance IS NULL OR v_balance<v_total THEN RAISE EXCEPTION 'Insufficient wallet balance including delivery'; END IF;
   UPDATE public.wallets SET balance_kobo=balance_kobo-v_total,updated_at=now() WHERE customer_id=v_customer RETURNING balance_kobo INTO v_balance;
-  INSERT INTO public.wallet_ledger(customer_id,tx_type,amount_kobo,balance_after_kobo,reference,description) VALUES(v_customer,'debit',-v_total,v_balance,v_ref,'Food order including delivery fee');
+  v_wallet_debit:=v_total; v_wallet_description:='Food order including delivery fee';
  ELSIF p_payment_method='tokens' THEN
   v_tokens:=(v_total+99)/100;
   SELECT available_tokens,locked_tokens INTO v_avail,v_locked FROM public.token_accounts WHERE customer_id=v_customer FOR UPDATE;
@@ -111,7 +118,8 @@ BEGIN
   SELECT * INTO v_ent FROM public.meal_entitlements WHERE subscription_id=p_subscription_id AND customer_id=v_customer AND service_date=(now() AT TIME ZONE 'Africa/Lagos')::date FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'No meal entitlement for today'; END IF;
   IF v_ent.redeemed>=v_ent.allowance THEN RAISE EXCEPTION 'No meals left today'; END IF;
-  IF p_expected_meal_cap_kobo IS DISTINCT FROM v_cap THEN RAISE EXCEPTION 'The outlet meal cap changed. Refresh and confirm the new co-pay'; END IF;
+  -- Older deployed clients omit this quote; always charge the authoritative cap.
+  IF p_expected_meal_cap_kobo IS NOT NULL AND p_expected_meal_cap_kobo<>v_cap THEN RAISE EXCEPTION 'The outlet meal cap changed. Refresh and confirm the new co-pay'; END IF;
   v_covered:=least(v_food,v_cap);
   v_copay:=greatest(v_food-v_cap,0);
   v_wallet_charge:=v_copay+v_fee;
@@ -123,7 +131,7 @@ BEGIN
     RAISE EXCEPTION 'Your cash wallet needs ₦% to cover the meal co-pay and delivery fee. Please top up your wallet to complete this order.',v_required;
    END IF;
    UPDATE public.wallets SET balance_kobo=balance_kobo-v_wallet_charge,updated_at=now() WHERE customer_id=v_customer RETURNING balance_kobo INTO v_balance;
-   INSERT INTO public.wallet_ledger(customer_id,tx_type,amount_kobo,balance_after_kobo,reference,description) VALUES(v_customer,'debit',-v_wallet_charge,v_balance,v_ref,'Subscription meal co-pay and delivery fee');
+   v_wallet_debit:=v_wallet_charge; v_wallet_description:='Subscription meal co-pay and delivery fee';
   END IF;
   UPDATE public.meal_entitlements SET redeemed=redeemed+1 WHERE id=v_ent.id;
   v_total:=v_wallet_charge;
@@ -141,7 +149,10 @@ BEGIN
   UPDATE public.customer_credit SET outstanding_kobo=outstanding_kobo+v_total+v_charge,updated_at=now() WHERE customer_id=v_customer;
  END IF;
  INSERT INTO public.orders(id,customer_id,outlet_id,payment_method,total_kobo,tokens_used,subscription_id,loan_id,status,reference,fulfillment_method,delivery_fee_kobo,delivery_address,meal_cap_kobo,meal_plan_covered_kobo,meal_copay_kobo) VALUES(v_order_id,v_customer,v_outlet,p_payment_method,v_total,v_tokens,CASE WHEN p_payment_method='subscription_entitlement' THEN p_subscription_id ELSE NULL END,v_loan_id,'confirmed',v_ref,p_fulfillment_method,v_fee,CASE WHEN p_fulfillment_method='delivery' THEN trim(p_delivery_address) ELSE NULL END,CASE WHEN p_payment_method='subscription_entitlement' THEN v_cap ELSE NULL END,v_covered,v_copay);
- UPDATE public.wallet_ledger SET related_order_id=v_order_id WHERE customer_id=v_customer AND reference=v_ref AND tx_type='debit';
+ IF v_wallet_debit>0 THEN
+  INSERT INTO public.wallet_ledger(customer_id,tx_type,amount_kobo,balance_after_kobo,reference,related_order_id,description)
+  VALUES(v_customer,'debit',-v_wallet_debit,v_balance,v_ref,v_order_id,v_wallet_description);
+ END IF;
  FOR item IN SELECT * FROM jsonb_array_elements(p_items) LOOP
   SELECT name,price_kobo INTO mi FROM public.menu_items WHERE id=(item->>'menu_item_id')::uuid;
   INSERT INTO public.order_items(order_id,menu_item_id,item_name,unit_price_kobo,quantity) VALUES(v_order_id,(item->>'menu_item_id')::uuid,mi.name,mi.price_kobo,(item->>'quantity')::int);

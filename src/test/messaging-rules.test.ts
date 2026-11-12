@@ -24,4 +24,15 @@ describe("dashboard messaging attachment rules", () => {
     expect(formatAttachmentSize(1024)).toBe("1.0 KB");
     expect(formatAttachmentSize(1024 * 1024)).toBe("1.0 MB");
   });
+  it("rejects active HTML and SVG content before upload", () => {
+    expect(
+      validateMessageAttachment({ name: "message.html", size: 200, type: "text/html" }),
+    ).toContain("Choose a PDF");
+    expect(
+      validateMessageAttachment({ name: "picture.svg", size: 200, type: "image/svg+xml" }),
+    ).toContain("Choose a PDF");
+    expect(
+      validateMessageAttachment({ name: "brief.pdf", size: 200, type: "application/pdf" }),
+    ).toBeNull();
+  });
 });

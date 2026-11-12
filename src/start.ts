@@ -2,6 +2,19 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { checkRequestSize, withSecurityHeaders } from "./lib/request-security";
+
+const securityMiddleware = createMiddleware().server(async ({ request, next }) => {
+  const path = new URL(request.url).pathname;
+  const maxBytes =
+    path.startsWith("/lovable/") || path === "/api/internal/pingram-auth-email"
+      ? 256 * 1024
+      : undefined;
+  const rejected = await checkRequestSize(request, maxBytes);
+  if (rejected) return withSecurityHeaders(rejected, request);
+  const result = await next();
+  return { ...result, response: withSecurityHeaders(result.response, request) };
+});
 
 const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
@@ -23,10 +36,11 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
 const csrfMiddleware = createCsrfMiddleware({
-  filter: (ctx) => !new URL(ctx.request.url).pathname.startsWith("/lovable/") && ctx.handlerType === "serverFn",
+  filter: (ctx) =>
+    !new URL(ctx.request.url).pathname.startsWith("/lovable/") && ctx.handlerType === "serverFn",
 });
 
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [securityMiddleware, errorMiddleware, csrfMiddleware],
 }));
