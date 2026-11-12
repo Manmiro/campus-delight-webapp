@@ -23,12 +23,15 @@ import {
   adminListOutletCatalog,
   adminListOutletOrders,
   adminListOutlets,
+  adminUpdateOutlet,
   adminSetOutletPriceEditLock,
   adminUpsertMenuItem,
   adminUpsertPlanPrice,
 } from "@/lib/admin.functions";
 import { updateFoodOrder } from "@/lib/transactions.functions";
 import { naira, formatDateTime } from "@/lib/format";
+import { formatMealCap, parseMealCap } from "@/lib/meal-cap-rules";
+import { MealCapField } from "@/components/meal-cap-field";
 import { StatusBadge } from "@/components/bits";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,6 +101,7 @@ function AdminOperations() {
   const [menuForm, setMenuForm] = useState<MenuForm | null>(null);
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
   const [lockReason, setLockReason] = useState("");
+  const [capDraft, setCapDraft] = useState<string | null>(null);
 
   useEffect(() => {
     if (!outletId && outlets[0]) setOutletId(outlets[0].id);
@@ -121,6 +125,7 @@ function AdminOperations() {
   const deleteMenuItem = useServerFn(adminDeleteMenuItem);
   const savePlanPrice = useServerFn(adminUpsertPlanPrice);
   const setPriceLock = useServerFn(adminSetOutletPriceEditLock);
+  const updateOutlet = useServerFn(adminUpdateOutlet);
   const submitOrderAction = useServerFn(updateFoodOrder);
 
   const refresh = () =>
@@ -201,21 +206,37 @@ function AdminOperations() {
   });
 
   const menu = catalogQuery.data?.menu ?? [];
+  const capMutation = useMutation({
+    mutationFn: ({ outletId, capKobo }: { outletId: string; capKobo: number }) =>
+      updateOutlet({ data: { outletId, mealCapKobo: capKobo } }),
+    onSuccess: () => {
+      toast.success("Meal cap updated");
+      setCapDraft(null);
+      void qc.invalidateQueries({ queryKey: ["admin"] });
+      void qc.invalidateQueries({ queryKey: ["delivery-fee"] });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update meal cap"),
+  });
   const prices = catalogQuery.data?.prices ?? [];
   const locked =
     catalogQuery.data?.outlet.price_edit_locked ?? selectedOutlet?.price_edit_locked ?? false;
+  const currentCap = catalogQuery.data?.outlet.meal_cap_kobo ?? selectedOutlet?.meal_cap_kobo;
+  const capValue = capDraft ?? (currentCap === undefined ? "" : formatMealCap(currentCap));
+  const parsedCap = parseMealCap(capValue);
 
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
-          <div className="min-w-64 flex-1">
+          <div className="min-w-0 flex-1 basis-64">
             <Label htmlFor="operations-outlet">Outlet</Label>
             <Select
               value={outletId}
+              disabled={capMutation.isPending}
               onValueChange={(value) => {
                 setOutletId(value);
                 setPriceDrafts({});
+                setCapDraft(null);
               }}
             >
               <SelectTrigger id="operations-outlet" className="mt-1">
@@ -249,48 +270,64 @@ function AdminOperations() {
 
       {section === "catalog" && (
         <>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="font-display text-lg">Price-edit control</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">
-                  {locked
-                    ? "Managers cannot change menu or food-plan prices at this outlet."
-                    : "The outlet manager may edit this outlet's prices."}
-                </p>
-                <Badge variant={locked ? "destructive" : "outline"}>
-                  {locked ? "Price edits locked" : "Price edits open"}
-                </Badge>
-              </div>
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="min-w-64 flex-1">
-                  <Label htmlFor="lock-reason">Reason (required for audit)</Label>
-                  <Input
-                    id="lock-reason"
-                    className="mt-1"
-                    value={lockReason}
-                    onChange={(event) => setLockReason(event.target.value)}
-                    maxLength={500}
-                    placeholder="HQ pricing review"
-                  />
+          <h2 className="font-display text-lg font-semibold">Outlet Settings</h2>
+          <section aria-label="Outlet Settings" className="grid min-w-0 gap-4 lg:grid-cols-2">
+            <Card className="min-w-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-display text-lg">Price Edit Lock</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-muted-foreground">
+                    {locked
+                      ? "Managers cannot change menu or food-plan prices at this outlet."
+                      : "The outlet manager may edit this outlet's prices."}
+                  </p>
+                  <Badge variant={locked ? "destructive" : "outline"}>
+                    {locked ? "Price edits locked" : "Price edits open"}
+                  </Badge>
                 </div>
-                <Button
-                  variant={locked ? "outline" : "destructive"}
-                  disabled={lockMutation.isPending || !lockReason.trim()}
-                  onClick={() => lockMutation.mutate(!locked)}
-                >
-                  {locked ? (
-                    <UnlockKeyhole className="mr-2 h-4 w-4" />
-                  ) : (
-                    <LockKeyhole className="mr-2 h-4 w-4" />
-                  )}
-                  {locked ? "Unlock price edits" : "Lock price edits"}
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="min-w-0 flex-1 basis-64">
+                    <Label htmlFor="lock-reason">Reason (required for audit)</Label>
+                    <Input
+                      id="lock-reason"
+                      className="mt-1"
+                      value={lockReason}
+                      onChange={(event) => setLockReason(event.target.value)}
+                      maxLength={500}
+                      placeholder="HQ pricing review"
+                    />
+                  </div>
+                  <Button
+                    variant={locked ? "outline" : "destructive"}
+                    disabled={lockMutation.isPending || !lockReason.trim()}
+                    onClick={() => lockMutation.mutate(!locked)}
+                  >
+                    {locked ? (
+                      <UnlockKeyhole className="mr-2 h-4 w-4" />
+                    ) : (
+                      <LockKeyhole className="mr-2 h-4 w-4" />
+                    )}
+                    {locked ? "Unlock price edits" : "Lock price edits"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-display text-lg">Meal Plan Cap Per Meal</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <MealCapField id="operations-meal-cap" value={capValue} onChange={setCapDraft} disabled={capMutation.isPending || currentCap === undefined} />
+                <Button disabled={capMutation.isPending || currentCap === undefined || parsedCap === null || parsedCap === currentCap}
+                  onClick={() => { if (parsedCap !== null) capMutation.mutate({ outletId, capKobo: parsedCap }); }}>
+                  {capMutation.isPending ? "Updating…" : "Update Cap"}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </section>
 
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">

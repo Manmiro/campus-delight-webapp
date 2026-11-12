@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { FulfillmentDialog } from '@/components/fulfillment-dialog';
 import { OrderThankYouDialog, type PlacedOrder } from '@/components/order-thank-you-dialog';
 import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
+import { mealPlanCharge, mealWalletMessage } from '@/lib/meal-cap-rules';
 import { outletDeliveryQuery, loanRestrictionsQuery } from '@/lib/queries';
 import { playDelightFeedback, prepareDelightFeedback } from '@/lib/delight-feedback';
 
@@ -108,7 +109,9 @@ function OrderPage() {
   const feeKobo = delivery?.delivery_fee_kobo ?? 0;
   const payableKobo = deliveryTotal(totalKobo, feeKobo, fulfillment ?? 'pickup');
   const deliveryFee = fulfillment === 'delivery' ? feeKobo : 0;
-  const checkoutTotal = method === 'subscription_entitlement' ? deliveryFee : payableKobo;
+  const mealCapKobo = delivery?.meal_cap_kobo ?? 0;
+  const mealCharge = mealPlanCharge(totalKobo, mealCapKobo, deliveryFee);
+  const checkoutTotal = method === 'subscription_entitlement' ? mealCharge.walletKobo : payableKobo;
   const creditCharge = loanChargeKobo(payableKobo, term);
   const creditTotal = payableKobo + creditCharge;
   const availableCredit = (credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO) - (credit?.outstanding_kobo ?? 0);
@@ -138,10 +141,11 @@ function OrderPage() {
         items,
         method,
         ...choice,
-        ...(method === "subscription_entitlement" && activeSub ? { subscriptionId: activeSub.id } : {}),
+        ...(method === "subscription_entitlement" && activeSub ? { subscriptionId: activeSub.id, expectedMealCapKobo: mealCapKobo } : {}),
         ...(method === "food_credit" ? { termDays: Number(termDays) } : {}),
       } });
-      return { ...snapshot, reference: res?.reference ?? null };
+      return { ...snapshot, reference: res.reference, foodKobo: res.foodKobo, totalKobo: res.totalKobo,
+        deliveryFeeKobo: res.deliveryFeeKobo, mealPlanCoveredKobo: res.mealPlanCoveredKobo, mealCopayKobo: res.mealCopayKobo };
     },
     onSuccess: (placed) => {
       playDelightFeedback("order");
@@ -154,7 +158,11 @@ function OrderPage() {
       setThankYou({ ...placed, burst: Date.now() });
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Order failed"),
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : "Order failed");
+      void qc.invalidateQueries({ queryKey: ["delivery-fee", profile.outlet_id] });
+      void qc.invalidateQueries({ queryKey: ["me"] });
+    },
   });
 
   if (!profile.outlet_id) {
@@ -174,7 +182,7 @@ function OrderPage() {
     accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000,
   });
   const checkoutEnabled = orderPaymentOptions({ mealsLeftToday: mealsLeft, walletBalanceKobo: wallet?.balance_kobo ?? 0, tokenBalance: tk?.available_tokens ?? 0, totalKobo: payableKobo, availableCreditKobo: availableCredit, isVerified: profile.verification_status === 'verified', accountAgeHours: (Date.now() - new Date(profile.created_at).getTime()) / 3_600_000 });
-  checkoutEnabled.subscription_entitlement = mealsLeft > 0 && (wallet?.balance_kobo ?? 0) >= deliveryFee;
+  checkoutEnabled.subscription_entitlement = mealsLeft > 0 && mealCapKobo > 0 && (wallet?.balance_kobo ?? 0) >= mealCharge.walletKobo;
   for (const enabled of [payEnabled, checkoutEnabled]) {
     if (restrictions.orderingLocked) { enabled.cash_wallet = false; enabled.tokens = false; enabled.food_credit = false; }
     if (restrictions.hasOverdue) enabled.food_credit = false;
@@ -182,7 +190,7 @@ function OrderPage() {
   const checkoutOptions = [
     { value: 'cash_wallet', label: `Cash wallet · ${naira(wallet?.balance_kobo)}`, disabled: !checkoutEnabled.cash_wallet },
     { value: 'tokens', label: `Tokens · needs ${tokensForKobo(payableKobo)}`, disabled: !checkoutEnabled.tokens },
-    { value: 'subscription_entitlement', label: `Meal plan · ${mealsLeft} left${deliveryFee ? ' + wallet delivery fee' : ''}`, disabled: !checkoutEnabled.subscription_entitlement },
+    { value: 'subscription_entitlement', label: `Meal plan · ${mealsLeft} left · wallet ${naira(mealCharge.walletKobo)}`, disabled: !checkoutEnabled.subscription_entitlement },
     { value: 'food_credit', label: `Eat Now & Pay Later · ${termDays} days`, disabled: !checkoutEnabled.food_credit },
   ];
 
@@ -527,7 +535,7 @@ function OrderPage() {
           {placeOrder.isPending && <LoaderPlaceholder />} Confirm order <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </aside>
-      <FulfillmentDialog open={checkoutOpen} onOpenChange={(open) => { if (!placeOrder.isPending) setCheckoutOpen(open); }} outletName={profile.outlet?.name ?? 'your outlet'} feeKobo={feeKobo} foodKobo={totalKobo} totalKobo={checkoutTotal} fulfillment={fulfillment} onChoose={setFulfillment} address={address} onAddress={setAddress} paymentStep={paymentStep} onContinue={() => setPaymentStep(true)} onBack={() => setPaymentStep(false)} onPay={() => placeOrder.mutate()} pending={placeOrder.isPending} canPay={cartItems.length > 0 && checkoutOptions.some((o) => o.value === method && !o.disabled)} subscription={method === 'subscription_entitlement'} creditTotal={method === 'food_credit' ? creditTotal : undefined} paymentOptions={checkoutOptions} method={method} onMethod={setMethod} />
+      <FulfillmentDialog open={checkoutOpen} onOpenChange={(open) => { if (!placeOrder.isPending) setCheckoutOpen(open); }} outletName={profile.outlet?.name ?? 'your outlet'} feeKobo={feeKobo} foodKobo={totalKobo} totalKobo={checkoutTotal} fulfillment={fulfillment} onChoose={setFulfillment} address={address} onAddress={setAddress} paymentStep={paymentStep} onContinue={() => setPaymentStep(true)} onBack={() => setPaymentStep(false)} onPay={() => placeOrder.mutate()} pending={placeOrder.isPending} canPay={cartItems.length > 0 && checkoutOptions.some((o) => o.value === method && !o.disabled)} subscription={method === 'subscription_entitlement'} mealPlanCoveredKobo={mealCharge.coveredKobo} mealCopayKobo={mealCharge.copayKobo} mealWalletError={mealsLeft > 0 && (wallet?.balance_kobo ?? 0) < mealCharge.walletKobo ? mealWalletMessage(mealCharge.walletKobo) : undefined} creditTotal={method === 'food_credit' ? creditTotal : undefined} paymentOptions={checkoutOptions} method={method} onMethod={setMethod} />
       <OrderThankYouDialog order={thankYou} onClose={() => setThankYou(null)} />
 
       {/* Mobile floating cart */}

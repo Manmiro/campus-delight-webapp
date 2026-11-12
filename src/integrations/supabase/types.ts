@@ -675,6 +675,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          meal_cap_kobo: number | null
+          meal_plan_covered_kobo: number
+          meal_copay_kobo: number
           created_at: string
           customer_id: string
           delivery_address: string | null
@@ -692,6 +695,9 @@ export type Database = {
           total_kobo: number
         }
         Insert: {
+          meal_cap_kobo?: number | null
+          meal_plan_covered_kobo?: number
+          meal_copay_kobo?: number
           created_at?: string
           customer_id: string
           delivery_address?: string | null
@@ -709,6 +715,9 @@ export type Database = {
           total_kobo: number
         }
         Update: {
+          meal_cap_kobo?: number | null
+          meal_plan_covered_kobo?: number
+          meal_copay_kobo?: number
           created_at?: string
           customer_id?: string
           delivery_address?: string | null
@@ -932,6 +941,7 @@ export type Database = {
       }
       outlets: {
         Row: {
+          meal_cap_kobo: number
           address: string | null
           code: string
           contact_email: string | null
@@ -945,6 +955,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          meal_cap_kobo?: number
           address?: string | null
           code: string
           contact_email?: string | null
@@ -958,6 +969,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          meal_cap_kobo?: number
           address?: string | null
           code?: string
           contact_email?: string | null
@@ -1445,6 +1457,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_outlet_details: {
+        Args: { p_outlet_id: string; p_patch: Json }
+        Returns: Json
+      }
       accrue_loan_overdue: { Args: { p_loan_id: string }; Returns: number }
       activate_subscription: {
         Args: { p_reference: string; p_subscription_id: string }
@@ -1616,6 +1632,7 @@ export type Database = {
       }
       place_order_with_fulfillment: {
         Args: {
+          p_expected_meal_cap_kobo?: number
           p_delivery_address?: string
           p_expected_fee_kobo?: number
           p_fulfillment_method: string

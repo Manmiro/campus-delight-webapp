@@ -20,10 +20,10 @@ export const transferTokens = createServerFn({ method: 'POST' }).middleware([req
   });
 
 export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((input: { items: { menu_item_id: string; quantity: number }[]; method: string; subscriptionId?: string; termDays?: number; fulfillment: 'delivery' | 'pickup'; address?: string | undefined; expectedFeeKobo?: number | undefined }) => z.object({ items: z.array(z.object({ menu_item_id: z.string().uuid(), quantity: z.number().int().positive().max(100) })).min(1).max(100), method: z.enum(['cash_wallet', 'tokens', 'subscription_entitlement', 'food_credit']), subscriptionId: z.string().uuid().optional(), termDays: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional() }).and(deliveryChoiceSchema).parse(input))
+  .inputValidator((input: { items: { menu_item_id: string; quantity: number }[]; method: string; subscriptionId?: string; termDays?: number; fulfillment: 'delivery' | 'pickup'; address?: string | undefined; expectedFeeKobo?: number | undefined; expectedMealCapKobo?: number | undefined }) => z.object({ items: z.array(z.object({ menu_item_id: z.string().uuid(), quantity: z.number().int().positive().max(100) })).min(1).max(100), method: z.enum(['cash_wallet', 'tokens', 'subscription_entitlement', 'food_credit']), subscriptionId: z.string().uuid().optional(), expectedMealCapKobo: z.number().int().positive().safe().optional(), termDays: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional() }).and(deliveryChoiceSchema).parse(input))
   .handler(async ({ context, data }) => {
     const startedAt = new Date().toISOString();
-    const { data: result, error } = await context.supabase.rpc('place_order_with_fulfillment', { p_items: data.items, p_payment_method: data.method, p_fulfillment_method: data.fulfillment, ...(data.address ? { p_delivery_address: data.address } : {}), ...(data.expectedFeeKobo !== undefined ? { p_expected_fee_kobo: data.expectedFeeKobo } : {}), ...(data.subscriptionId ? { p_subscription_id: data.subscriptionId } : {}), ...(data.termDays ? { p_loan_term_days: data.termDays } : {}) });
+    const { data: result, error } = await context.supabase.rpc('place_order_with_fulfillment', { p_items: data.items, p_payment_method: data.method, p_fulfillment_method: data.fulfillment, ...(data.address ? { p_delivery_address: data.address } : {}), ...(data.expectedFeeKobo !== undefined ? { p_expected_fee_kobo: data.expectedFeeKobo } : {}), ...(data.expectedMealCapKobo !== undefined ? { p_expected_meal_cap_kobo: data.expectedMealCapKobo } : {}), ...(data.subscriptionId ? { p_subscription_id: data.subscriptionId } : {}), ...(data.termDays ? { p_loan_term_days: data.termDays } : {}) });
     if (error) throw new Error(error.message);
     const tx = resultObject(result);
     const mail = await import('./transaction-emails.server');
@@ -39,7 +39,11 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
       const { data: order } = await context.supabase.from('orders').select('reference').eq('id', orderId).maybeSingle();
       reference = order?.reference ?? null;
     }
-    return { ok: true, emailStatus, orderId, reference };
+    return { ok: true, emailStatus, orderId, reference,
+      foodKobo: Number(tx['food_kobo']), totalKobo: Number(tx['total_kobo']),
+      deliveryFeeKobo: Number(tx['delivery_fee_kobo']),
+      mealPlanCoveredKobo: Number(tx['meal_plan_covered_kobo']), mealCopayKobo: Number(tx['meal_copay_kobo']),
+    };
   });
 
 export const repayFoodLoan = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
