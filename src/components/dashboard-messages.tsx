@@ -28,7 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { formatAttachmentSize, validateMessageAttachment } from "@/lib/messaging-rules";
+import {
+  MESSAGE_ATTACHMENT_TYPES,
+  formatAttachmentSize,
+  validateMessageAttachment,
+} from "@/lib/messaging-rules";
 import { formatDateTime } from "@/lib/format";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -420,6 +424,7 @@ export function DashboardMessages({
                   ref={fileInputRef}
                   id="message-attachment"
                   type="file"
+                  accept={MESSAGE_ATTACHMENT_TYPES.join(",")}
                   onChange={(event) => {
                     const next = event.target.files?.[0] ?? null;
                     const error = validateMessageAttachment(next);

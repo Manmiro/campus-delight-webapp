@@ -12,6 +12,8 @@ export const lookupGiftRecipient = createServerFn({ method: "POST" })
     z.object({ foodieId: foodieIdSchema }).parse(input),
   )
   .handler(async ({ data }) => {
+    const { enforcePublicRequestLimit } = await import("./rate-limit.server");
+    await enforcePublicRequestLimit("gift-lookup", 20);
     const { lookupRecipient } = await import("./gifting.server");
     return lookupRecipient(data.foodieId);
   });
@@ -19,6 +21,8 @@ export const lookupGiftRecipient = createServerFn({ method: "POST" })
 export const initializeGift = createServerFn({ method: "POST" })
   .inputValidator((input: GiftInput) => giftInputSchema.parse(input))
   .handler(async ({ data }) => {
+    const { enforcePublicRequestLimit } = await import("./rate-limit.server");
+    await enforcePublicRequestLimit("gift-checkout", 5);
     const { startGift } = await import("./gifting.server");
     return startGift(data);
   });
@@ -30,6 +34,8 @@ export const verifyGift = createServerFn({ method: "POST" })
     z.object({ reference: giftReferenceSchema }).parse(input),
   )
   .handler(async ({ data }) => {
+    const { enforcePublicRequestLimit } = await import("./rate-limit.server");
+    await enforcePublicRequestLimit("gift-verification", 30);
     const { settleGift } = await import("./gifting.server");
     return settleGift(data.reference);
   });

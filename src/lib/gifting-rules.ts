@@ -9,12 +9,12 @@ export const giftReferenceSchema = z.string().regex(/^CDG-[a-f0-9-]{36}$/);
 export const giftInputSchema = z
   .object({
     foodieId: foodieIdSchema,
-    outletId: z.string().uuid(),
+    outletId: z.guid(),
     kind: z.enum(["wallet", "plan", "meal"]),
     expectedAmountKobo: z.number().int().min(10000).max(100000000),
     plan: z.enum(["weekend", "weekly", "monthly"]).optional(),
     tier: z.enum(["basic", "standard", "turbo"]).optional(),
-    menuItemId: z.string().uuid().optional(),
+    menuItemId: z.guid().optional(),
     fulfillment: z.enum(["pickup", "delivery"]).default("pickup"),
     address: z.string().trim().max(500).default(""),
     sponsorName: z.string().trim().min(1).max(80),

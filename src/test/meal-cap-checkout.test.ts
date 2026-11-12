@@ -166,13 +166,14 @@ describe("atomic meal cap checkout", () => {
     await checkout("pickup");
     expect(await state()).toMatchObject({ balance: 0, redeemed: 1, debits: 0 });
   });
-  it.each([null, 199999, 250000])(
-    "rejects a missing or stale cap quote %s without charging",
-    async (cap) => {
-      await expect(checkout("delivery", cap)).rejects.toThrow("meal cap changed");
-      expect(await state()).toMatchObject({ balance: 500000, redeemed: 0, orders: 0, debits: 0 });
-    },
-  );
+  it("charges the authoritative cap for older clients without a cap quote", async () => {
+    await checkout("delivery", null);
+    expect(await state()).toMatchObject({ balance: 380000, redeemed: 1, orders: 1, debits: 1 });
+  });
+  it.each([199999, 250000])("rejects a stale cap quote %s without charging", async (cap) => {
+    await expect(checkout("delivery", cap)).rejects.toThrow("meal cap changed");
+    expect(await state()).toMatchObject({ balance: 500000, redeemed: 0, orders: 0, debits: 0 });
+  });
   it("validates the delivery quote independently of the meal cap", async () => {
     await db.exec("UPDATE outlets SET delivery_fee_kobo=70000");
     await expect(checkout()).rejects.toThrow("delivery fee changed");

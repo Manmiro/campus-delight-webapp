@@ -986,6 +986,7 @@ export type Database = {
       }
       payment_transactions: {
         Row: {
+          checkout_snapshot: Json | null
           amount_kobo: number
           created_at: string
           customer_id: string
@@ -999,6 +1000,7 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          checkout_snapshot?: Json | null
           amount_kobo: number
           created_at?: string
           customer_id: string
@@ -1012,6 +1014,7 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          checkout_snapshot?: Json | null
           amount_kobo?: number
           created_at?: string
           customer_id?: string
@@ -1457,6 +1460,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_request_budget: {
+        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       admin_update_outlet_details: {
         Args: { p_outlet_id: string; p_patch: Json }
         Returns: Json
