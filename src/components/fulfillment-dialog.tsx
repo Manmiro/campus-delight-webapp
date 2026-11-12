@@ -15,6 +15,7 @@ type Props = {
   address: string; onAddress: (address: string) => void;
   paymentStep: boolean; onContinue: () => void; onPay: () => void; onBack: () => void;
   pending: boolean; canPay: boolean; subscription: boolean; creditTotal?: number | undefined;
+  mealPlan?: { capKobo: number; coveredKobo: number; copayKobo: number } | undefined;
   paymentOptions: { value: string; label: string; disabled: boolean }[]; method: string; onMethod: (method: string) => void;
 };
 
@@ -72,12 +73,16 @@ export function FulfillmentDialog(p: Props) {
           {p.paymentOptions.map((o) => <Button key={o.value} variant="outline" role="radio" aria-checked={p.method === o.value} disabled={o.disabled || p.pending} onClick={() => p.onMethod(o.value)} className={`h-auto min-h-16 whitespace-normal justify-start text-left text-xs ${p.method === o.value ? 'border-primary bg-primary/10 ring-2 ring-primary/25' : ''}`}>{o.label}</Button>)}
         </div>}
         <dl className="space-y-2 border-y border-border py-3 text-sm">
-          <div className="flex justify-between gap-2"><dt>Food</dt><dd>{p.subscription ? 'Covered by your meal plan' : naira(p.foodKobo)}</dd></div>
+          <div className="flex justify-between gap-2"><dt>Food</dt><dd>{p.subscription ? (p.mealPlan?.copayKobo ? naira(p.foodKobo) : 'Covered by your meal plan') : naira(p.foodKobo)}</dd></div>
+          {p.subscription && !!p.mealPlan?.copayKobo && <>
+            <div className="flex justify-between gap-2 text-primary"><dt>Meal plan covers</dt><dd>−{naira(p.mealPlan.coveredKobo)}</dd></div>
+            <div className="flex justify-between gap-2"><dt>Extra from wallet</dt><dd>{naira(p.mealPlan.copayKobo)}</dd></div>
+          </>}
           <div className="flex justify-between"><dt>{p.fulfillment === 'pickup' ? 'Pickup' : 'Delivery fee'}</dt><dd>{naira(p.fulfillment === 'delivery' ? p.feeKobo : 0)}</dd></div>
           <div className="flex justify-between font-display text-xl font-bold"><dt>Total</dt><dd className="text-primary">{naira(p.totalKobo)}</dd></div>
           {p.creditTotal !== undefined && <div className="flex justify-between text-xs"><dt>Total repayable, including term charge</dt><dd>{naira(p.creditTotal)}</dd></div>}
         </dl>
-        {p.subscription && p.fulfillment === 'delivery' && <p className="flex items-start gap-2 text-xs text-muted-foreground"><Wallet className="h-4 w-4 shrink-0" />Your meal plan covers the food. The delivery fee comes from your cash wallet.</p>}
+        {p.subscription && (p.fulfillment === 'delivery' || !!p.mealPlan?.copayKobo) && <p className="flex items-start gap-2 text-xs text-muted-foreground"><Wallet className="h-4 w-4 shrink-0" />{p.mealPlan?.copayKobo ? `Your meal plan covers up to ${naira(p.mealPlan.capKobo)} per meal. The extra${p.fulfillment === 'delivery' ? ' and the delivery fee come' : ' comes'} from your cash wallet.` : 'Your meal plan covers the food. The delivery fee comes from your cash wallet.'}</p>}
         {p.paymentStep && !p.canPay && <p role="alert" className="text-sm text-destructive">Choose an available payment method, top up your wallet, or go back for free pickup.</p>}
         <Button className="w-full" size="lg" disabled={p.paymentStep ? !p.canPay || p.pending || (p.fulfillment === 'delivery' && !addressValid) : !p.fulfillment || ((showAddress || showReview) && !addressValid)} onClick={p.paymentStep ? p.onPay : continueCheckout}>{p.pending ? 'Placing your order…' : p.paymentStep ? 'Pay & place order' : showAddress ? 'Review delivery address' : showChoice && p.fulfillment === 'delivery' ? 'Enter delivery address' : 'Continue to payment'}<ArrowRight className="ml-2 h-4 w-4" /></Button>
         {(p.paymentStep || !showChoice) && <Button variant="ghost" className="w-full" disabled={p.pending} onClick={goBack}>Change delivery / pickup</Button>}

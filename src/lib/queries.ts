@@ -264,7 +264,7 @@ export const outletDeliveryQuery = (outletId: string) => queryOptions({
   queryKey: ["delivery-fee", outletId],
   queryFn: async () => {
     if (!outletId) return null;
-    const { data, error } = await supabase.from("outlets").select("delivery_fee_kobo").eq("id", outletId).single();
+    const { data, error } = await supabase.from("outlets").select("delivery_fee_kobo, subscription_meal_cap_kobo").eq("id", outletId).single();
     if (error) throw new Error(error.message);
     return data;
   },

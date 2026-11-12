@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { isDisposableEmailAddress, normalizeEmailAddress } from "@/lib/auth-rules";
+import { mealCapSchema } from "@/lib/meal-cap-rules";
 
 async function assertCentralAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -20,7 +21,7 @@ export const adminListOutlets = createServerFn({ method: "GET" })
     const db = await assertCentralAdmin(context);
     const { data, error } = await db
       .from("outlets")
-      .select("id, name, code, location, address, contact_phone, contact_email, status, price_edit_locked, created_at")
+      .select("id, name, code, location, address, contact_phone, contact_email, status, price_edit_locked, subscription_meal_cap_kobo, created_at")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -36,7 +37,7 @@ export const adminListOutletCatalog = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const db = await assertCentralAdmin(context);
     const [{ data: outlet, error: outletError }, { data: menu, error: menuError }, { data: prices, error: priceError }] = await Promise.all([
-      db.from("outlets").select("id, name, code, price_edit_locked").eq("id", data.outletId).single(),
+      db.from("outlets").select("id, name, code, price_edit_locked, subscription_meal_cap_kobo").eq("id", data.outletId).single(),
       db.from("menu_items").select("id, outlet_id, name, category, price_kobo, is_available, is_credit_eligible").eq("outlet_id", data.outletId).order("category").order("name"),
       db.from("outlet_plan_prices").select("id, outlet_id, plan, tier, price_kobo, is_active").eq("outlet_id", data.outletId).order("plan").order("tier"),
     ]);
@@ -133,6 +134,16 @@ export const adminSetOutletPriceEditLock = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertCentralAdmin(context);
     const { data: result, error } = await context.supabase.rpc("admin_set_outlet_price_edit_lock", { p_outlet_id: data.outletId, p_locked: data.locked, p_reason: data.reason });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const adminSetOutletMealCap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; capKobo: number }) => mealCapSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertCentralAdmin(context);
+    const { data: result, error } = await context.supabase.rpc("admin_set_outlet_meal_cap", { p_outlet_id: data.outletId, p_cap_kobo: data.capKobo });
     if (error) throw new Error(error.message);
     return result;
   });

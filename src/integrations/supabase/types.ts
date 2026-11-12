@@ -943,6 +943,7 @@ export type Database = {
           name: string
           price_edit_locked: boolean
           status: string
+          subscription_meal_cap_kobo: number
         }
         Insert: {
           address?: string | null
@@ -956,6 +957,7 @@ export type Database = {
           name: string
           price_edit_locked?: boolean
           status?: string
+          subscription_meal_cap_kobo?: number
         }
         Update: {
           address?: string | null
@@ -969,6 +971,7 @@ export type Database = {
           name?: string
           price_edit_locked?: boolean
           status?: string
+          subscription_meal_cap_kobo?: number
         }
         Relationships: []
       }
@@ -1496,6 +1499,10 @@ export type Database = {
       }
       admin_set_outlet_manager_suspension: {
         Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
+        Returns: Json
+      }
+      admin_set_outlet_meal_cap: {
+        Args: { p_cap_kobo: number; p_outlet_id: string }
         Returns: Json
       }
       admin_set_outlet_price_edit_lock: {

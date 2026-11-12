@@ -20,6 +20,7 @@ export type PlacedOrder = {
   method: string;
   creditTotalKobo?: number | undefined;
   termDays?: number | undefined;
+  mealPlanCopayKobo?: number | undefined;
   burst: number;
 };
 
@@ -88,7 +89,8 @@ export function OrderThankYouDialog({ order, onClose }: { order: PlacedOrder | n
             </section>
 
             <dl className="space-y-2 border-y border-border py-3 text-sm">
-              <div className="flex justify-between gap-2"><dt>Food</dt><dd>{order.method === 'subscription_entitlement' ? 'Covered by your meal plan' : naira(order.foodKobo)}</dd></div>
+              <div className="flex justify-between gap-2"><dt>Food</dt><dd>{order.method === 'subscription_entitlement' ? (order.mealPlanCopayKobo ? `Plan covered ${naira(order.foodKobo - order.mealPlanCopayKobo)}` : 'Covered by your meal plan') : naira(order.foodKobo)}</dd></div>
+              {order.method === 'subscription_entitlement' && !!order.mealPlanCopayKobo && <div className="flex justify-between gap-2"><dt>Extra from wallet</dt><dd>{naira(order.mealPlanCopayKobo)}</dd></div>}
               <div className="flex justify-between gap-2"><dt>{delivery ? 'Delivery fee' : 'Pickup'}</dt><dd>{delivery ? naira(order.deliveryFeeKobo) : 'Free'}</dd></div>
               <div className="flex justify-between gap-2 font-display text-xl font-bold"><dt>{order.method === 'food_credit' ? 'Paid now' : 'Total paid'}</dt><dd className="text-primary">{order.method === 'food_credit' ? naira(0) : naira(order.totalKobo)}</dd></div>
               <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground"><dt>Paid with</dt><dd className="flex items-center gap-1 font-semibold text-foreground"><m.Icon className="h-4 w-4 text-primary" />{m.label}</dd></div>

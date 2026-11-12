@@ -351,6 +351,13 @@
       "when": 1794384205841,
       "tag": "0049_feed_someone_gifting",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794469473451,
+      "tag": "0050_subscription_meal_cap",
+      "breakpoints": true
     }
   ]
 }
