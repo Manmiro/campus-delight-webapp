@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import logoImg from "@/assets/logo.webp.asset.json";
 import { profileQuery, referralsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
+import { referralLinkFor, referralQrImageUrl } from "@/lib/referrals";
 import { playDelightFeedback, prepareDelightFeedback } from "@/lib/delight-feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,128 +58,6 @@ const rankSteps = [
   { label: "Master Foodie Ambassador", range: "10+ friends", threshold: 10, icon: Trophy },
 ];
 
-function makeQrMatrix(value: string) {
-  // Version 4-L is enough for the app's referral URL and keeps QR rendering local.
-  const version = 4;
-  const size = 17 + version * 4;
-  const modules = Array.from({ length: size }, () =>
-    Array<boolean | undefined>(size).fill(undefined),
-  );
-  const reserved = Array.from({ length: size }, () => Array<boolean>(size).fill(false));
-  const set = (x: number, y: number, dark: boolean, reserve = true) => {
-    if (x < 0 || y < 0 || x >= size || y >= size) return;
-    modules[y]![x] = dark;
-    if (reserve) reserved[y]![x] = true;
-  };
-
-  const finder = (left: number, top: number) => {
-    for (let y = -1; y < 8; y += 1) {
-      for (let x = -1; x < 8; x += 1) {
-        const border = x === -1 || x === 7 || y === -1 || y === 7;
-        const dark =
-          !border &&
-          (x === 0 || x === 6 || y === 0 || y === 6 || (x >= 2 && x <= 4 && y >= 2 && y <= 4));
-        set(left + x, top + y, dark);
-      }
-    }
-  };
-
-  finder(0, 0);
-  finder(size - 7, 0);
-  finder(0, size - 7);
-  for (let i = 8; i < size - 8; i += 1) {
-    set(i, 6, i % 2 === 0);
-    set(6, i, i % 2 === 0);
-  }
-
-  const alignment = (left: number, top: number) => {
-    for (let y = -2; y <= 2; y += 1)
-      for (let x = -2; x <= 2; x += 1)
-        set(left + x, top + y, Math.max(Math.abs(x), Math.abs(y)) !== 1);
-  };
-  alignment(26, 26);
-  set(8, size - 8, true);
-
-  // Error correction level L, mask 0. This is the fixed format word for QR version 4.
-  const format = 0x77c;
-  for (let i = 0; i < 15; i += 1) {
-    const dark = ((format >>> i) & 1) !== 0;
-    if (i < 6) set(8, i, dark);
-    else if (i < 8) set(8, i + 1, dark);
-    else set(8, size - 15 + i, dark);
-    if (i < 8) set(size - i - 1, 8, dark);
-    else if (i < 9) set(15 - i, 8, dark);
-    else set(15 - i - 1, 8, dark);
-  }
-
-  const bytes = Array.from(new TextEncoder().encode(value));
-  if (bytes.length > 78)
-    throw new Error("Referral link is too long for the ambassador pass QR code");
-  const dataCodewords = 80;
-  const dataBits = [
-    0,
-    1,
-    0,
-    0,
-    ...Array.from({ length: 8 }, (_, bit) => (bytes.length >>> (7 - bit)) & 1),
-    ...bytes.flatMap((byte) => Array.from({ length: 8 }, (_, bit) => (byte >>> (7 - bit)) & 1)),
-  ];
-  for (let i = 0; i < 4 && dataBits.length < dataCodewords * 8; i += 1) dataBits.push(0);
-  while (dataBits.length % 8 !== 0) dataBits.push(0);
-  const data = Array.from({ length: dataBits.length / 8 }, (_, index) =>
-    dataBits.slice(index * 8, index * 8 + 8).reduce((result, bit) => (result << 1) | bit, 0),
-  );
-  for (let i = data.length; i < dataCodewords; i += 1) data.push(i % 2 === 0 ? 0xec : 0x11);
-
-  const exp = new Uint8Array(512);
-  const log = new Uint8Array(256);
-  let factor = 1;
-  for (let i = 0; i < 255; i += 1) {
-    exp[i] = factor;
-    log[factor] = i;
-    factor <<= 1;
-    if (factor & 0x100) factor ^= 0x11d;
-  }
-  for (let i = 255; i < exp.length; i += 1) exp[i] = exp[i - 255]!;
-  const multiply = (left: number, right: number) =>
-    left && right ? exp[log[left]! + log[right]!]! : 0;
-  let generator = [1];
-  for (let i = 0; i < 20; i += 1) {
-    const next = Array(generator.length + 1).fill(0) as number[];
-    generator.forEach((coefficient, index) => {
-      next[index]! ^= coefficient;
-      next[index + 1]! ^= multiply(coefficient, exp[i]!);
-    });
-    generator = next;
-  }
-  const remainder = Array(20).fill(0) as number[];
-  for (const byte of data) {
-    const lead = byte ^ remainder[0]!;
-    remainder.shift();
-    remainder.push(0);
-    for (let i = 0; i < 20; i += 1) remainder[i]! ^= multiply(generator[i + 1]!, lead);
-  }
-  const codewords = [...data, ...remainder];
-  const bits = codewords.flatMap((byte) =>
-    Array.from({ length: 8 }, (_, bit) => ((byte >>> (7 - bit)) & 1) !== 0),
-  );
-  let bitIndex = 0;
-  for (let right = size - 1; right >= 1; right -= 2) {
-    if (right === 6) right -= 1;
-    for (let step = 0; step < size; step += 1) {
-      const y = ((right + 1) & 2) === 0 ? size - 1 - step : step;
-      for (let offset = 0; offset < 2; offset += 1) {
-        const x = right - offset;
-        if (reserved[y]![x]) continue;
-        let dark = bits[bitIndex++] ?? false;
-        if ((x + y) % 2 === 0) dark = !dark;
-        set(x, y, dark, false);
-      }
-    }
-  }
-  return modules.map((row) => row.map((cell) => cell ?? false));
-}
-
 function ReferralQrCode({
   value,
   expanded,
@@ -188,7 +67,7 @@ function ReferralQrCode({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const matrix = useMemo(() => makeQrMatrix(value), [value]);
+  const qrImageUrl = referralQrImageUrl(value);
   return (
     <button
       type="button"
@@ -199,23 +78,13 @@ function ReferralQrCode({
     >
       <span className="absolute inset-0 rounded-[1.5rem] border-2 border-golden/70 bg-[#fffdf2] shadow-[0_12px_30px_-18px_rgba(184,134,11,.9)] dark:bg-[#221f13]" />
       <span className="relative block rounded-xl bg-white p-2 dark:bg-white">
-        <svg
-          viewBox="0 0 33 33"
-          className="block size-40 sm:size-44"
-          role="img"
-          aria-label="QR code for the Campus Delight referral link"
-          shapeRendering="crispEdges"
-        >
-          <rect width="33" height="33" fill="white" />
-          {matrix.flatMap((row, y) =>
-            row.map((dark, x) =>
-              dark ? (
-                <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="#17220a" />
-              ) : null,
-            ),
-          )}
-        </svg>
-        <span className="absolute left-1/2 top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl border-2 border-golden bg-card p-1 shadow-md">
+        <img
+          src={qrImageUrl}
+          decoding="async"
+          alt="QR code for the Campus Delight referral link"
+          className="block size-40 bg-white sm:size-44"
+        />
+        <span className="pointer-events-none absolute left-1/2 top-1/2 grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-lg border-2 border-white bg-white p-1 shadow-md sm:size-8">
           <img
             src={logoImg.url}
             decoding="async"
@@ -239,7 +108,7 @@ function ReferPage() {
   const { data: referrals } = useSuspenseQuery(referralsQuery);
 
   const referralCode = profile.referral_code;
-  const referralLink = `${typeof window === "undefined" ? "https://campusdelight.net" : window.location.origin}/auth?mode=signup&ref=${referralCode}`;
+  const referralLink = referralLinkFor(referralCode);
   const whatsappMessage = `Hey! Join Campus Delight with my code to get 2,000 welcome tokens for food at campus delight kitchen: ${referralLink}`;
   const totalFriends = referrals.length;
   const unlocked = referrals.filter((referral) => referral.status === "rewarded");
