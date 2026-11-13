@@ -358,6 +358,13 @@
       "when": 1794469473451,
       "tag": "0050_subscription_meal_cap",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1794536000001,
+      "tag": "0052_scope_menu_item_reads",
+      "breakpoints": true
     }
   ]
 }

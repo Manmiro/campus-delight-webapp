@@ -1628,6 +1628,7 @@ export type Database = {
         Returns: undefined
       }
       my_outlet_id: { Args: never; Returns: string }
+      my_profile_outlet_id: { Args: never; Returns: string }
       normalize_nigerian_phone: { Args: { p_phone: string }; Returns: string }
       overdue_loan_warnings: {
         Args: never
