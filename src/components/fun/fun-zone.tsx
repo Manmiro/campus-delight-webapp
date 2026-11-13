@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Flame, Gift, Loader2, RotateCw, Sparkles, Cake, Repeat } from "lucide-react";
+import { Gift, Cake, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { claimDailyReward, sendBirthdayGreeting } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fun/confetti";
 import { ScratchFortuneCard } from "@/components/fun/scratch-fortune-card";
+import { MealPlanCard, type DashboardMealEntitlement, type DashboardMealPlan } from "@/components/meal-plan-card";
 import { getUserId } from "@/lib/queries";
 import { playDelightFeedback, prepareDelightFeedback } from "@/lib/delight-feedback";
 import {
-  SPIN_MAX_TOKENS, SPIN_MIN_TOKENS, badgesFor, isBirthday, levelFor, nextStreakMilestone, referralMilestone, streakBonusFor,
+  badgesFor, isBirthday, levelFor, referralMilestone,
 } from "@/lib/fun-rules";
 
 export const checkinsQuery = queryOptions({
@@ -38,8 +39,9 @@ type OrderLite = { created_at: string; status: string; order_items: { item_name:
 type LoanLite = { status: string };
 type ReferralLite = { status: string };
 
-export function FunZone({ orders, loans, referrals, dob, firstName }: {
+export function FunZone({ orders, loans, referrals, dob, firstName, activePlan, todayEntitlements }: {
   orders: OrderLite[]; loans: LoanLite[]; referrals: ReferralLite[]; dob: string | null; firstName: string;
+  activePlan?: DashboardMealPlan; todayEntitlements?: DashboardMealEntitlement[];
 }) {
   const qc = useQueryClient();
   const claimReward = useServerFn(claimDailyReward);
@@ -61,7 +63,6 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
   const prize = todayResult ?? (last?.checkin_date === today ? { spin: last.spin_tokens, bonus: last.bonus_tokens } : null);
   const liveStreak = last && (last.checkin_date === today || last.checkin_date === lagosYesterday()) ? last.streak : 0;
   const bestStreak = checkins.reduce((m, c) => Math.max(m, c.streak), 0);
-  const nextMs = nextStreakMilestone(liveStreak);
 
   const claim = useMutation({
     mutationFn: async () => {
@@ -121,35 +122,10 @@ export function FunZone({ orders, loans, referrals, dob, firstName }: {
 
       {checkinsFailed && <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive">Your daily reward could not load.<Button size="sm" variant="outline" onClick={() => void refetch()}>Try again</Button></div>}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Daily spin + streak */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-brand p-5 text-primary-foreground shadow-glow">
-          <div className="flex items-center justify-between">
-            <p className="flex items-center gap-1.5 font-display font-bold"><Flame className="h-5 w-5 text-golden" /> {liveStreak}-day streak</p>
-            <span className="rounded-full bg-primary-foreground/15 px-2.5 py-0.5 text-xs">Best {bestStreak}</span>
-          </div>
-          <div className="mt-4 flex items-center gap-4">
-            <div className={`grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 border-dashed border-golden bg-primary-foreground/10 ${spinning ? "motion-safe:animate-spin-wheel" : ""}`}>
-              <Sparkles className="h-8 w-8 text-golden" />
-            </div>
-            <div className="min-w-0">
-              {prize ? (
-                <p className="motion-safe:animate-pop-in font-display text-2xl font-extrabold">+{prize.spin + prize.bonus} tokens</p>
-              ) : (
-                <p className="font-display text-lg font-bold">{checkedToday ? "Done for today ✅" : "Daily spin is ready!"}</p>
-              )}
-              <p className="text-xs opacity-85">
-                Win {SPIN_MIN_TOKENS}–{SPIN_MAX_TOKENS} tokens daily. Day {nextMs} streak bonus: +{streakBonusFor(nextMs)}
-              </p>
-            </div>
-          </div>
-          <Button variant="secondary" className="mt-4 w-full rounded-full" disabled={unavailable || spinning} onClick={revealReward}>
-            {spinning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
-            {checkedToday ? "Come back tomorrow" : spinning ? "Claiming…" : loadingCheckins ? "Loading reward…" : "Spin & check in"}
-          </Button>
-        </div>
-
         <ScratchFortuneCard key={today} prize={prize} busy={spinning} disabled={unavailable}
-          error={claim.isError} onReveal={revealReward} onPrepare={prepareDelightFeedback} />
+          streak={liveStreak} bestStreak={bestStreak} error={claim.isError} onReveal={revealReward} onPrepare={prepareDelightFeedback} />
+
+        <MealPlanCard activePlan={activePlan} todayEntitlements={todayEntitlements} />
 
         {/* Level + badges */}
         <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft">

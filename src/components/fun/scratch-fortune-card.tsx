@@ -1,5 +1,5 @@
 import { useEffect, useRef, type PointerEvent } from "react";
-import { Coins, Loader2, Ticket } from "lucide-react";
+import { Coins, Flame, Loader2, Ticket } from "lucide-react";
 
 export type DailyPrize = { spin: number; bonus: number };
 
@@ -8,6 +8,8 @@ export function ScratchFortuneCard({
   busy,
   disabled,
   error,
+  streak = 0,
+  bestStreak = 0,
   onReveal,
   onPrepare,
 }: {
@@ -15,6 +17,8 @@ export function ScratchFortuneCard({
   busy: boolean;
   disabled: boolean;
   error: boolean;
+  streak?: number;
+  bestStreak?: number;
   onReveal: () => void;
   onPrepare: () => void;
 }) {
@@ -107,12 +111,15 @@ export function ScratchFortuneCard({
       className="min-w-0 rounded-3xl border border-golden/40 bg-gradient-to-br from-golden/15 via-card to-golden/5 p-5 shadow-soft"
       aria-label="Daily fortune card"
     >
-      <h2 className="flex items-center gap-2 font-display font-bold">
-        <Ticket className="size-5 text-golden" /> Daily fortune
-      </h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        One daily prize. Spin or scratch — your choice.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-display font-bold">
+          <Ticket className="size-5 text-golden" /> Golden Ticket
+        </h2>
+        <span className="inline-flex items-center gap-1 rounded-full bg-golden/15 px-2.5 py-1 text-xs font-semibold text-golden-foreground">
+          <Flame className="size-3.5 text-golden" /> {streak}-Day Streak · Best: {bestStreak}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">One daily prize. Scratch to reveal your coins.</p>
       <div className="relative mt-4 grid h-40 place-items-center overflow-hidden rounded-2xl border border-golden/40 bg-card text-center">
         <div className="p-3" role="status" aria-live="polite">
           {prize ? (

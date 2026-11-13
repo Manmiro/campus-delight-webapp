@@ -118,7 +118,7 @@ function rubTicket(canvas: HTMLCanvasElement) {
 }
 
 describe("daily fortune reward", () => {
-  it("shares one in-flight claim across spin and scratch and reveals the server prize", async () => {
+  it("uses the scratch card as the single daily claim and reveals the server prize", async () => {
     let resolve!: (prize: { spin: number; bonus: number; total: number; streak: number }) => void;
     claim.mockImplementation(
       () =>
@@ -136,16 +136,10 @@ describe("daily fortune reward", () => {
     ).toBeInTheDocument();
     rubTicket(canvas);
     await waitFor(() => expect(claim).toHaveBeenCalledTimes(1));
-    expect(screen.getByRole("button", { name: "Claiming…" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Claiming…" }));
+    expect(screen.queryByRole("button", { name: "Spin & check in" })).not.toBeInTheDocument();
     rubTicket(canvas);
     await act(async () => resolve({ spin: 13, bonus: 20, total: 33, streak: 3 }));
-    expect(await screen.findAllByText("+33 tokens")).toHaveLength(2);
-    expect(
-      screen
-        .getAllByRole("button", { name: "Come back tomorrow" })
-        .every((button) => button.hasAttribute("disabled")),
-    ).toBe(true);
+    expect(await screen.findByText("+33 tokens")).toBeInTheDocument();
     expect(claim).toHaveBeenCalledTimes(1);
     expect(play).toHaveBeenCalledExactlyOnceWith("tokens");
     expect(client.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["me"] });
@@ -153,8 +147,7 @@ describe("daily fortune reward", () => {
 
   it("restores an already claimed daily prize without calling the reward endpoint", () => {
     mount([{ checkin_date: today(), spin_tokens: 7, bonus_tokens: 50, streak: 7 }]);
-    expect(screen.getAllByText("+57 tokens")).toHaveLength(2);
-    expect(screen.getAllByRole("button", { name: "Come back tomorrow" })).toHaveLength(1);
+    expect(screen.getByText("+57 tokens")).toBeInTheDocument();
     expect(ticketCanvas()).toHaveClass("hidden");
     expect(claim).not.toHaveBeenCalled();
     expect(play).not.toHaveBeenCalled();
@@ -175,7 +168,7 @@ describe("daily fortune reward", () => {
       expect(screen.queryByText(/\+\d+ tokens/)).not.toBeInTheDocument();
       if (method === "retry link") fireEvent.click(retry);
       else rubTicket(canvas);
-      expect(await screen.findAllByText("+4 tokens")).toHaveLength(2);
+      expect(await screen.findByText("+4 tokens")).toBeInTheDocument();
       expect(claim).toHaveBeenCalledTimes(2);
       expect(screen.queryByRole("button", { name: "Tap to retry" })).not.toBeInTheDocument();
     },
