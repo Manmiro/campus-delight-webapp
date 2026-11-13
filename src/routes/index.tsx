@@ -18,19 +18,21 @@ export const Route = createFileRoute("/")({
   head: () => ({
     links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
     meta: [
-      { title: "Campus Delight — Affordable campus meals, subscriptions & rewards" },
+      { title: "Campus Delight — The All-in-One Food App" },
       {
         name: "description",
         content:
-          "Subscribe to meal plans, pay with your wallet or Campus Delight tokens, refer friends, and eat now & pay later — from your campus outlet.",
+          "Affordable Food, flexible food plans, Eat Now & Pay Later — right from your choice outlet.",
       },
-      { property: "og:title", content: "Campus Delight — Affordable campus meals" },
+      { property: "og:title", content: "Campus Delight — The All-in-One Food App" },
       {
         property: "og:description",
-        content: "Meal subscriptions, wallets, tokens, referrals and Eat Now & Pay Later — all from your campus outlet.",
+        content: "Affordable Food, flexible food plans, Eat Now & Pay Later — right from your choice outlet.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://www.campusdelight.net/og-image.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://www.campusdelight.net/og-image.jpg" },
     ],
   }),
   component: Landing,
