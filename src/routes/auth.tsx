@@ -302,7 +302,7 @@ function AuthPage() {
           <form onSubmit={submit} noValidate className="space-y-4">
             {mode === "signup" && firstName.trim() && (
               <p className="rounded-full border border-primary/25 bg-primary/10 px-3 py-2 text-center text-sm font-semibold text-primary animate-in fade-in slide-in-from-top-1 duration-300" aria-live="polite">
-                Welcome to the Foodie Family, {firstName.trim()}! 🍛
+                Welcome to Campus Delight Family, {firstName.trim()}! 🍛
               </p>
             )}
             {mode === "signin" && (
