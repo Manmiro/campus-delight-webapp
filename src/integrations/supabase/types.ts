@@ -675,9 +675,6 @@ export type Database = {
       }
       orders: {
         Row: {
-          meal_cap_kobo: number | null
-          meal_plan_covered_kobo: number
-          meal_copay_kobo: number
           created_at: string
           customer_id: string
           delivery_address: string | null
@@ -686,6 +683,9 @@ export type Database = {
           fulfillment_method: string
           id: string
           loan_id: string | null
+          meal_cap_kobo: number | null
+          meal_copay_kobo: number
+          meal_plan_covered_kobo: number
           outlet_id: string
           payment_method: string
           reference: string
@@ -695,9 +695,6 @@ export type Database = {
           total_kobo: number
         }
         Insert: {
-          meal_cap_kobo?: number | null
-          meal_plan_covered_kobo?: number
-          meal_copay_kobo?: number
           created_at?: string
           customer_id: string
           delivery_address?: string | null
@@ -706,6 +703,9 @@ export type Database = {
           fulfillment_method?: string
           id?: string
           loan_id?: string | null
+          meal_cap_kobo?: number | null
+          meal_copay_kobo?: number
+          meal_plan_covered_kobo?: number
           outlet_id: string
           payment_method: string
           reference: string
@@ -715,9 +715,6 @@ export type Database = {
           total_kobo: number
         }
         Update: {
-          meal_cap_kobo?: number | null
-          meal_plan_covered_kobo?: number
-          meal_copay_kobo?: number
           created_at?: string
           customer_id?: string
           delivery_address?: string | null
@@ -726,6 +723,9 @@ export type Database = {
           fulfillment_method?: string
           id?: string
           loan_id?: string | null
+          meal_cap_kobo?: number | null
+          meal_copay_kobo?: number
+          meal_plan_covered_kobo?: number
           outlet_id?: string
           payment_method?: string
           reference?: string
@@ -941,7 +941,6 @@ export type Database = {
       }
       outlets: {
         Row: {
-          meal_cap_kobo: number
           address: string | null
           code: string
           contact_email: string | null
@@ -950,13 +949,13 @@ export type Database = {
           delivery_fee_kobo: number
           id: string
           location: string | null
+          meal_cap_kobo: number
           name: string
           price_edit_locked: boolean
           status: string
           subscription_meal_cap_kobo: number
         }
         Insert: {
-          meal_cap_kobo?: number
           address?: string | null
           code: string
           contact_email?: string | null
@@ -965,13 +964,13 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          meal_cap_kobo?: number
           name: string
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
         }
         Update: {
-          meal_cap_kobo?: number
           address?: string | null
           code?: string
           contact_email?: string | null
@@ -980,6 +979,7 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          meal_cap_kobo?: number
           name?: string
           price_edit_locked?: boolean
           status?: string
@@ -989,8 +989,8 @@ export type Database = {
       }
       payment_transactions: {
         Row: {
-          checkout_snapshot: Json | null
           amount_kobo: number
+          checkout_snapshot: Json | null
           created_at: string
           customer_id: string
           id: string
@@ -1003,8 +1003,8 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
-          checkout_snapshot?: Json | null
           amount_kobo: number
+          checkout_snapshot?: Json | null
           created_at?: string
           customer_id: string
           id?: string
@@ -1017,8 +1017,8 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
-          checkout_snapshot?: Json | null
           amount_kobo?: number
+          checkout_snapshot?: Json | null
           created_at?: string
           customer_id?: string
           id?: string
@@ -1146,6 +1146,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      request_rate_limits: {
+        Row: {
+          key_hash: string
+          requests: number
+          window_started_at: string
+        }
+        Insert: {
+          key_hash: string
+          requests: number
+          window_started_at?: string
+        }
+        Update: {
+          key_hash?: string
+          requests?: number
+          window_started_at?: string
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -1463,14 +1481,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      consume_request_budget: {
-        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
-        Returns: boolean
-      }
-      admin_update_outlet_details: {
-        Args: { p_outlet_id: string; p_patch: Json }
-        Returns: Json
-      }
       accrue_loan_overdue: { Args: { p_loan_id: string }; Returns: number }
       activate_subscription: {
         Args: { p_reference: string; p_subscription_id: string }
@@ -1532,6 +1542,10 @@ export type Database = {
         Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
         Returns: Json
       }
+      admin_update_outlet_details: {
+        Args: { p_outlet_id: string; p_patch: Json }
+        Returns: Json
+      }
       apply_loan_repayment: {
         Args: {
           p_amount_kobo: number
@@ -1569,6 +1583,10 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
+      consume_request_budget: {
+        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       credit_purchased_tokens: {
         Args: { p_amount: number; p_customer: string; p_reference: string }
         Returns: Json
@@ -1646,9 +1664,9 @@ export type Database = {
       }
       place_order_with_fulfillment: {
         Args: {
-          p_expected_meal_cap_kobo?: number
           p_delivery_address?: string
           p_expected_fee_kobo?: number
+          p_expected_meal_cap_kobo?: number
           p_fulfillment_method: string
           p_items: Json
           p_loan_term_days?: number
@@ -1687,6 +1705,7 @@ export type Database = {
         Returns: Json
       }
       request_otp: { Args: { p_purpose?: string }; Returns: string }
+      require_active_user: { Args: never; Returns: undefined }
       set_outlet_delivery_fee: {
         Args: { p_fee_kobo: number; p_outlet_id: string }
         Returns: undefined
