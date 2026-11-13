@@ -41,15 +41,23 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in or create your account — Campus Delight" },
-      { name: "description", content: "Sign in to Campus Delight or create your customer account and pick your campus outlet." },
-      { property: "og:title", content: "Sign in or create your account — Campus Delight" },
+      { title: "Campus Delight — The All-in-One Food App" },
+      {
+        name: "description",
+        content:
+          "Join with my referral link to unlock your welcome food bonus, flexible Food plans, and Eat Now & Pay Later at your campus outlet.",
+      },
+      { property: "og:title", content: "Campus Delight — The All-in-One Food App" },
       {
         property: "og:description",
-        content: "Sign in to Campus Delight or create your customer account and pick your campus outlet.",
+        content:
+          "Join with my referral link to unlock your welcome food bonus, flexible Food plans, and Eat Now & Pay Later at your campus outlet.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://www.campusdelight.net/auth" },
+      { property: "og:image", content: "https://www.campusdelight.net/og-image.jpg" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://www.campusdelight.net/og-image.jpg" },
     ],
   }),
   component: AuthPage,
