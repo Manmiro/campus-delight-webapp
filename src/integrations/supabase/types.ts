@@ -989,8 +989,8 @@ export type Database = {
       }
       payment_transactions: {
         Row: {
-          checkout_snapshot: Json | null
           amount_kobo: number
+          checkout_snapshot: Json | null
           created_at: string
           customer_id: string
           id: string
@@ -1003,8 +1003,8 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
-          checkout_snapshot?: Json | null
           amount_kobo: number
+          checkout_snapshot?: Json | null
           created_at?: string
           customer_id: string
           id?: string
@@ -1017,8 +1017,8 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
-          checkout_snapshot?: Json | null
           amount_kobo?: number
+          checkout_snapshot?: Json | null
           created_at?: string
           customer_id?: string
           id?: string
@@ -1481,14 +1481,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      consume_request_budget: {
-        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
-        Returns: boolean
-      }
-      admin_update_outlet_details: {
-        Args: { p_outlet_id: string; p_patch: Json }
-        Returns: Json
-      }
       accrue_loan_overdue: { Args: { p_loan_id: string }; Returns: number }
       activate_subscription: {
         Args: { p_reference: string; p_subscription_id: string }
@@ -1550,6 +1542,10 @@ export type Database = {
         Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
         Returns: Json
       }
+      admin_update_outlet_details: {
+        Args: { p_outlet_id: string; p_patch: Json }
+        Returns: Json
+      }
       apply_loan_repayment: {
         Args: {
           p_amount_kobo: number
@@ -1587,6 +1583,10 @@ export type Database = {
       }
       cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       claim_daily_checkin: { Args: never; Returns: Json }
+      consume_request_budget: {
+        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       credit_purchased_tokens: {
         Args: { p_amount: number; p_customer: string; p_reference: string }
         Returns: Json
