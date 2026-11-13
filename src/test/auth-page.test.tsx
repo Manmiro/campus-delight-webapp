@@ -112,7 +112,8 @@ describe("account form submission", () => {
   it("sends a complete signup immediately and waits for email confirmation", async () => {
     mocks.mode = "signup";
     render(<Page />);
-    change(/^Full name/, "Ada Obi");
+    change(/^First name/, "Ada");
+    change(/^Last name/, "Obi");
     change(/^Email address/, "ada@ebsonu.edu.ng");
     change(/^Phone number/, "08030000000");
     change(/^Gender/, "female");
@@ -129,6 +130,8 @@ describe("account form submission", () => {
         emailRedirectTo: window.location.origin + "/auth",
         data: {
           full_name: "Ada Obi",
+          first_name: "Ada",
+          last_name: "Obi",
           phone: "+2348030000000",
           gender: "female",
           date_of_birth: "2004-05-12",

@@ -29,7 +29,8 @@ describe("Customer email verification and sign-in", () => {
 });
 
 const completeSignUp = {
-  fullName: "Ada Obi",
+  firstName: "Ada",
+  lastName: "Obi",
   email: "ada.obi@ebsonu.edu.ng",
   phone: "08030000000",
   gender: "female",
@@ -50,8 +51,18 @@ describe("Customer sign-up form requires every field except the referral code", 
     expect(validateSignUpForm({ ...completeSignUp, referralCode: "CD482901" })).toEqual({});
   });
 
-  it("requires the full name", () => {
-    expect(validateSignUpForm({ ...completeSignUp, fullName: "   " })).toEqual({ fullName: "Enter your full name" });
+  it("requires the first name", () => {
+    expect(validateSignUpForm({ ...completeSignUp, firstName: "   " })).toEqual({ firstName: "Enter your first name" });
+    expect(validateSignUpForm({ ...completeSignUp, firstName: "a".repeat(51) })).toEqual({
+      firstName: "First name must be 50 characters or fewer",
+    });
+  });
+
+  it("requires the last name", () => {
+    expect(validateSignUpForm({ ...completeSignUp, lastName: "   " })).toEqual({ lastName: "Enter your last name" });
+    expect(validateSignUpForm({ ...completeSignUp, lastName: "b".repeat(51) })).toEqual({
+      lastName: "Last name must be 50 characters or fewer",
+    });
   });
 
   it("requires a usable email address", () => {
@@ -116,7 +127,8 @@ describe("Customer sign-up form requires every field except the referral code", 
 
   it("reports every missing field at once so nothing is quietly skipped", () => {
     const errors = validateSignUpForm({
-      fullName: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       gender: "",
@@ -128,7 +140,7 @@ describe("Customer sign-up form requires every field except the referral code", 
       acceptedTerms: false,
     });
     expect(Object.keys(errors).sort()).toEqual(
-      ["acceptedTerms", "confirmPassword", "dateOfBirth", "email", "fullName", "gender", "outletId", "password", "phone"].sort(),
+      ["acceptedTerms", "confirmPassword", "dateOfBirth", "email", "firstName", "gender", "lastName", "outletId", "password", "phone"].sort(),
     );
   });
 });

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Loader2, MailCheck } from "lucide-react";
+import { CheckCircle2, Gift, Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
 import { getMyRole } from "@/lib/roles.functions";
@@ -30,9 +30,15 @@ const searchSchema = {
   },
 };
 
+const GOLDEN_FIELD_CLASS =
+  "border-golden/40 bg-background/80 hover:border-golden/60 transition-colors focus-visible:border-golden focus-visible:ring-golden/30 focus-visible:ring-2 shadow-sm";
+
 export const Route = createFileRoute("/auth")({
   ...searchSchema,
-  loader: ({ context }) => context.queryClient.ensureQueryData(outletsQuery),
+  loader: ({ context }) => {
+    context.queryClient.setQueryData(outletsQuery.queryKey, []);
+    return [];
+  },
   head: () => ({
     meta: [
       { title: "Sign in or create your account — Campus Delight" },
@@ -61,7 +67,8 @@ function AuthPage() {
   const welcomeReceipt = useServerFn(acknowledgeRegistrationRewards);
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode === "signup" ? "signup" : "signin");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,6 +81,16 @@ function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const phoneIsValid = (() => {
+    if (!phone.trim()) return false;
+    try {
+      normalizeNigerianPhone(phone);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
 
   const clearError = (field: keyof FormErrors) =>
     setErrors((prev) => {
@@ -149,7 +166,7 @@ function AuthPage() {
     // Every field is required except the referral code, which stays optional.
     const fieldErrors =
       mode === "signup"
-        ? validateSignUpForm({ fullName, email, phone, gender, dateOfBirth: dob, outletId, password, confirmPassword, referralCode, acceptedTerms })
+        ? validateSignUpForm({ firstName, lastName, email, phone, gender, dateOfBirth: dob, outletId, password, confirmPassword, referralCode, acceptedTerms })
         : validateSignInForm(email, password);
     const messages = Object.values(fieldErrors).filter(Boolean) as string[];
     if (messages.length > 0) {
@@ -168,7 +185,9 @@ function AuthPage() {
           options: {
             emailRedirectTo: `${window.location.origin}/auth`,
             data: {
-              full_name: fullName.trim(),
+              full_name: `${firstName.trim()} ${lastName.trim()}`,
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
               phone: normalizeNigerianPhone(phone),
               gender,
               date_of_birth: dob,
@@ -258,6 +277,12 @@ function AuthPage() {
             <img src={logoImg.url} width={256} height={256} decoding="async" alt="Campus Delight logo" className="h-20 w-20 rounded-full shadow-glow" />
             <span className="font-display text-xl font-bold">Campus Delight</span>
           </Link>
+          {mode === "signup" && (
+            <div className="mb-4 flex items-center gap-2 rounded-full border border-golden/50 bg-golden/10 px-3 py-2 text-xs font-bold text-golden shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+              <Gift className="size-4 shrink-0" aria-hidden="true" />
+              <span>Complete sign-up and get {WELCOME_TOKENS.toLocaleString("en-NG")} Welcome Food Tokens</span>
+            </div>
+          )}
           <h1 className="font-display text-2xl font-bold">{mode === "signin" ? "Welcome back 👋" : "Create your account 🍛"}</h1>
           <p className="mt-1 mb-6 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to order, top up and track your meals." : "Fill in every field below — only the referral code is optional."}</p>
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
@@ -275,35 +300,50 @@ function AuthPage() {
           </div>
 
           <form onSubmit={submit} noValidate className="space-y-4">
+            {mode === "signup" && firstName.trim() && (
+              <p className="rounded-full border border-primary/25 bg-primary/10 px-3 py-2 text-center text-sm font-semibold text-primary animate-in fade-in slide-in-from-top-1 duration-300" aria-live="polite">
+                Welcome to the Foodie Family, {firstName.trim()}! 🍛
+              </p>
+            )}
             {mode === "signin" && (
               <div>
                 <Label htmlFor="email">Email address <Required /></Label>
-                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
+                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
                 <FieldError message={errors.email} />
               </div>
             )}
             {mode === "signup" && (
               <>
-                <div>
-                  <Label htmlFor="fullName">Full name <Required /></Label>
-                  <Input id="fullName" value={fullName} onChange={(e) => { setFullName(e.target.value); clearError("fullName"); }} required aria-required="true" aria-invalid={Boolean(errors.fullName)} placeholder="Ada Obi" />
-                  <FieldError message={errors.fullName} />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="firstName">First name <Required /></Label>
+                    <Input id="firstName" autoComplete="given-name" value={firstName} onChange={(e) => { setFirstName(e.target.value); clearError("firstName"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.firstName)} placeholder="Ada" />
+                    <FieldError message={errors.firstName} />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last name <Required /></Label>
+                    <Input id="lastName" autoComplete="family-name" value={lastName} onChange={(e) => { setLastName(e.target.value); clearError("lastName"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.lastName)} placeholder="Obi" />
+                    <FieldError message={errors.lastName} />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="email">Email address <Required /></Label>
-                  <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
+                  <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.email)} placeholder="you@example.com" />
                   <FieldError message={errors.email} />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone number <Required /></Label>
-                  <Input id="phone" inputMode="tel" value={phone} onChange={(e) => { setPhone(e.target.value); clearError("phone"); }} required aria-required="true" aria-invalid={Boolean(errors.phone)} placeholder="0803 000 0000" />
+                  <div className="relative">
+                    <Input id="phone" inputMode="tel" value={phone} onChange={(e) => { setPhone(e.target.value); clearError("phone"); }} className={`${GOLDEN_FIELD_CLASS} pr-10`} required aria-required="true" aria-invalid={Boolean(errors.phone)} placeholder="0803 000 0000" />
+                    {phoneIsValid && <CheckCircle2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-emerald-600 animate-in zoom-in duration-200" aria-hidden="true" />}
+                  </div>
                   <FieldError message={errors.phone} />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="gender">Gender <Required /></Label>
                     <Select value={gender} onValueChange={(v) => { setGender(v); clearError("gender"); }} required>
-                      <SelectTrigger id="gender" className="w-full" aria-required="true" aria-invalid={Boolean(errors.gender)}>
+                    <SelectTrigger id="gender" className={`w-full ${GOLDEN_FIELD_CLASS}`} aria-required="true" aria-invalid={Boolean(errors.gender)}>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
@@ -315,14 +355,15 @@ function AuthPage() {
                   </div>
                   <div>
                     <Label htmlFor="dob">Date of birth <Required /></Label>
-                    <Input id="dob" type="date" value={dob} onChange={(e) => { setDob(e.target.value); clearError("dateOfBirth"); }} required aria-required="true" aria-invalid={Boolean(errors.dateOfBirth)} max={new Date().toISOString().slice(0, 10)} />
+                    <Input id="dob" type="date" value={dob} onChange={(e) => { setDob(e.target.value); clearError("dateOfBirth"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.dateOfBirth)} max={new Date().toISOString().slice(0, 10)} />
                     <FieldError message={errors.dateOfBirth} />
+                    {dob && <p className="mt-1.5 text-xs font-semibold text-primary animate-in fade-in slide-in-from-top-1 duration-300">We'll be the first to celebrate you on your birthday! 🎂</p>}
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="outlet">Your campus outlet <Required /></Label>
                   <Select value={outletId} onValueChange={(v) => { setOutletId(v); clearError("outletId"); }} required>
-                    <SelectTrigger id="outlet" className="w-full" aria-required="true" aria-invalid={Boolean(errors.outletId)}>
+                    <SelectTrigger id="outlet" className={`w-full ${GOLDEN_FIELD_CLASS}`} aria-required="true" aria-invalid={Boolean(errors.outletId)}>
                       <SelectValue placeholder="Select your outlet" />
                     </SelectTrigger>
                     <SelectContent>
@@ -337,20 +378,21 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="referral">Referral code <span className="font-normal text-muted-foreground">(optional)</span></Label>
-                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value.toUpperCase())} placeholder="CD482901" />
+                  <Input id="referral" value={referralCode} onChange={(e) => setReferralCode(e.target.value.toUpperCase())} className={GOLDEN_FIELD_CLASS} placeholder="CD482901" />
+                  {referralCode.trim() && <p className="mt-1.5 text-xs font-semibold text-emerald-600 animate-in fade-in slide-in-from-top-1 duration-300">🎉 Ambassador link active! Your bonus is sure.</p>}
                 </div>
               </>
             )}
             <div>
               <Label htmlFor="password">Password <Required /></Label>
-              <PasswordInput id="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} required aria-required="true" aria-invalid={Boolean(errors.password)} minLength={mode === "signup" ? 8 : undefined} placeholder="••••••••" />
+              <PasswordInput id="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.password)} minLength={mode === "signup" ? 8 : undefined} placeholder="••••••••" />
               <FieldError message={errors.password} />
               {mode === "signup" && <PasswordStrengthMeter password={password} />}
             </div>
             {mode === "signup" && (
               <div>
                 <Label htmlFor="confirmPassword">Confirm password <Required /></Label>
-                <PasswordInput id="confirmPassword" autoComplete="new-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }} required aria-required="true" aria-invalid={Boolean(errors.confirmPassword)} placeholder="••••••••" />
+                <PasswordInput id="confirmPassword" autoComplete="new-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.confirmPassword)} placeholder="••••••••" />
                 <FieldError message={errors.confirmPassword} />
                 {confirmPassword && !errors.confirmPassword && (
                   <p className={`mt-1.5 text-xs font-semibold animate-in fade-in duration-300 ${confirmPassword === password ? "text-primary" : "text-destructive"}`}>

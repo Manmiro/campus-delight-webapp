@@ -70,7 +70,8 @@ export function hasConfirmedEmail(user: { email_confirmed_at?: string | null } |
 }
 
 export type SignUpForm = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   gender: string;
@@ -91,9 +92,13 @@ export type FormErrors = Partial<Record<keyof SignUpForm | "referralCode", strin
 export function validateSignUpForm(form: SignUpForm): FormErrors {
   const errors: FormErrors = {};
 
-  const fullName = form.fullName.trim();
-  if (!fullName) errors.fullName = "Enter your full name";
-  else if (fullName.length > 100) errors.fullName = "Full name must be 100 characters or fewer";
+  const firstName = form.firstName.trim();
+  if (!firstName) errors.firstName = "Enter your first name";
+  else if (firstName.length > 50) errors.firstName = "First name must be 50 characters or fewer";
+
+  const lastName = form.lastName.trim();
+  if (!lastName) errors.lastName = "Enter your last name";
+  else if (lastName.length > 50) errors.lastName = "Last name must be 50 characters or fewer";
 
   const emailError = validateEmailAddress(form.email, { rejectDisposable: true });
   if (emailError) errors.email = emailError;
