@@ -40,6 +40,8 @@ export async function emailOrder(orderId: string, kind: 'order' | 'fulfilled' | 
   const details = [{ label: 'Meal', value: order.order_items.map(item => `${item.item_name} × ${item.quantity}`).join(', ') }, { label: 'Payment method', value: order.payment_method.replaceAll('_', ' ') }];
   details.push({ label: 'Collection', value: order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup at your outlet' }, { label: 'Delivery fee', value: money(order.delivery_fee_kobo) });
   if (order.delivery_address) details.push({ label: 'Delivery address', value: order.delivery_address });
+  const mealPlanCopay = order.payment_method === 'subscription_entitlement' ? Math.max(order.total_kobo - order.delivery_fee_kobo, 0) : 0;
+  if (mealPlanCopay > 0) details.push({ label: kind === 'cancelled' ? 'Extra above meal plan refunded to wallet' : 'Extra above meal plan paid from wallet', value: money(mealPlanCopay) });
   if (order.payment_method === 'subscription_entitlement' && order.delivery_fee_kobo > 0) details.push({ label: kind === 'cancelled' ? 'Delivery refunded to wallet' : 'Delivery paid from wallet', value: money(order.delivery_fee_kobo) });
   if (order.payment_method === 'subscription_entitlement' && order.meal_cap_kobo != null) {
     details.push({ label: 'Meal cap per meal', value: money(order.meal_cap_kobo) },

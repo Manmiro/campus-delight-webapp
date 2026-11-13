@@ -675,9 +675,6 @@ export type Database = {
       }
       orders: {
         Row: {
-          meal_cap_kobo: number | null
-          meal_plan_covered_kobo: number
-          meal_copay_kobo: number
           created_at: string
           customer_id: string
           delivery_address: string | null
@@ -686,6 +683,9 @@ export type Database = {
           fulfillment_method: string
           id: string
           loan_id: string | null
+          meal_cap_kobo: number | null
+          meal_copay_kobo: number
+          meal_plan_covered_kobo: number
           outlet_id: string
           payment_method: string
           reference: string
@@ -695,9 +695,6 @@ export type Database = {
           total_kobo: number
         }
         Insert: {
-          meal_cap_kobo?: number | null
-          meal_plan_covered_kobo?: number
-          meal_copay_kobo?: number
           created_at?: string
           customer_id: string
           delivery_address?: string | null
@@ -706,6 +703,9 @@ export type Database = {
           fulfillment_method?: string
           id?: string
           loan_id?: string | null
+          meal_cap_kobo?: number | null
+          meal_copay_kobo?: number
+          meal_plan_covered_kobo?: number
           outlet_id: string
           payment_method: string
           reference: string
@@ -715,9 +715,6 @@ export type Database = {
           total_kobo: number
         }
         Update: {
-          meal_cap_kobo?: number | null
-          meal_plan_covered_kobo?: number
-          meal_copay_kobo?: number
           created_at?: string
           customer_id?: string
           delivery_address?: string | null
@@ -726,6 +723,9 @@ export type Database = {
           fulfillment_method?: string
           id?: string
           loan_id?: string | null
+          meal_cap_kobo?: number | null
+          meal_copay_kobo?: number
+          meal_plan_covered_kobo?: number
           outlet_id?: string
           payment_method?: string
           reference?: string
@@ -941,7 +941,6 @@ export type Database = {
       }
       outlets: {
         Row: {
-          meal_cap_kobo: number
           address: string | null
           code: string
           contact_email: string | null
@@ -950,12 +949,13 @@ export type Database = {
           delivery_fee_kobo: number
           id: string
           location: string | null
+          meal_cap_kobo: number
           name: string
           price_edit_locked: boolean
           status: string
+          subscription_meal_cap_kobo: number
         }
         Insert: {
-          meal_cap_kobo?: number
           address?: string | null
           code: string
           contact_email?: string | null
@@ -964,12 +964,13 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          meal_cap_kobo?: number
           name: string
           price_edit_locked?: boolean
           status?: string
+          subscription_meal_cap_kobo?: number
         }
         Update: {
-          meal_cap_kobo?: number
           address?: string | null
           code?: string
           contact_email?: string | null
@@ -978,9 +979,11 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          meal_cap_kobo?: number
           name?: string
           price_edit_locked?: boolean
           status?: string
+          subscription_meal_cap_kobo?: number
         }
         Relationships: []
       }
@@ -1143,6 +1146,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      request_rate_limits: {
+        Row: {
+          key_hash: string
+          requests: number
+          window_started_at: string
+        }
+        Insert: {
+          key_hash: string
+          requests: number
+          window_started_at?: string
+        }
+        Update: {
+          key_hash?: string
+          requests?: number
+          window_started_at?: string
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -1521,6 +1542,10 @@ export type Database = {
         Args: { p_outlet_id: string; p_reason: string; p_suspended: boolean }
         Returns: Json
       }
+      admin_set_outlet_meal_cap: {
+        Args: { p_cap_kobo: number; p_outlet_id: string }
+        Returns: Json
+      }
       admin_set_outlet_price_edit_lock: {
         Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
         Returns: Json
@@ -1603,6 +1628,7 @@ export type Database = {
         Returns: undefined
       }
       my_outlet_id: { Args: never; Returns: string }
+      my_profile_outlet_id: { Args: never; Returns: string }
       normalize_nigerian_phone: { Args: { p_phone: string }; Returns: string }
       overdue_loan_warnings: {
         Args: never
@@ -1639,9 +1665,9 @@ export type Database = {
       }
       place_order_with_fulfillment: {
         Args: {
-          p_expected_meal_cap_kobo?: number
           p_delivery_address?: string
           p_expected_fee_kobo?: number
+          p_expected_meal_cap_kobo?: number
           p_fulfillment_method: string
           p_items: Json
           p_loan_term_days?: number
@@ -1680,6 +1706,7 @@ export type Database = {
         Returns: Json
       }
       request_otp: { Args: { p_purpose?: string }; Returns: string }
+      require_active_user: { Args: never; Returns: undefined }
       set_outlet_delivery_fee: {
         Args: { p_fee_kobo: number; p_outlet_id: string }
         Returns: undefined

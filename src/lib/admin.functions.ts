@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isDisposableEmailAddress, normalizeEmailAddress } from "@/lib/auth-rules";
+import { mealCapSchema } from "@/lib/meal-cap-rules";
 
 async function assertCentralAdmin(context: { supabase: SupabaseClient<Database>; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -139,6 +140,19 @@ export const adminSetOutletPriceEditLock = createServerFn({ method: "POST" })
   });
 
 type ManagerAccountInput = { email: string; fullName: string; password: string };
+
+// Preserve the existing server action while sharing the audited cap update.
+export const adminSetOutletMealCap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { outletId: string; capKobo: number }) => mealCapSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertCentralAdmin(context);
+    const { data: result, error } = await context.supabase.rpc("admin_update_outlet_details", {
+      p_outlet_id: data.outletId, p_patch: { meal_cap_kobo: data.capKobo },
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
 
 export const adminRestoreLoanAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

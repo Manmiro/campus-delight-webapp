@@ -1,12 +1,59 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkRequestSize,
   MAX_SERVER_REQUEST_BYTES,
   withSecurityHeaders,
 } from "@/lib/request-security";
 
+afterEach(() => vi.unstubAllEnvs());
+
 describe("request size and browser protections", () => {
+  it("allows sign-in and realtime connections to the configured Lovable Cloud backend", () => {
+    const origin = "https://c--26e23df5-ee2e-4a9c-9175-3fb980bfd92d-prod.lovable.cloud";
+    vi.stubEnv("VITE_SUPABASE_URL", `${origin}/`);
+    const response = withSecurityHeaders(
+      new Response("ok"),
+      new Request("https://campusdelight.net/auth"),
+    );
+    const connections = response.headers
+      .get("Content-Security-Policy")!
+      .split("; ")
+      .find((value) => value.startsWith("connect-src "))!
+      .split(" ")
+      .slice(1);
+    expect(connections).toContain(origin);
+    expect(connections).toContain(origin.replace("https:", "wss:"));
+    expect(connections).not.toContain("https://*.lovable.cloud");
+    expect(connections).not.toContain("*");
+  });
+  it("only adds the configured backend origin, never its path or credentials", () => {
+    vi.stubEnv("VITE_SUPABASE_URL", "https://ignored:ignored@backend.example.test/path?q=ignored");
+    const response = withSecurityHeaders(
+      new Response("ok"),
+      new Request("https://campusdelight.net/auth"),
+    );
+    const policy = response.headers.get("Content-Security-Policy")!;
+    expect(policy).toContain("https://backend.example.test wss://backend.example.test");
+    expect(policy).not.toContain("ignored");
+  });
+  it.each([
+    undefined,
+    "not a URL; connect-src *",
+    "data:text/plain,anything",
+    "javascript:alert(1)",
+  ])("keeps a restrictive policy for invalid or absent backend configuration %s", (backend) => {
+    vi.stubEnv("VITE_SUPABASE_URL", backend);
+    const response = withSecurityHeaders(
+      new Response("ok"),
+      new Request("https://campusdelight.net/auth"),
+    );
+    const policy = response.headers.get("Content-Security-Policy")!;
+    expect(policy).toContain("object-src 'none'");
+    expect(policy).not.toContain("connect-src *");
+    expect(policy).not.toContain("javascript:");
+    expect(policy).not.toContain("data:text");
+  });
   it("rejects oversized content lengths before parsing", async () => {
     const request = new Request("https://campusdelight.net/api/test", {
       method: "POST",
