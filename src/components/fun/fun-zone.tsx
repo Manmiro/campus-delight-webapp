@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Gift, Cake, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { claimDailyReward, sendBirthdayGreeting } from "@/lib/transactions.functions";
+import { claimDailyReward } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/fun/confetti";
 import { ScratchFortuneCard } from "@/components/fun/scratch-fortune-card";
@@ -104,8 +104,6 @@ export function FunZone({ orders, loans, referrals, dob, firstName, activePlan, 
   const ref = referralMilestone(qualified);
   const usual = counted[0]?.order_items[0];
   const birthday = isBirthday(dob);
-  const greet = useServerFn(sendBirthdayGreeting);
-  useEffect(() => { if (birthday) greet().catch(() => {}); }, [birthday, greet]);
 
   return (
     <>
