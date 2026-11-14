@@ -18,6 +18,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { toast } from "sonner";
+import { showFoodieError } from "@/lib/foodie-errors";
 import {
   adminDeleteMenuItem,
   adminListOutletCatalog,
@@ -153,7 +154,7 @@ function AdminOperations() {
       refresh();
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Could not save menu item"),
+      showFoodieError(error, "Could not save menu item"),
   });
   const deleteMutation = useMutation({
     mutationFn: (menuItemId: string) => deleteMenuItem({ data: { outletId, menuItemId } }),
@@ -162,7 +163,7 @@ function AdminOperations() {
       refresh();
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Could not remove menu item"),
+      showFoodieError(error, "Could not remove menu item"),
   });
   const planMutation = useMutation({
     mutationFn: ({ plan, tier, price }: { plan: string; tier: string; price: string }) => {
@@ -176,7 +177,7 @@ function AdminOperations() {
       refresh();
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Could not save plan price"),
+      showFoodieError(error, "Could not save plan price"),
   });
   const lockMutation = useMutation({
     mutationFn: (locked: boolean) => {
@@ -192,7 +193,7 @@ function AdminOperations() {
       void qc.invalidateQueries({ queryKey: ["admin", "outlet-catalog", outletId] });
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Could not update price-edit lock"),
+      showFoodieError(error, "Could not update price-edit lock"),
   });
   const orderMutation = useMutation({
     mutationFn: (input: { orderId: string; action: "fulfill" | "cancel" }) =>
@@ -202,7 +203,7 @@ function AdminOperations() {
       void qc.invalidateQueries({ queryKey: ["admin", "outlet-orders", outletId] });
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Could not update order"),
+      showFoodieError(error, "Could not update order"),
   });
 
   const menu = catalogQuery.data?.menu ?? [];
@@ -215,7 +216,7 @@ function AdminOperations() {
       void qc.invalidateQueries({ queryKey: ["admin"] });
       void qc.invalidateQueries({ queryKey: ["delivery-fee"] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update meal cap"),
+    onError: (error) => showFoodieError(error, "Could not update meal cap"),
   });
   const prices = catalogQuery.data?.prices ?? [];
   const locked =

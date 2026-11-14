@@ -12,9 +12,15 @@ import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import logoImg from "@/assets/logo.webp.asset.json";
 import heroImg from "@/assets/hero-meal.webp.asset.json";
+import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(outletsQuery),
+  loader: ({ context }) => {
+    // Keep SSR independent from the remote catalog. The query refreshes on the
+    // client and the page can still render if the backend is unavailable.
+    context.queryClient.setQueryData(outletsQuery.queryKey, []);
+    return [];
+  },
   head: () => ({
     links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
     meta: [
@@ -36,7 +42,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: Landing,
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Campus Delight page not found.</div>,
 });
 

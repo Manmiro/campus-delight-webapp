@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { deliverFile } from "@/lib/download";
 import { customersCsv, customersCsvFilename } from "@/lib/customer-export";
 import { Trash2 } from "lucide-react";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   component: AdminCustomers,
@@ -133,7 +134,7 @@ function AdminCustomers() {
       void qc.invalidateQueries({ queryKey: ["admin", "wallet-ledger"] });
       void qc.invalidateQueries({ queryKey: ["admin", "token-ledger"] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Balance adjustment failed"),
+    onError: (error) => showFoodieError(error, "Balance adjustment failed"),
   });
 
   const changeStatus = useMutation({
@@ -153,7 +154,7 @@ function AdminCustomers() {
       void qc.invalidateQueries({ queryKey: ["admin", "customers"] });
       void qc.invalidateQueries({ queryKey: ["admin", "audit-all"] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Account status update failed"),
+    onError: (error) => showFoodieError(error, "Account status update failed"),
   });
 
   const create = useMutation({
@@ -165,7 +166,7 @@ function AdminCustomers() {
       void qc.invalidateQueries({ queryKey: ["admin", "customers-count"] });
       void qc.invalidateQueries({ queryKey: ["admin", "audit-all"] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Customer account creation failed"),
+    onError: (error) => showFoodieError(error, "Customer account creation failed"),
   });
 
   const remove = useMutation({
@@ -181,7 +182,7 @@ function AdminCustomers() {
       void qc.invalidateQueries({ queryKey: ["admin", "customers-count"] });
       void qc.invalidateQueries({ queryKey: ["admin", "audit-all"] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Customer account deletion failed"),
+    onError: (error) => showFoodieError(error, "Customer account deletion failed"),
   });
 
   function exportCsv() {

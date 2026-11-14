@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/_customer/transfer-tokens")({
   component: TransferTokensPage,
@@ -43,7 +44,7 @@ function TransferTokensPage() {
       setAmount("");
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Transfer failed"),
+    onError: (e) => showFoodieError(e, "Transfer failed"),
   });
 
   const amountNum = Number(amount) || 0;

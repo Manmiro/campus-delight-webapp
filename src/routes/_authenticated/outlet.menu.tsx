@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/outlet/menu")({
   component: OutletMenu,
@@ -52,7 +53,7 @@ function OutletMenu() {
       void qc.invalidateQueries({ queryKey: ['delivery-fee', outletId] });
       void qc.invalidateQueries({ queryKey: ['me', 'profile'] });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not save delivery fee'),
+    onError: (error) => showFoodieError(error, 'Could not save delivery fee'),
   });
 
   const [name, setName] = useState("");
@@ -78,7 +79,7 @@ function OutletMenu() {
       setName(""); setPrice("");
       void qc.invalidateQueries({ queryKey: ["menu", outletId] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not add item"),
+    onError: (e) => showFoodieError(e, "Could not add item"),
   });
 
   const patchItem = useMutation({
@@ -87,7 +88,7 @@ function OutletMenu() {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["menu", outletId] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
+    onError: (e) => showFoodieError(e, "Update failed"),
   });
 
   const [editing, setEditing] = useState<{ id: string; name: string; category: string; price: string } | null>(null);
@@ -105,7 +106,7 @@ function OutletMenu() {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => { toast.success("Menu item updated"); setEditing(null); void qc.invalidateQueries({ queryKey: ["menu", outletId] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update item"),
+    onError: (e) => showFoodieError(e, "Could not update item"),
   });
 
   const deleteItem = useMutation({
@@ -114,7 +115,7 @@ function OutletMenu() {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => { toast.success("Menu item deleted"); setDeleting(null); void qc.invalidateQueries({ queryKey: ["menu", outletId] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete item"),
+    onError: (e) => showFoodieError(e, "Could not delete item"),
   });
 
   const savePrice = useMutation({
@@ -128,7 +129,7 @@ function OutletMenu() {
       toast.success("Price saved");
       void qc.invalidateQueries({ queryKey: ["plan-prices", outletId] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save price"),
+    onError: (e) => showFoodieError(e, "Could not save price"),
   });
 
   return (

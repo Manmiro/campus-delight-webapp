@@ -20,6 +20,7 @@ import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
 import logoImg from "@/assets/logo.webp.asset.json";
 import heroImg from "@/assets/hero-meal.webp.asset.json";
+import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 
 const searchSchema = {
   validateSearch: (search: Record<string, unknown>): { mode?: string; ref?: string } => {
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/auth")({
     ],
   }),
   component: AuthPage,
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Campus Delight account page not found.</div>,
 });
 
@@ -162,7 +163,7 @@ function AuthPage() {
       if (error) throw error;
       toast.success("Confirmation email sent. Please check your inbox and spam folder.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not send the confirmation email");
+      showFoodieError(err, "Could not send the confirmation email");
     } finally {
       setBusy(false);
     }
@@ -179,7 +180,7 @@ function AuthPage() {
     const messages = Object.values(fieldErrors).filter(Boolean) as string[];
     if (messages.length > 0) {
       setErrors(fieldErrors);
-      toast.error(messages[0]);
+      showFoodieError(messages[0]);
       return;
     }
     setErrors({});
@@ -223,7 +224,7 @@ function AuthPage() {
         await afterSignIn();
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      showFoodieError(err, "Something went wrong");
     } finally {
       setBusy(false);
     }

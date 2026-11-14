@@ -6,6 +6,7 @@ import { tokens as fmtTokens, naira, formatDateTime, statusLabel } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import logo from '@/assets/logo.webp.asset.json';
+import { formatFoodieError } from '@/lib/foodie-errors';
 
 export const Route = createFileRoute('/_authenticated/_customer/tokens')({
   loader: async ({ context: { queryClient } }) => {
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/_authenticated/_customer/tokens')({
       queryClient.ensureQueryData({ ...tokenLedgerQuery, revalidateIfStale: true }),
     ]);
   },
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Tokens page not found.</div>,
   component: TokensPage,
   head: () => ({ meta: [{ title: 'Tokens — Campus Delight' }, { name: 'description', content: 'Spend Campus Delight tokens on meals, send tokens to friends and track your rewards.' }, { property: 'og:title', content: 'Tokens — Campus Delight' }, { property: 'og:description', content: 'Your rewards, token transfers and activity in one place.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),

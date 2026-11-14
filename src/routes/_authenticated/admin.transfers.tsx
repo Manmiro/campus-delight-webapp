@@ -8,6 +8,7 @@ import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/admin/transfers")({
   component: AdminTransfers,
@@ -37,7 +38,7 @@ function AdminTransfers() {
       toast.success("Decision recorded and the customer was notified");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Decision failed"),
+    onError: (e) => showFoodieError(e, "Decision failed"),
   });
 
   if ((apps ?? []).length === 0) {

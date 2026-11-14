@@ -7,6 +7,7 @@ import { adjustFoodCredit } from "@/lib/transactions.functions";
 import { adminRestoreLoanAccess } from "@/lib/admin.functions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { showFoodieError } from "@/lib/foodie-errors";
 import { naira, formatDateTime } from "@/lib/format";
 import { StatCard, EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +35,7 @@ function AdminCredit() {
   const saveAccess = useMutation({ mutationFn: async () => {
     if (!access) throw new Error("Choose a loan");
     return restoreAccess({ data: access });
-  }, onSuccess: () => { toast.success("Loan access updated — debt and charges are unchanged"); setAccess(null); void qc.invalidateQueries({ queryKey: ["admin"] }); void qc.invalidateQueries({ queryKey: ["me"] }); }, onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update access") });
+  }, onSuccess: () => { toast.success("Loan access updated — debt and charges are unchanged"); setAccess(null); void qc.invalidateQueries({ queryKey: ["admin"] }); void qc.invalidateQueries({ queryKey: ["me"] }); }, onError: (e) => showFoodieError(e, "Could not update access") });
   const [adjust, setAdjust] = useState<{ customerId: string; name: string; current: number; value: string; reason: string } | null>(null);
 
   const { data: loans } = useQuery({
@@ -72,7 +73,7 @@ function AdminCredit() {
       setAdjust(null);
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Adjustment failed"),
+    onError: (e) => showFoodieError(e, "Adjustment failed"),
   });
 
   const outstanding = (loans ?? []).filter((l) => ["active", "partially_repaid", "overdue"].includes(l.status)).reduce((a, l) => a + l.total_due_kobo, 0);

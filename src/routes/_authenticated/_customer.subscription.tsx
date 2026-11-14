@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 import { ArrowRight, CalendarDays, Check, Loader2, ReceiptText, Sparkles, Trash2, UtensilsCrossed, Wallet, Zap } from "lucide-react";
 import heroMeal from "@/assets/hero-meal.webp.asset.json";
 import { initializePayment } from "@/lib/payments.functions";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/_customer/subscription")({
       }),
     ]);
   },
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Food plans page not found.</div>,
   component: SubscriptionPage,
   head: () => ({ meta: [{ title: "My Food Plans — Campus Delight" }, { name: "description", content: "Choose a campus meal subscription and pay securely with Paystack or your Campus Delight wallet." }, { property: "og:title", content: "My Food Plans — Campus Delight" }, { property: "og:description", content: "Weekend, weekly and monthly meal plans at your outlet." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -85,7 +86,7 @@ function SubscriptionPage() {
     onSuccess: (_, variables) => {
       if (variables.method === "wallet") toast.success("Your meal plan is active. Payment made from your wallet.");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not start checkout"),
+    onError: (e) => showFoodieError(e, "Could not start checkout"),
     onSettled: async () => {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["me"] }),
@@ -97,7 +98,7 @@ function SubscriptionPage() {
   const remove = useMutation({
     mutationFn: (subscriptionId: string) => removePlan({ data: { subscriptionId } }),
     onSuccess: () => toast.success("Unpaid plan removed"),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not remove plan"),
+    onError: (e) => showFoodieError(e, "Could not remove plan"),
     onSettled: () => qc.invalidateQueries({ queryKey: ["me", "subscriptions"] }),
   });
   const busy = buy.isPending || remove.isPending;

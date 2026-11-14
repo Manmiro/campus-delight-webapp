@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { showFoodieError } from "@/lib/foodie-errors";
 import { ShieldCheck, Timer, Loader2, Sparkles, UtensilsCrossed, TrendingUp, Wallet, Receipt, Check, CalendarClock, History } from "lucide-react";
 import { requestOtp } from "@/lib/credit.functions";
 import { repayFoodLoan } from "@/lib/transactions.functions";
@@ -50,7 +51,7 @@ function CreditPage() {
       toast.success("Verification text requested. Check your phone.");
     },
     onSettled: () => setSending(false),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not send code"),
+    onError: (e) => showFoodieError(e, "Could not send code"),
   });
 
   const verify = useMutation({
@@ -65,7 +66,7 @@ function CreditPage() {
       setCodeSent(false);
       void qc.invalidateQueries({ queryKey: ["me", "profile"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Verification failed"),
+    onError: (e) => showFoodieError(e, "Verification failed"),
   });
 
   const repay = useMutation({
@@ -76,7 +77,7 @@ function CreditPage() {
       toast.success("Repayment applied.");
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Repayment failed"),
+    onError: (e) => showFoodieError(e, "Repayment failed"),
   });
 
   const limitKobo = credit?.credit_limit_kobo ?? DEFAULT_CREDIT_LIMIT_KOBO;

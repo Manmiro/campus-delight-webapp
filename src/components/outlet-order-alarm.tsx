@@ -8,6 +8,7 @@ import { playOutletOrderAlarmChime, unlockOutletOrderAlarmAudio } from "@/lib/ou
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export function OutletOrderAlarmControls({
   isCentralAdmin = false,
@@ -34,7 +35,7 @@ export function OutletOrderAlarmControls({
     },
     onError: (error, nextEnabled) => {
       setAlarmEnabled(!nextEnabled);
-      toast.error(error instanceof Error ? error.message : "Could not update the order alarm");
+      showFoodieError(error, "Could not update the order alarm");
     },
   });
 

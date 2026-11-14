@@ -4,6 +4,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { useServerFn } from "@tanstack/react-start";
 import { repayFoodLoan } from "@/lib/transactions.functions";
 import { toast } from "sonner";
+import { showFoodieError } from "@/lib/foodie-errors";
 import { loansQuery, repaymentsQuery, walletQuery } from "@/lib/queries";
 import { naira, formatDateTime } from "@/lib/format";
 import { EmptyState, StatusBadge } from "@/components/bits";
@@ -36,7 +37,7 @@ function RepaymentsPage() {
       setAmounts({});
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Repayment failed"),
+    onError: (e) => showFoodieError(e, "Repayment failed"),
   });
 
   return (

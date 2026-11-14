@@ -9,6 +9,7 @@ import { EmptyState, StatusBadge } from "@/components/bits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/outlet/orders")({
   component: OutletOrders,
@@ -35,7 +36,7 @@ function OutletOrders() {
         queryKey: outletOrdersQuery(assignment?.outlet_id ?? "").queryKey,
       });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Action failed"),
+    onError: (e) => showFoodieError(e, "Action failed"),
   });
 
   if (orders.length === 0) {

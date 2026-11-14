@@ -5,6 +5,7 @@ import { Crown, Flame, ShoppingBag, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
 import { Switch } from "@/components/ui/switch";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 const leaderboardQuery = queryOptions({
   queryKey: ["me", "leaderboard"],
@@ -47,7 +48,7 @@ function LeaderboardPage() {
       toast.success(v ? "You're on the board! Let's go 🔥" : "You're hidden from the leaderboard.");
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update"),
+    onError: (e) => showFoodieError(e, "Could not update"),
   });
 
   return (

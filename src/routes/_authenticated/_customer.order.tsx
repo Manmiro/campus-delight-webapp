@@ -19,6 +19,7 @@ import { deliveryChoiceSchema, deliveryTotal } from '@/lib/delivery-rules';
 import { mealPlanCharge, mealWalletMessage } from '@/lib/meal-cap-rules';
 import { outletDeliveryQuery, loanRestrictionsQuery } from '@/lib/queries';
 import { playDelightFeedback, prepareDelightFeedback } from '@/lib/delight-feedback';
+import { formatFoodieError, showFoodieError } from '@/lib/foodie-errors';
 
 export const Route = createFileRoute("/_authenticated/_customer/order")({
   loader: async ({ context: { queryClient } }) => {
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/_customer/order")({
       queryClient.ensureQueryData({ ...loanRestrictionsQuery, revalidateIfStale: true }),
     ]);
   },
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Order page not found.</div>,
   component: OrderPage,
   head: () => ({ meta: [{ title: "Order Food — Campus Delight" }, { name: "description", content: "Order meals at your campus outlet and pay with your wallet or eligible benefits." }, { property: "og:title", content: "Order Food — Campus Delight" }, { property: "og:description", content: "Choose your campus meals and pay securely." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -159,7 +160,7 @@ function OrderPage() {
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
     onError: (e) => {
-      toast.error(e instanceof Error ? e.message : "Order failed");
+      showFoodieError(e, "Order failed", { amountKobo: checkoutTotal, balanceKobo: wallet?.balance_kobo ?? 0, creditLimitKobo: availableCredit });
       void qc.invalidateQueries({ queryKey: ["delivery-fee", profile.outlet_id] });
       void qc.invalidateQueries({ queryKey: ["me"] });
     },

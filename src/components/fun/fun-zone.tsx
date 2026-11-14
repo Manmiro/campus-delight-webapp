@@ -12,6 +12,7 @@ import { ScratchFortuneCard } from "@/components/fun/scratch-fortune-card";
 import { MealPlanCard, type DashboardMealEntitlement, type DashboardMealPlan } from "@/components/meal-plan-card";
 import { getUserId } from "@/lib/queries";
 import { playDelightFeedback, prepareDelightFeedback } from "@/lib/delight-feedback";
+import { showFoodieError } from "@/lib/foodie-errors";
 import {
   badgesFor, isBirthday, levelFor, referralMilestone,
 } from "@/lib/fun-rules";
@@ -76,7 +77,7 @@ export function FunZone({ orders, loans, referrals, dob, firstName, activePlan, 
       void qc.invalidateQueries({ queryKey: ["me"] });
     },
     onError: (e) => {
-      toast.error(e instanceof Error ? e.message : "Could not check in");
+      showFoodieError(e, "Could not check in");
       void qc.invalidateQueries({ queryKey: ["me", "checkins"] });
     },
     onSettled: () => { claimInFlight.current = false; },

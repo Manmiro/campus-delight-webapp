@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { MIN_PASSWORD_LENGTH, normalizeEmailAddress, validateEmailAddress } from "@/lib/auth-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { formatFoodieError } from "@/lib/foodie-errors";
 
 type ResetStage = "checking" | "request" | "sent" | "ready" | "invalid";
 
@@ -126,7 +127,7 @@ function ResetPassword() {
       if (resetError) throw resetError;
       setStage("sent");
     } catch (err) {
-      setRequestError(err instanceof Error ? err.message : "Could not send the reset link");
+      setRequestError(formatFoodieError(err, { fallback: "Could not send the reset link" }).description);
     } finally {
       setBusy(false);
     }
@@ -153,7 +154,7 @@ function ResetPassword() {
       toast.success("Password updated. You can sign in with it now.");
       await navigate({ to: "/auth", search: {} });
     } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : "Could not update password");
+      setPasswordError(formatFoodieError(err, { fallback: "Could not update password" }).description);
     } finally {
       setBusy(false);
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BadgeCheck, Barcode, Check, Copy, GraduationCap, Microchip, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export function FoodieIdBadge({ customerCode, compact = false }: { customerCode: string; compact?: boolean }) {
   const [copied, setCopied] = useState(false);
@@ -22,7 +23,7 @@ export function FoodieIdBadge({ customerCode, compact = false }: { customerCode:
       // Vibration is optional: unsupported devices must still get copy feedback.
       try { navigator.vibrate?.(20); } catch { /* Toast remains available. */ }
     } catch {
-      toast.error("Could not copy your ID. Please try again.");
+      showFoodieError("Could not copy your ID. Please try again.");
     }
   }
 

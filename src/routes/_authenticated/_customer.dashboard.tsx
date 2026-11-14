@@ -17,6 +17,7 @@ import { DEFAULT_CREDIT_LIMIT_KOBO } from "@/lib/prd-rules";
 import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/_customer/dashboard")({
   loader: async ({ context: { queryClient } }) => {
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/_customer/dashboard")({
       queryClient.ensureQueryData({ ...referralsQuery, revalidateIfStale: true }),
     ]);
   },
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Dashboard not found.</div>,
   component: Dashboard,
   head: () => ({ meta: [{ title: "My Campus Delight — Meals & Wallet" }, { name: "description", content: "View your meals, wallet, rewards and recent Campus Delight orders." }, { property: "og:title", content: "My Campus Delight — Meals & Wallet" }, { property: "og:description", content: "Your campus meals, wallet and rewards in one place." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -65,7 +66,7 @@ function Dashboard() {
       const result = await initPayment({ data: { purpose: "wallet_funding", amountKobo: 200000, origin: window.location.origin } });
       window.location.href = result.authorizationUrl;
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not start payment"),
+    onError: (e) => showFoodieError(e, "Could not start payment"),
   });
 
   const referralLink = `${window.location.origin}/auth?mode=signup&ref=${profile.referral_code}`;

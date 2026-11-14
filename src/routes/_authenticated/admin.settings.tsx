@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { adminUpdateConfig } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
@@ -36,7 +37,7 @@ function AdminSettings() {
       toast.success("Setting saved");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+    onError: (e) => showFoodieError(e, "Save failed"),
   });
 
   return (

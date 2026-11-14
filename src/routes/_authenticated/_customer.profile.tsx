@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LegalLinks } from "@/components/legal-page";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/_customer/profile")({
   component: ProfilePage,
@@ -81,11 +82,11 @@ function ProfilePage() {
 
   const changePhoto = async (file: File) => {
     if (!AVATAR_MIME_TYPES.includes(file.type)) {
-      toast.error("Choose a JPG, PNG, WebP or GIF image");
+      showFoodieError("Choose a JPG, PNG, WebP or GIF image");
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      toast.error("Picture is too large — keep it under 5 MB");
+      showFoodieError("Picture is too large — keep it under 5 MB");
       return;
     }
     setUploading(true);
@@ -108,7 +109,7 @@ function ProfilePage() {
       await invalidate();
       toast.success("Profile picture updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not update picture");
+      showFoodieError(err, "Could not update picture");
     } finally {
       setUploading(false);
     }
@@ -130,7 +131,7 @@ function ProfilePage() {
       await invalidate();
       toast.success("Profile picture removed");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not remove picture");
+      showFoodieError(err, "Could not remove picture");
     } finally {
       setUploading(false);
     }
@@ -138,7 +139,7 @@ function ProfilePage() {
 
   const saveDetails = async () => {
     if (!fullName.trim()) {
-      toast.error("Full name is required");
+      showFoodieError("Full name is required");
       return;
     }
     setSaving(true);
@@ -157,7 +158,7 @@ function ProfilePage() {
       await invalidate();
       toast.success("Profile updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save changes");
+      showFoodieError(err, "Could not save changes");
     } finally {
       setSaving(false);
     }

@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LegalLinks } from "@/components/legal-page";
 import logo from "@/assets/logo.webp.asset.json";
+import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/feed-someone")({
   validateSearch: (search: Record<string, unknown>) =>
@@ -72,8 +73,10 @@ const choices = [
   },
 ] as const;
 const selectClass = "h-11 w-full rounded-xl border border-input bg-background px-3 text-sm";
-const errorText = (e: unknown) =>
-  e instanceof Error ? e.message : "Something went wrong. Please try again.";
+const errorText = (e: unknown) => {
+  const copy = formatFoodieError(e, { fallback: "Something went wrong. Please try again." });
+  return `${copy.title} ${copy.description}`;
+};
 
 function FeedSomeone() {
   const { reference } = Route.useSearch();

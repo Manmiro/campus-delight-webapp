@@ -163,7 +163,10 @@ describe("daily fortune reward", () => {
       const canvas = ticketCanvas();
       rubTicket(canvas);
       const retry = await screen.findByRole("button", { name: "Tap to retry" });
-      expect(toastError).toHaveBeenCalledWith("Connection lost");
+      expect(toastError).toHaveBeenCalledWith(
+        "A small kitchen hiccup",
+        expect.objectContaining({ description: expect.stringContaining("Connection lost") }),
+      );
       expect(play).not.toHaveBeenCalled();
       expect(screen.queryByText(/\+\d+ tokens/)).not.toBeInTheDocument();
       if (method === "retry link") fireEvent.click(retry);

@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/_authenticated/_customer/transfer-outlet")({
   component: TransferOutletPage,
@@ -45,7 +46,7 @@ function TransferOutletPage() {
       void qc.invalidateQueries({ queryKey: ["me", "wallet"] });
       void qc.invalidateQueries({ queryKey: ["me", "tokens"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Application failed"),
+    onError: (e) => showFoodieError(e, "Application failed"),
   });
 
   const thisMonth = apps.filter(

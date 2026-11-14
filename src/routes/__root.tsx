@@ -17,6 +17,7 @@ import { GlobalLoadingOverlay } from "@/components/global-loading-overlay";
 import { supabase } from "@/integrations/supabase/client";
 import soraFont from "@fontsource-variable/sora/files/sora-latin-wght-normal.woff2?url";
 import manropeFont from "@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url";
+import { formatFoodieError } from "../lib/foodie-errors";
 
 function NotFoundComponent() {
   return (
@@ -42,6 +43,7 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
+  const copy = formatFoodieError(error);
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
@@ -53,9 +55,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{copy.description}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {

@@ -151,6 +151,9 @@ describe("account form submission", () => {
       }),
     );
     expect(mocks.signIn).not.toHaveBeenCalled();
-    expect(mocks.toastError).toHaveBeenCalledWith("Enter your email address");
+    expect(mocks.toastError).toHaveBeenCalledWith(
+      "Let's get your seat ready",
+      expect.objectContaining({ description: expect.stringContaining("Enter your email address") }),
+    );
   });
 });

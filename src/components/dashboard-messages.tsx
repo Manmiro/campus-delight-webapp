@@ -35,6 +35,7 @@ import {
 } from "@/lib/messaging-rules";
 import { formatDateTime } from "@/lib/format";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 
 type DashboardMessage = Tables<"dashboard_messages">;
 type Outlet = Pick<Tables<"outlets">, "id" | "name" | "code" | "status">;
@@ -133,7 +134,7 @@ export function DashboardMessages({
     },
     onSuccess: () =>
       void queryClient.invalidateQueries({ queryKey: [...messageQueryKey, "reads", userId ?? ""] }),
-    onError: (error) => toast.error(error.message),
+    onError: (error) => showFoodieError(error, "Could not mark messages as read"),
   });
 
   const sendMessage = useMutation({
@@ -191,7 +192,7 @@ export function DashboardMessages({
       void queryClient.invalidateQueries({ queryKey: messageQueryKey });
       toast.success("Message sent");
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => showFoodieError(error, "Could not send the message"),
   });
 
   const downloadAttachment = async (message: DashboardMessage) => {
@@ -200,7 +201,7 @@ export function DashboardMessages({
       .from("dashboard-attachments")
       .createSignedUrl(message.attachment_path, 300);
     if (error) {
-      toast.error(error.message);
+      showFoodieError(error, "Could not open that attachment");
       return;
     }
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
@@ -260,7 +261,7 @@ export function DashboardMessages({
               </div>
             ) : messagesQuery.isError ? (
               <p className="rounded-2xl bg-destructive/10 p-4 text-sm text-destructive">
-                {messagesQuery.error.message}
+                {formatFoodieError(messagesQuery.error, { fallback: "Messages are taking a little longer to load." }).description}
               </p>
             ) : messages.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border px-4 py-12 text-center">
@@ -431,7 +432,7 @@ export function DashboardMessages({
                     if (error) {
                       setAttachment(null);
                       event.target.value = "";
-                      toast.error(error);
+                      showFoodieError(error);
                       return;
                     }
                     setAttachment(next);

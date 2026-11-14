@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import logo from '@/assets/logo.webp.asset.json';
 import { FoodieIdBadge } from '@/components/foodie-id-badge';
+import { formatFoodieError } from '@/lib/foodie-errors';
 
 export const Route = createFileRoute('/_authenticated/_customer/wallet')({
   loader: async ({ context: { queryClient } }) => {
@@ -21,7 +22,7 @@ export const Route = createFileRoute('/_authenticated/_customer/wallet')({
       queryClient.ensureQueryData({ ...profileQuery, revalidateIfStale: true }),
     ]);
   },
-  errorComponent: ({ error }) => <div role="alert" className="p-6 text-destructive">{error instanceof Error ? error.message : "This page could not load. Please try again."}</div>,
+  errorComponent: ({ error }) => { const copy = formatFoodieError(error, { fallback: "This page could not load. Please try again." }); return <div role="alert" className="p-6 text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; },
   notFoundComponent: () => <div className="p-6">Wallet page not found.</div>,
   component: WalletPage,
   head: () => ({ meta: [{ title: 'Wallet — Campus Delight' }, { name: 'description', content: 'Top up your Campus Delight wallet with Paystack, pay for meals and track your wallet activity.' }, { property: 'og:title', content: 'Wallet — Campus Delight' }, { property: 'og:description', content: 'Your meal money, secure top-ups and wallet activity in one place.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
@@ -74,7 +75,7 @@ function WalletPage() {
             <div className="flex items-center justify-between gap-3 border-t pt-4 text-sm"><span className="text-muted-foreground">Amount to add</span><span className="break-all font-bold">{validAmount ? naira(kobo) : '—'}</span></div>
             <Button type="submit" className="h-12 w-full text-base" disabled={fund.isPending}>{fund.isPending ? <><Loader2 className="animate-spin" />Opening Paystack…</> : <><Plus />{validAmount ? `Add ${naira(kobo)}` : 'Add money'}<ArrowRight /></>}</Button>
           </fieldset>
-          {fund.isError && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{fund.error instanceof Error ? fund.error.message : 'Could not start payment. Please try again.'}</div>}
+          {fund.isError && (() => { const copy = formatFoodieError(fund.error, { fallback: 'Could not start payment. Please try again.' }); return <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"><p className="font-semibold">{copy.title}</p><p className="mt-1">{copy.description}</p></div>; })()}
           <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0" />Secure checkout with Paystack</p>
         </form> : <p className="rounded-lg bg-secondary p-4 text-sm text-muted-foreground">Funding unlocks once your outlet is assigned.</p>}
       </section>

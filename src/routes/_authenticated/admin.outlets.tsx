@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Pencil, Trash2 } from "lucide-react";
 import { MealCapField } from "@/components/meal-cap-field";
 import { formatMealCap, parseMealCap } from "@/lib/meal-cap-rules";
+import { showFoodieError } from "@/lib/foodie-errors";
 
 type ManagerAssignment = {
   id: string;
@@ -91,7 +92,7 @@ function AdminOutlets() {
       setForm({ name: "", code: "", location: "" });
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create outlet"),
+    onError: (e) => showFoodieError(e, "Could not create outlet"),
   });
 
   const setStatus = useMutation({
@@ -100,7 +101,7 @@ function AdminOutlets() {
       toast.success("Outlet updated");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
+    onError: (e) => showFoodieError(e, "Update failed"),
   });
 
   const saveEdit = useMutation({
@@ -115,7 +116,7 @@ function AdminOutlets() {
       void qc.invalidateQueries({ queryKey: ["admin"] });
       void qc.invalidateQueries({ queryKey: ["delivery-fee"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update outlet"),
+    onError: (e) => showFoodieError(e, "Could not update outlet"),
   });
 
   const removeOutlet = useMutation({
@@ -125,7 +126,7 @@ function AdminOutlets() {
       setDeleteTarget(null);
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete outlet"),
+    onError: (e) => showFoodieError(e, "Could not delete outlet"),
   });
 
   const assignManager = useMutation({
@@ -136,7 +137,7 @@ function AdminOutlets() {
       setManagerMode("assign");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update manager"),
+    onError: (e) => showFoodieError(e, "Could not update manager"),
   });
 
   const managerLifecycle = useMutation({
@@ -152,7 +153,7 @@ function AdminOutlets() {
       setManagerActionReason("");
       void qc.invalidateQueries({ queryKey: ["admin"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update manager"),
+    onError: (e) => showFoodieError(e, "Could not update manager"),
   });
 
   const managerForOutlet = (outletId: string) => managers?.find((manager) => manager.outlet_id === outletId);

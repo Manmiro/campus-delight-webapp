@@ -26,6 +26,7 @@ import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { referralLinkFor, referralQrImageUrl } from "@/lib/referrals";
 import { playDelightFeedback, prepareDelightFeedback } from "@/lib/delight-feedback";
 import { Button } from "@/components/ui/button";
+import { showFoodieError } from "@/lib/foodie-errors";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/_customer/refer")({
@@ -135,7 +136,7 @@ function ReferPage() {
           1900,
         );
       })
-      .catch(() => toast.error(`Could not copy the ${label.toLowerCase()}`));
+      .catch((error) => showFoodieError(error, `Could not copy the ${label.toLowerCase()}`));
   };
 
   return (

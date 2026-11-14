@@ -86,7 +86,10 @@ describe('subscription payment choices', () => {
     showPage();
     fireEvent.click(within(pendingSection()).getByRole('button', { name: 'Pay now' }));
     await waitFor(() => expect(fixtures.onlinePay).toHaveBeenCalledWith({ data: { purpose: 'subscription', relatedId: 'pending-1', origin: window.location.origin } }));
-    await waitFor(() => expect(fixtures.error).toHaveBeenCalledWith('Gateway unavailable'));
+    await waitFor(() => expect(fixtures.error).toHaveBeenCalledWith(
+      'A small kitchen hiccup',
+      expect.objectContaining({ description: expect.stringContaining('Gateway unavailable') }),
+    ));
     expect(fixtures.walletPay).not.toHaveBeenCalled();
   });
   it('removes an unpaid plan through the authenticated feature handler', async () => {
