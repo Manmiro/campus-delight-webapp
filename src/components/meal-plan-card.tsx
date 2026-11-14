@@ -24,8 +24,8 @@ export function MealPlanCard({
   activePlan,
   todayEntitlements,
 }: {
-  activePlan?: DashboardMealPlan;
-  todayEntitlements?: DashboardMealEntitlement[];
+  activePlan?: DashboardMealPlan | undefined;
+  todayEntitlements?: DashboardMealEntitlement[] | undefined;
 }) {
   if (!activePlan) {
     return (

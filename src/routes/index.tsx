@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, CalendarDays, Coins, Gift, MapPin, Users, Zap } from "lucide-react";
 import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
+import { OutletCountdown } from "@/components/landing/outlet-countdown";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
@@ -15,11 +16,11 @@ import heroImg from "@/assets/hero-meal.webp.asset.json";
 import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => {
-    // Keep SSR independent from the remote catalog. The query refreshes on the
-    // client and the page can still render if the backend is unavailable.
-    context.queryClient.setQueryData(outletsQuery.queryKey, []);
-    return [];
+  loader: async ({ context }) => {
+    // Load the live outlet list so the count and directory reflect the
+    // database. If the backend is briefly unavailable the page still renders
+    // and the client retries the query.
+    await context.queryClient.ensureQueryData(outletsQuery).catch(() => undefined);
   },
   head: () => ({
     links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
@@ -74,7 +75,7 @@ function Logo({ size = "md" }: { size?: "sm" | "md" }) {
 }
 
 function Landing() {
-  const { data: outlets } = useSuspenseQuery(outletsQuery);
+  const { data: outlets = [] } = useQuery(outletsQuery);
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -160,7 +161,7 @@ function Landing() {
         {/* KPI cards */}
         <section className="grid grid-cols-3 gap-3 sm:gap-6">
           {[
-            { label: "Outlets", value: `${outlets.length}`, icon: MapPin },
+            { label: "Outlets", value: <OutletCountdown value={outlets.length} />, icon: MapPin },
             { label: "Meal plans", value: "3", icon: CalendarDays },
             { label: "Daily tiers", value: "B–T", icon: Zap },
           ].map((s) => (
