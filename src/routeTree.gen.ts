@@ -12,11 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DownloadRouteImport } from './routes/download'
 import { Route as FeedSomeoneRouteImport } from './routes/feed-someone'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as DownloadRouteImport } from './routes/download'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOutletRouteImport } from './routes/_authenticated/outlet'
@@ -74,6 +74,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DownloadRoute = DownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedSomeoneRoute = FeedSomeoneRouteImport.update({
   id: '/feed-someone',
   path: '/feed-someone',
@@ -92,11 +97,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DownloadRoute = DownloadRouteImport.update({
-  id: '/download',
-  path: '/download',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
@@ -345,11 +345,11 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/download': typeof DownloadRoute
   '/feed-someone': typeof FeedSomeoneRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/download': typeof DownloadRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
@@ -395,11 +395,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/download': typeof DownloadRoute
   '/feed-someone': typeof FeedSomeoneRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/download': typeof DownloadRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -445,11 +445,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/download': typeof DownloadRoute
   '/feed-someone': typeof FeedSomeoneRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/download': typeof DownloadRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/outlet': typeof AuthenticatedOutletRouteWithChildren
@@ -498,11 +498,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/download'
     | '/feed-someone'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/download'
     | '/admin'
     | '/outlet'
     | '/payment/callback'
@@ -548,11 +548,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/download'
     | '/feed-someone'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/download'
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
@@ -597,11 +597,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/download'
     | '/feed-someone'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/download'
     | '/_authenticated/_customer'
     | '/_authenticated/admin'
     | '/_authenticated/outlet'
@@ -650,11 +650,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DownloadRoute: typeof DownloadRoute
   FeedSomeoneRoute: typeof FeedSomeoneRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
-  DownloadRoute: typeof DownloadRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
   ApiInternalPingramAuthEmailRoute: typeof ApiInternalPingramAuthEmailRoute
   ApiPublicJobsBirthdayGreetingsRoute: typeof ApiPublicJobsBirthdayGreetingsRoute
@@ -688,6 +688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/download': {
+      id: '/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof DownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feed-someone': {
       id: '/feed-someone'
       path: '/feed-someone'
@@ -714,13 +721,6 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/download': {
-      id: '/download'
-      path: '/download'
-      fullPath: '/download'
-      preLoaderRoute: typeof DownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_customer': {
@@ -1133,11 +1133,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DownloadRoute: DownloadRoute,
   FeedSomeoneRoute: FeedSomeoneRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
-  DownloadRoute: DownloadRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
   ApiInternalPingramAuthEmailRoute: ApiInternalPingramAuthEmailRoute,
   ApiPublicJobsBirthdayGreetingsRoute: ApiPublicJobsBirthdayGreetingsRoute,
