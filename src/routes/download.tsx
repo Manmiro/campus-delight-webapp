@@ -1,12 +1,8 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  Check,
   Download as DownloadIcon,
-  Globe,
-  Plus,
-  Share2,
   Smartphone,
   Sparkles,
   Zap,
@@ -15,13 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/app-shell";
-import { isInstalledAppEnvironment } from "@/lib/app-environment";
 import { APK_DOWNLOAD_PATH, downloadPercent, foodieDownloadStatus } from "@/lib/mobile-download";
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
 
 type DownloadState = "idle" | "downloading" | "complete" | "error";
 
@@ -39,29 +29,9 @@ export const Route = createFileRoute("/download")({
 });
 
 function DownloadPage() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
   const [downloadState, setDownloadState] = useState<DownloadState>("idle");
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setInstalled(isInstalledAppEnvironment());
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as BeforeInstallPromptEvent);
-    };
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-  }, []);
-
-  const installPwa = async () => {
-    if (!installPrompt) return;
-    await installPrompt.prompt();
-    await installPrompt.userChoice;
-    setInstallPrompt(null);
-  };
 
   const downloadAndroidApp = async () => {
     setDownloadState("downloading");
@@ -143,22 +113,8 @@ function DownloadPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3" aria-label="Download options">
-          <DownloadOption
-            eyebrow="Android"
-            title="Google Play"
-            description="The official Android app is coming soon."
-            icon={<span className="text-2xl" aria-hidden="true">▶</span>}
-            disabled
-          />
-          <DownloadOption
-            eyebrow="iPhone"
-            title="Apple App Store"
-            description="The iOS app is coming soon."
-            icon={<span className="text-2xl" aria-hidden="true"></span>}
-            disabled
-          />
-          <Card className="border-golden/50 bg-card shadow-soft">
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start" aria-labelledby="download-runway-title">
+          <Card className="border-2 border-golden/60 bg-card shadow-soft">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-golden text-golden-foreground">
@@ -177,16 +133,13 @@ function DownloadPage() {
               {downloadError && <p role="alert" className="mt-3 text-sm text-destructive">{downloadError}</p>}
             </CardContent>
           </Card>
-        </section>
-
-        <section aria-labelledby="download-runway-title">
           <div className="cd-download-frosted-card rounded-[2rem] border border-primary/35 bg-primary/10 p-5 shadow-soft backdrop-blur sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-golden">Campus Delight delivery tracker</p>
                 <h2 id="download-runway-title" className="mt-1 font-display text-2xl font-extrabold text-foreground sm:text-3xl">Steaming your Jollof to your phone</h2>
               </div>
-              <span className="rounded-full bg-card px-3 py-1.5 text-sm font-bold text-primary shadow-soft">{downloadProgress}% ready</span>
+              <span className="shrink-0 self-start whitespace-nowrap rounded-full bg-card px-3 py-1.5 text-sm font-bold text-primary shadow-soft sm:self-auto">{downloadProgress}% ready</span>
             </div>
 
             <DownloadRunway progress={downloadProgress} complete={downloadComplete} active={downloading} />
@@ -208,48 +161,21 @@ function DownloadPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <Card className="overflow-hidden border-primary/25 bg-card shadow-soft">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><Globe className="h-5 w-5" /></span>
-                <div>
-                  <CardTitle className="font-display text-xl">1-tap install from your browser</CardTitle>
-                  <p className="mt-1 text-sm text-muted-foreground">Use Campus Delight like an app, with no store account needed.</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {installed ? (
-                <div className="flex items-center gap-3 rounded-2xl bg-secondary p-4 text-sm font-semibold text-secondary-foreground">
-                  <Check className="h-5 w-5 shrink-0" /> Campus Delight is already installed on this device.
-                </div>
-              ) : installPrompt ? (
-                <Button onClick={() => void installPwa()} className="w-full rounded-full sm:w-auto">
-                  <Smartphone className="mr-2 h-4 w-4" /> Install Campus Delight
-                </Button>
-              ) : (
-                <p className="rounded-2xl bg-muted p-4 text-sm leading-6 text-muted-foreground">
-                  On Android Chrome, use the browser menu and choose <strong className="text-foreground">Install app</strong> or <strong className="text-foreground">Add to Home screen</strong>. If the install button appears above, it will trigger the native banner directly.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70 bg-card shadow-soft">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">iPhone / iPad Safari</CardTitle>
-              <p className="text-sm text-muted-foreground">Two quick taps to keep meals one touch away.</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
-                <InstallStep icon={<Share2 className="h-5 w-5" />} label="Tap Share" />
-                <ArrowLeft className="h-4 w-4 rotate-180 text-golden" />
-                <InstallStep icon={<Plus className="h-5 w-5" />} label="Add to Home Screen" />
-              </div>
-              <p className="mt-4 text-xs leading-5 text-muted-foreground">Open this page in Safari, tap the Share icon, then choose Add to Home Screen.</p>
-            </CardContent>
-          </Card>
+        <section className="grid gap-4 sm:grid-cols-2" aria-label="App stores">
+          <DownloadOption
+            eyebrow="Android"
+            title="Google Play"
+            description="The official Android app is coming soon."
+            icon={<span className="text-2xl" aria-hidden="true">▶</span>}
+            disabled
+          />
+          <DownloadOption
+            eyebrow="iPhone"
+            title="Apple App Store"
+            description="The iOS app is coming soon."
+            icon={<Smartphone className="h-5 w-5" aria-hidden="true" />}
+            disabled
+          />
         </section>
 
         <div className="flex flex-wrap items-center justify-center gap-2 text-center text-sm text-muted-foreground">
@@ -264,14 +190,9 @@ function DownloadPage() {
 
 function DownloadRunway({ progress, complete, active }: { progress: number; complete: boolean; active: boolean }) {
   const percent = Math.max(0, Math.min(100, progress));
-  const milestones = [
-    { at: 25, emoji: "🥟", label: "Crispy Meat Pie" },
-    { at: 50, emoji: "🍗", label: "Peppered Chicken" },
-    { at: 75, emoji: "🥤", label: "Chilled Drink" },
-  ];
 
   return (
-    <div className="cd-download-runway relative mt-7 h-36 sm:h-40">
+    <div className="cd-download-runway relative mt-7 h-24">
       <div className="absolute left-0 right-0 top-9 h-5 rounded-full bg-golden/20 ring-1 ring-golden/30">
         <div className="h-full rounded-full bg-gradient-golden transition-[width] duration-200 ease-out" style={{ width: `${percent}%` }} />
         <div
@@ -287,12 +208,6 @@ function DownloadRunway({ progress, complete, active }: { progress: number; comp
         </div>
       </div>
 
-      {milestones.map((milestone) => (
-        <div key={milestone.at} className="absolute top-16 -translate-x-1/2 text-center" style={{ left: `${milestone.at}%` }}>
-          <span className="cd-download-snack grid h-9 w-9 place-items-center rounded-full border border-golden/40 bg-card text-lg shadow-soft" aria-hidden="true">{milestone.emoji}</span>
-          <span className="mt-1 block max-w-20 text-[0.65rem] font-semibold leading-3 text-muted-foreground">{milestone.label}</span>
-        </div>
-      ))}
 
       <div className={`absolute right-0 top-0 flex translate-x-1/2 flex-col items-center ${complete ? "cd-download-finish-complete" : ""}`}>
         <span className="text-2xl" aria-hidden="true">🏁</span>
@@ -356,14 +271,5 @@ function DownloadOption({
         </Button>
       </CardContent>
     </Card>
-  );
-}
-
-function InstallStep({ icon, label }: { icon: ReactNode; label: string }) {
-  return (
-    <div className="flex min-w-0 flex-col items-center gap-2">
-      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-accent-foreground">{icon}</span>
-      <span className="text-xs font-semibold leading-4">{label}</span>
-    </div>
   );
 }
