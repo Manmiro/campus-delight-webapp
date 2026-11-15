@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -11,9 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/app-shell";
-import { APK_DOWNLOAD_PATH, downloadPercent, foodieDownloadStatus } from "@/lib/mobile-download";
+import { APK_DOWNLOAD_PATH, APK_FILENAME, foodieDownloadStatus, handoffProgress } from "@/lib/mobile-download";
 
-type DownloadState = "idle" | "downloading" | "complete" | "error";
+type DownloadState = "idle" | "downloading" | "complete";
 
 export const Route = createFileRoute("/download")({
   head: () => ({
@@ -31,55 +31,36 @@ export const Route = createFileRoute("/download")({
 function DownloadPage() {
   const [downloadState, setDownloadState] = useState<DownloadState>("idle");
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const frameRef = useRef<number | null>(null);
 
-  const downloadAndroidApp = async () => {
+  useEffect(() => () => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+  }, []);
+
+  // The link itself starts the download, so the phone's own download manager
+  // streams the file in the background (resumable, no browser memory). This
+  // handler only runs the Jollof hand-off animation alongside it.
+  const startHandoff = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (downloadState === "downloading") {
+      event.preventDefault();
+      return;
+    }
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     setDownloadState("downloading");
     setDownloadProgress(0);
-    setDownloadError(null);
-
-    try {
-      const response = await fetch(APK_DOWNLOAD_PATH, { credentials: "same-origin" });
-      if (!response.ok) throw new Error(`Download failed with status ${response.status}.`);
-
-      const totalBytes = Number(response.headers.get("content-length"));
-      const chunks: Uint8Array[] = [];
-      let loadedBytes = 0;
-
-      if (response.body) {
-        const reader = response.body.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (!value) continue;
-          chunks.push(value);
-          loadedBytes += value.byteLength;
-          if (totalBytes > 0) setDownloadProgress(downloadPercent(loadedBytes, totalBytes));
-        }
-      } else {
-        const fallback = new Uint8Array(await response.arrayBuffer());
-        chunks.push(fallback);
-        loadedBytes = fallback.byteLength;
+    const startedAt = performance.now();
+    const tick = (now: number) => {
+      const progress = handoffProgress(now - startedAt);
+      setDownloadProgress(progress);
+      if (progress >= 100) {
+        frameRef.current = null;
+        setDownloadState("complete");
+        playCelebratoryPing();
+        return;
       }
-
-      const blob = new Blob(chunks as BlobPart[], { type: "application/vnd.android.package-archive" });
-      const objectUrl = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download = "campus-delight.apk";
-      anchor.style.display = "none";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
-
-      setDownloadProgress(100);
-      setDownloadState("complete");
-      playCelebratoryPing();
-    } catch (error) {
-      setDownloadState("error");
-      setDownloadError(error instanceof Error ? error.message : "We could not fetch the APK. Please try again.");
-    }
+      frameRef.current = requestAnimationFrame(tick);
+    };
+    frameRef.current = requestAnimationFrame(tick);
   };
 
   const downloadComplete = downloadState === "complete";
@@ -125,12 +106,21 @@ function DownloadPage() {
               <CardTitle className="pt-2 font-display text-xl">Install directly</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-6 text-muted-foreground">Install immediately without waiting for store review. The steaming Jollof will track every byte as it arrives.</p>
-              <Button onClick={() => void downloadAndroidApp()} disabled={downloading} className="mt-5 w-full rounded-full">
-                <DownloadIcon className="mr-2 h-4 w-4" />
-                {downloading ? `Downloading ${downloadProgress}%` : downloadComplete ? "Download complete" : downloadState === "error" ? "Try again" : "Download Android App"}
+              <p className="text-sm leading-6 text-muted-foreground">Install immediately without waiting for store review. Your phone downloads it in the background, so you can lock your screen or switch apps.</p>
+              <Button asChild className="mt-5 w-full rounded-full" aria-disabled={downloading}>
+                <a href={APK_DOWNLOAD_PATH} download={APK_FILENAME} type="application/vnd.android.package-archive" onClick={startHandoff}>
+                  <DownloadIcon className="mr-2 h-4 w-4" />
+                  {downloading ? `Starting download ${downloadProgress}%` : downloadComplete ? "Download again" : "Download Android App"}
+                </a>
               </Button>
-              {downloadError && <p role="alert" className="mt-3 text-sm text-destructive">{downloadError}</p>}
+              {downloadComplete && (
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  Download didn&apos;t start?{" "}
+                  <a href={APK_DOWNLOAD_PATH} download={APK_FILENAME} className="font-semibold text-primary underline underline-offset-2">
+                    Tap here
+                  </a>
+                </p>
+              )}
             </CardContent>
           </Card>
           <div className="cd-download-frosted-card rounded-[2rem] border border-primary/35 bg-primary/10 p-5 shadow-soft backdrop-blur sm:p-8">
@@ -150,9 +140,9 @@ function DownloadPage() {
 
             {downloadComplete && (
               <div className="mt-5 rounded-2xl border border-golden/40 bg-card/85 p-4 text-sm text-foreground shadow-soft">
-                <p className="font-display font-bold">🔔 Ping! Your file is saved.</p>
+                <p className="font-display font-bold">🔔 Ping! Your phone has taken over the download.</p>
                 <ol className="mt-2 list-inside list-decimal space-y-1 text-muted-foreground">
-                  <li>Open your phone&apos;s Downloads folder.</li>
+                  <li>Watch the download finish in your notification bar.</li>
                   <li>Tap <strong className="text-foreground">campus-delight.apk</strong>.</li>
                   <li>Allow installs from this browser if Android asks, then tap Install.</li>
                 </ol>
