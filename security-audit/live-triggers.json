@@ -1,0 +1,32 @@
+{
+  "rows": [
+    {
+      "definition": "CREATE TRIGGER assign_profile_codes BEFORE INSERT OR UPDATE OF customer_code, referral_code ON public.profiles FOR EACH ROW EXECUTE FUNCTION assign_profile_codes()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.assign_profile_codes()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE v_candidate text; v_found boolean;\nBEGIN\n  -- Serialize allocation until commit; existing unique indexes remain the final guard.\n  PERFORM pg_advisory_xact_lock(78461021);\n  IF NEW.customer_code IS NULL OR NEW.customer_code !~ '^CD[0-9]{6}$' THEN\n    v_found := false;\n    FOR i IN 1..1000 LOOP\n      v_candidate := 'CD' || lpad(floor(random() * 1000000)::integer::text, 6, '0');\n      IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE customer_code = v_candidate) THEN\n        NEW.customer_code := v_candidate; v_found := true; EXIT;\n      END IF;\n    END LOOP;\n    IF NOT v_found THEN RAISE EXCEPTION 'Unable to allocate a unique customer ID'; END IF;\n  END IF;\n  IF NEW.referral_code IS NULL OR NEW.referral_code !~ '^CD[0-9]{6}$' THEN\n    v_found := false;\n    FOR i IN 1..1000 LOOP\n      v_candidate := 'CD' || lpad(floor(random() * 1000000)::integer::text, 6, '0');\n      IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE referral_code = v_candidate) THEN\n        NEW.referral_code := v_candidate; v_found := true; EXIT;\n      END IF;\n    END LOOP;\n    IF NOT v_found THEN RAISE EXCEPTION 'Unable to allocate a unique referral code'; END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "function_name": "assign_profile_codes",
+      "table_name": "profiles",
+      "trigger_name": "assign_profile_codes"
+    },
+    {
+      "definition": "CREATE TRIGGER normalize_profile_phone BEFORE INSERT OR UPDATE OF phone ON public.profiles FOR EACH ROW EXECUTE FUNCTION normalize_profile_phone()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.normalize_profile_phone()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  NEW.phone := public.normalize_nigerian_phone(NEW.phone);\n  RETURN NEW;\nEND;\n$function$\n",
+      "function_name": "normalize_profile_phone",
+      "table_name": "profiles",
+      "trigger_name": "normalize_profile_phone"
+    },
+    {
+      "definition": "CREATE TRIGGER reset_phone_verification BEFORE UPDATE OF phone ON public.profiles FOR EACH ROW EXECUTE FUNCTION reset_phone_verification()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.reset_phone_verification()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF NEW.phone IS DISTINCT FROM OLD.phone THEN NEW.verification_status := 'unverified'; END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "function_name": "reset_phone_verification",
+      "table_name": "profiles",
+      "trigger_name": "reset_phone_verification"
+    },
+    {
+      "definition": "CREATE TRIGGER add_transferable_tokens_from_ledger AFTER INSERT ON public.token_ledger FOR EACH ROW EXECUTE FUNCTION add_transferable_tokens_from_ledger()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.add_transferable_tokens_from_ledger()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF NEW.tx_type IN ('referral_unlock', 'reward', 'purchase', 'transfer_in')\n     AND NEW.to_available > 0 THEN\n    UPDATE public.token_accounts\n    SET transferable_tokens = LEAST(available_tokens, transferable_tokens + NEW.to_available),\n        updated_at = now()\n    WHERE customer_id = NEW.customer_id;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "function_name": "add_transferable_tokens_from_ledger",
+      "table_name": "token_ledger",
+      "trigger_name": "add_transferable_tokens_from_ledger"
+    }
+  ]
+}

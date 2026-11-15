@@ -18,6 +18,7 @@ import { StatusBadge, StatCard, EmptyState, PageLoader } from "@/components/bits
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
+import { MobileAppPrompt } from "@/components/mobile-app-prompt";
 
 export const Route = createFileRoute("/_authenticated/_customer/dashboard")({
   loader: async ({ context: { queryClient } }) => {
@@ -215,6 +216,8 @@ function Dashboard() {
           </Card>
         </div>
       </div>
+
+      <MobileAppPrompt />
     </div>
   );
 }

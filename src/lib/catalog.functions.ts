@@ -10,7 +10,13 @@ function publicClient() {
         const h = new Headers(init?.headers);
         if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
         h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
+        return fetch(input, {
+          ...init,
+          headers: h,
+          // Public catalog data should not prevent the landing page from rendering
+          // when the remote backend is temporarily unavailable.
+          signal: init?.signal ?? AbortSignal.timeout(4000),
+        });
       },
     },
   });
@@ -18,13 +24,21 @@ function publicClient() {
 
 export const listOutlets = createServerFn({ method: "GET" }).handler(async () => {
   const db = publicClient();
-  const { data, error } = await db
-    .from("outlets")
-    .select("id, name, code, location, status")
-    .eq("status", "active")
-    .order("name");
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  try {
+    const { data, error } = await db
+      .from("outlets")
+      .select("id, name, code, location, status")
+      .eq("status", "active")
+      .order("name");
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } catch (cause) {
+    if (cause instanceof TypeError || (typeof DOMException !== "undefined" && cause instanceof DOMException)) {
+      return [];
+    }
+    throw cause;
+  }
 });
 
 export const getMenuForOutlet = createServerFn({ method: "GET" })

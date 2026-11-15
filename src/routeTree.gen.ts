@@ -16,6 +16,7 @@ import { Route as FeedSomeoneRouteImport } from './routes/feed-someone'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as DownloadRouteImport } from './routes/download'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/_customer'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOutletRouteImport } from './routes/_authenticated/outlet'
@@ -91,6 +92,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadRoute = DownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
@@ -343,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/download': typeof DownloadRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/outlet': typeof AuthenticatedOutletRouteWithChildren
   '/payment/callback': typeof PaymentCallbackRoute
@@ -392,6 +399,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/download': typeof DownloadRoute
   '/payment/callback': typeof PaymentCallbackRoute
   '/credit': typeof AuthenticatedCustomerCreditRoute
   '/dashboard': typeof AuthenticatedCustomerDashboardRoute
@@ -441,6 +449,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/download': typeof DownloadRoute
   '/_authenticated/_customer': typeof AuthenticatedCustomerRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/outlet': typeof AuthenticatedOutletRouteWithChildren
@@ -493,6 +502,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/download'
     | '/admin'
     | '/outlet'
     | '/payment/callback'
@@ -542,6 +552,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/download'
     | '/payment/callback'
     | '/credit'
     | '/dashboard'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/download'
     | '/_authenticated/_customer'
     | '/_authenticated/admin'
     | '/_authenticated/outlet'
@@ -642,6 +654,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  DownloadRoute: typeof DownloadRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
   ApiInternalPingramAuthEmailRoute: typeof ApiInternalPingramAuthEmailRoute
   ApiPublicJobsLoanRemindersRoute: typeof ApiPublicJobsLoanRemindersRoute
@@ -701,6 +714,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/download': {
+      id: '/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof DownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_customer': {
@@ -1117,6 +1137,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  DownloadRoute: DownloadRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
   ApiInternalPingramAuthEmailRoute: ApiInternalPingramAuthEmailRoute,
   ApiPublicJobsLoanRemindersRoute: ApiPublicJobsLoanRemindersRoute,

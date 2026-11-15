@@ -1,0 +1,70 @@
+[
+  {
+    "url": "https://campus-delight-webapp.lovable.app",
+    "status": 302,
+    "headers": {
+      "content-security-policy": null,
+      "content-security-policy-report-only": null,
+      "x-frame-options": null,
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "permissions-policy": null,
+      "access-control-allow-origin": null,
+      "cache-control": null,
+      "location": "https://www.campusdelight.net/"
+    }
+  },
+  {
+    "url": "https://www.campusdelight.net",
+    "status": 200,
+    "headers": {
+      "content-security-policy": null,
+      "content-security-policy-report-only": null,
+      "x-frame-options": null,
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "permissions-policy": null,
+      "access-control-allow-origin": null,
+      "cache-control": "no-cache, must-revalidate, max-age=0",
+      "location": null
+    }
+  },
+  {
+    "authPublicSettingsStatus": 200,
+    "settings": {
+      "disable_signup": false,
+      "mailer_autoconfirm": false,
+      "phone_autoconfirm": false,
+      "external": {
+        "anonymous_users": false,
+        "apple": false,
+        "azure": false,
+        "bitbucket": false,
+        "discord": false,
+        "facebook": false,
+        "snapchat": false,
+        "figma": false,
+        "fly": false,
+        "github": false,
+        "gitlab": false,
+        "google": false,
+        "keycloak": false,
+        "kakao": false,
+        "linkedin": false,
+        "linkedin_oidc": false,
+        "notion": false,
+        "spotify": false,
+        "slack": false,
+        "slack_oidc": false,
+        "workos": false,
+        "twitch": false,
+        "twitter": false,
+        "email": true,
+        "phone": false,
+        "zoom": false
+      }
+    }
+  }
+]

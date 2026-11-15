@@ -1,0 +1,787 @@
+{
+  "rows": [
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read audit logs",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "audit_logs",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all limit history",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "credit_limit_history",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own limit history",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "credit_limit_history",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all credit",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "customer_credit",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own credit",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "customer_credit",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet credit",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "customer_credit",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all checkins",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "daily_checkins",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own checkins",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "daily_checkins",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "policyname": "users mark readable messages",
+      "qual": null,
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "dashboard_message_reads",
+      "with_check": "((user_id = auth.uid()) AND can_read_dashboard_message(message_id))"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "users read their message receipts",
+      "qual": "(user_id = auth.uid())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "dashboard_message_reads",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "users update their message receipts",
+      "qual": "(user_id = auth.uid())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "dashboard_message_reads",
+      "with_check": "((user_id = auth.uid()) AND can_read_dashboard_message(message_id))"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "dashboard participants read messages",
+      "qual": "can_read_dashboard_message(id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "dashboard_messages",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "policyname": "dashboard users send permitted messages",
+      "qual": null,
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "dashboard_messages",
+      "with_check": "((sender_id = auth.uid()) AND ((is_central_admin() AND (sender_outlet_id IS NULL) AND ((recipient_scope = 'headquarters'::text) OR (recipient_scope = 'all_outlets'::text) OR ((recipient_scope = 'outlet'::text) AND (target_outlet_id IS NOT NULL)))) OR (is_outlet_staff(sender_outlet_id) AND (sender_outlet_id = my_outlet_id()) AND (recipient_scope = 'headquarters'::text) AND (target_outlet_id IS NULL))))"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all repayments",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loan_repayments",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own repayments",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loan_repayments",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet repayments",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loan_repayments",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "HQ or borrower reads exceptions",
+      "qual": "(is_central_admin() OR (EXISTS ( SELECT 1\n   FROM loans l\n  WHERE ((l.id = loan_restriction_exceptions.loan_id) AND (l.customer_id = auth.uid())))))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loan_restriction_exceptions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all loans",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loans",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own loans",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loans",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet loans",
+      "qual": "(outlet_id = my_outlet_id())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "loans",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all entitlements",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "meal_entitlements",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own entitlements",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "meal_entitlements",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet entitlements",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "meal_entitlements",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "admins manage all menus",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "menu_items",
+      "with_check": "is_central_admin()"
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "outlet managers manage own menu",
+      "qual": "is_outlet_manager(outlet_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "menu_items",
+      "with_check": "is_outlet_manager(outlet_id)"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "signed-in users read menu items",
+      "qual": "(auth.uid() IS NOT NULL)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "menu_items",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all notifications",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "notifications",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own notifications",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "notifications",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "customers update own notifications",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "notifications",
+      "with_check": "(auth.uid() = customer_id)"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all order items",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "order_items",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own order items",
+      "qual": "(order_id IN ( SELECT orders.id\n   FROM orders\n  WHERE (orders.customer_id = auth.uid())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "order_items",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet order items",
+      "qual": "(order_id IN ( SELECT o.id\n   FROM orders o\n  WHERE (is_outlet_staff(o.outlet_id) OR is_central_admin())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "order_items",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all orders",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "orders",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own orders",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "orders",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet orders",
+      "qual": "(is_outlet_staff(outlet_id) OR is_central_admin())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "orders",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read otp rows",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "otp_codes",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own otp rows",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "otp_codes",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "active plan prices readable by everyone",
+      "qual": "(is_active = true)",
+      "roles": "{public}",
+      "schemaname": "public",
+      "tablename": "outlet_plan_prices",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "admins manage all prices",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_plan_prices",
+      "with_check": "is_central_admin()"
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "outlet managers manage own prices",
+      "qual": "is_outlet_manager(outlet_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_plan_prices",
+      "with_check": "is_outlet_manager(outlet_id)"
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "admins manage outlet staff",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_staff",
+      "with_check": "is_central_admin()"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read own assignments",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_staff",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins manage applications",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_transfer_applications",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "admins update applications",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_transfer_applications",
+      "with_check": "is_central_admin()"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own applications",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "outlet_transfer_applications",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "outlets readable by everyone",
+      "qual": "true",
+      "roles": "{public}",
+      "schemaname": "public",
+      "tablename": "outlets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all payments",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "payment_transactions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own payments",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "payment_transactions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet payments",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "payment_transactions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all profiles",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own profile",
+      "qual": "(auth.uid() = id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "customers update own profile",
+      "qual": "(auth.uid() = id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "profiles",
+      "with_check": "((auth.uid() = id) AND (outlet_id = my_outlet_id()) AND (customer_code = ( SELECT profiles_1.customer_code\n   FROM profiles profiles_1\n  WHERE (profiles_1.id = auth.uid()))) AND (referral_code = ( SELECT profiles_1.referral_code\n   FROM profiles profiles_1\n  WHERE (profiles_1.id = auth.uid()))))"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet customer profiles",
+      "qual": "((outlet_id IS NOT NULL) AND is_outlet_staff(outlet_id))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "profiles",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all referrals",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "referrals",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "referred reads own referral row",
+      "qual": "(auth.uid() = referred_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "referrals",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "referrer reads own referrals",
+      "qual": "(auth.uid() = referrer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "referrals",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all subscriptions",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "customers cancel own subscription",
+      "qual": "((auth.uid() = customer_id) AND (status = 'awaiting_payment'::text))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": "((auth.uid() = customer_id) AND (status = ANY (ARRAY['awaiting_payment'::text, 'cancelled'::text])))"
+    },
+    {
+      "cmd": "INSERT",
+      "policyname": "customers create own subscription rows",
+      "qual": null,
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": "((auth.uid() = customer_id) AND (status = 'awaiting_payment'::text) AND (outlet_id = my_outlet_id()))"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own subscriptions",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "staff manage outlet subscriptions",
+      "qual": "(is_outlet_staff(outlet_id) OR is_central_admin())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": "(is_outlet_staff(outlet_id) OR is_central_admin())"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet subscriptions",
+      "qual": "(outlet_id = my_outlet_id())",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "subscriptions",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read system config",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "system_config",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all token accounts",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_accounts",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own token account",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_accounts",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet token accounts",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_accounts",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all token ledgers",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own token ledger",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet token ledgers",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all transfers",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_transfers",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "parties read own transfers",
+      "qual": "((auth.uid() = sender_id) OR (auth.uid() = recipient_id))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_transfers",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet transfers",
+      "qual": "((sender_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id()))) OR (recipient_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id()))))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "token_transfers",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "policyname": "admins manage roles",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "user_roles",
+      "with_check": "is_central_admin()"
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "users read own roles",
+      "qual": "(auth.uid() = user_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "user_roles",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all wallet ledgers",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallet_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own wallet ledger",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallet_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet wallet ledgers",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallet_ledger",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "admins read all wallets",
+      "qual": "is_central_admin()",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "customers read own wallet",
+      "qual": "(auth.uid() = customer_id)",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "staff read outlet wallets",
+      "qual": "(customer_id IN ( SELECT profiles.id\n   FROM profiles\n  WHERE (profiles.outlet_id = my_outlet_id())))",
+      "roles": "{authenticated}",
+      "schemaname": "public",
+      "tablename": "wallets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "dashboard participants download attachments",
+      "qual": "((bucket_id = 'dashboard-attachments'::text) AND (EXISTS ( SELECT 1\n   FROM dashboard_messages m\n  WHERE ((m.attachment_path = objects.name) AND can_read_dashboard_message(m.id)))))",
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "policyname": "dashboard users remove their staged attachments",
+      "qual": "((bucket_id = 'dashboard-attachments'::text) AND (owner_id = ( SELECT (auth.uid())::text AS uid)) AND ((storage.foldername(name))[1] = ( SELECT (auth.uid())::text AS uid)))",
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "policyname": "dashboard users upload their attachments",
+      "qual": null,
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": "((bucket_id = 'dashboard-attachments'::text) AND (name ~~ ((auth.uid())::text || '/%'::text)))"
+    },
+    {
+      "cmd": "DELETE",
+      "policyname": "delete own avatar",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "policyname": "owners read own avatars",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "policyname": "update own avatar",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    },
+    {
+      "cmd": "INSERT",
+      "policyname": "upload own avatar",
+      "qual": null,
+      "roles": "{authenticated}",
+      "schemaname": "storage",
+      "tablename": "objects",
+      "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    }
+  ]
+}

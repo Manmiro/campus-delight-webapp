@@ -1,0 +1,268 @@
+{
+  "rows": [
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "audit_logs"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "credit_limit_history"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "customer_credit"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "daily_checkins"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "dashboard_message_reads"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "dashboard_messages"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "email_send_claims"
+    },
+    {
+      "anon_select": false,
+      "authenticated_insert": false,
+      "authenticated_select": false,
+      "authenticated_update": false,
+      "rls_enabled": true,
+      "table_name": "gift_payments"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "loan_reminder_sends"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "loan_repayments"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "loan_restriction_exceptions"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "loans"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "meal_entitlements"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "menu_items"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "notifications"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "order_items"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "orders"
+    },
+    {
+      "anon_select": false,
+      "authenticated_insert": false,
+      "authenticated_select": false,
+      "authenticated_update": false,
+      "rls_enabled": true,
+      "table_name": "otp_codes"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "outlet_plan_prices"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "outlet_staff"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "outlet_transfer_applications"
+    },
+    {
+      "anon_select": false,
+      "authenticated_insert": true,
+      "authenticated_select": false,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "outlets"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "payment_transactions"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": false,
+      "rls_enabled": true,
+      "table_name": "profiles"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "referrals"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "subscriptions"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "system_config"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "token_accounts"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "token_ledger"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "token_transfers"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "user_roles"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "wallet_ledger"
+    },
+    {
+      "anon_select": true,
+      "authenticated_insert": true,
+      "authenticated_select": true,
+      "authenticated_update": true,
+      "rls_enabled": true,
+      "table_name": "wallets"
+    }
+  ]
+}

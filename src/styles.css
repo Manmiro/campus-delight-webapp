@@ -314,6 +314,171 @@
   }
 }
 
+.cd-download-frosted-card {
+  background-image:
+    radial-gradient(circle at 12% 12%, color-mix(in oklab, #b8860b 17%, transparent), transparent 32%),
+    linear-gradient(135deg, color-mix(in oklab, #78a61b 14%, var(--card)), color-mix(in oklab, #b8860b 8%, var(--card)));
+}
+
+.cd-jollof-runner {
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  transition: left 200ms ease-out;
+}
+
+.cd-jollof-runner-active {
+  animation: cd-jollof-bounce 0.9s ease-in-out infinite;
+}
+
+.cd-jollof-runner-complete {
+  animation: cd-jollof-finish 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.cd-jollof-bowl {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 8px 7px color-mix(in oklab, #b8860b 34%, transparent));
+  font-size: 2.35rem;
+  line-height: 1;
+}
+
+.cd-jollof-steam {
+  position: absolute;
+  bottom: 1.65rem;
+  color: #b8860b;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  transform: rotate(-18deg);
+}
+
+.cd-jollof-steam-one {
+  left: 0.25rem;
+  animation: cd-steam-rise 1.4s ease-out infinite;
+}
+
+.cd-jollof-steam-two {
+  left: 0.8rem;
+  animation: cd-steam-rise 1.4s 0.35s ease-out infinite;
+}
+
+.cd-jollof-steam-three {
+  left: 1.25rem;
+  animation: cd-steam-rise 1.4s 0.7s ease-out infinite;
+}
+
+.cd-download-snack {
+  animation: cd-snack-wiggle 3.2s ease-in-out infinite;
+}
+
+.cd-download-finish-pack {
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+.cd-download-finish-complete .cd-download-finish-pack {
+  animation: cd-pack-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.cd-download-confetti {
+  position: absolute;
+  top: 0.5rem;
+  width: 10rem;
+  color: #b8860b;
+  font-size: 0.9rem;
+  letter-spacing: 0.7rem;
+  animation: cd-download-confetti 1.2s ease-out both;
+}
+
+@keyframes cd-jollof-bounce {
+  0%,
+  100% {
+    margin-top: 0;
+    transform: translate(-50%, -50%) rotate(-2deg);
+  }
+  50% {
+    margin-top: -4px;
+    transform: translate(-50%, -50%) rotate(2deg);
+  }
+}
+
+@keyframes cd-jollof-finish {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  55% {
+    transform: translate(-50%, -72%) scale(1.18) rotate(-5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes cd-steam-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(-18deg) scale(0.8);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-0.9rem, -2.25rem) rotate(-34deg) scale(1.1);
+  }
+}
+
+@keyframes cd-snack-wiggle {
+  0%,
+  88%,
+  100% {
+    transform: rotate(0);
+  }
+  92% {
+    transform: rotate(-6deg) translateY(-1px);
+  }
+  96% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes cd-pack-pop {
+  0% {
+    transform: scale(0.75) rotate(-8deg);
+  }
+  65% {
+    transform: scale(1.28) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes cd-download-confetti {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.4);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3rem) scale(1.2) rotate(18deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-jollof-runner,
+  .cd-jollof-steam,
+  .cd-download-snack,
+  .cd-download-finish-pack,
+  .cd-download-confetti {
+    animation: none;
+  }
+}
+
 .cd-global-loading-overlay {
   position: fixed;
   inset: 0;

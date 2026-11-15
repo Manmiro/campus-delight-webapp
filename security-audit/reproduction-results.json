@@ -1,0 +1,57 @@
+{
+  "localOnly": true,
+  "migrations": 50,
+  "findings": [
+    {
+      "id": "SEC-01",
+      "evidence": {
+        "anonymousWalletCreditKobo": 200000,
+        "replayWithSameReference": true
+      }
+    },
+    {
+      "id": "SEC-02",
+      "evidence": {
+        "anonymousUnearnedTokens": 100,
+        "orders": 0
+      }
+    },
+    {
+      "id": "SEC-03",
+      "evidence": {
+        "othersSubscriptions": 1,
+        "othersLoans": 1,
+        "othersProfiles": 0,
+        "othersWallets": 0
+      }
+    },
+    {
+      "id": "SEC-04",
+      "evidence": {
+        "plan": "monthly",
+        "tier": "turbo",
+        "status": "active",
+        "price_kobo": 1800000,
+        "days": 30,
+        "meals": 90,
+        "paidKobo": 1800000,
+        "monthlyTurboPriceKobo": 9000000
+      }
+    },
+    {
+      "id": "SEC-05",
+      "evidence": {
+        "frozenCustomerReceivedReward": true,
+        "frozenCustomerPlacedPaidOrder": true
+      }
+    },
+    {
+      "id": "SEC-06",
+      "evidence": {
+        "legacySubscriptionFoodKobo": 260000,
+        "walletDebitKobo": 0,
+        "entitlementRedeemed": true
+      }
+    }
+  ]
+}

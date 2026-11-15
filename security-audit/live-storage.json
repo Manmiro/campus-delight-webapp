@@ -1,0 +1,16 @@
+{
+  "rows": [
+    {
+      "allowed_mime_types": null,
+      "file_size_limit": 5242880,
+      "id": "avatars",
+      "public": false
+    },
+    {
+      "allowed_mime_types": null,
+      "file_size_limit": 1048576,
+      "id": "dashboard-attachments",
+      "public": false
+    }
+  ]
+}
