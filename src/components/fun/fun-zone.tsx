@@ -42,7 +42,7 @@ type ReferralLite = { status: string };
 
 export function FunZone({ orders, loans, referrals, dob, firstName, activePlan, todayEntitlements }: {
   orders: OrderLite[]; loans: LoanLite[]; referrals: ReferralLite[]; dob: string | null; firstName: string;
-  activePlan?: DashboardMealPlan; todayEntitlements?: DashboardMealEntitlement[];
+  activePlan?: DashboardMealPlan | undefined; todayEntitlements?: DashboardMealEntitlement[] | undefined;
 }) {
   const qc = useQueryClient();
   const claimReward = useServerFn(claimDailyReward);
