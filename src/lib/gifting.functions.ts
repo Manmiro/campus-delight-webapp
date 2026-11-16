@@ -13,7 +13,7 @@ export const lookupGiftRecipient = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { enforcePublicRequestLimit } = await import("./rate-limit.server");
-    await enforcePublicRequestLimit("gift-lookup", 20);
+    await enforcePublicRequestLimit("gift-lookup", 10);
     const { lookupRecipient } = await import("./gifting.server");
     return lookupRecipient(data.foodieId);
   });
