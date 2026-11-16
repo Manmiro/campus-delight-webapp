@@ -363,8 +363,8 @@ function AuthPage() {
                     <FieldError message={errors.gender} />
                   </div>
                   <div>
-                    <Label htmlFor="dob">Date of birth <Required /></Label>
-                    <Input id="dob" type="date" value={dob} onChange={(e) => { setDob(e.target.value); clearError("dateOfBirth"); }} className={GOLDEN_FIELD_CLASS} required aria-required="true" aria-invalid={Boolean(errors.dateOfBirth)} max={new Date().toISOString().slice(0, 10)} />
+                    <Label id="dob-label">Date of birth <Required /></Label>
+                    <DobSelects value={dob} onChange={(v) => { setDob(v); clearError("dateOfBirth"); }} invalid={Boolean(errors.dateOfBirth)} />
                     <FieldError message={errors.dateOfBirth} />
                     {dob && <p className="mt-1.5 text-xs font-semibold text-primary animate-in fade-in slide-in-from-top-1 duration-300">We'll be the first to celebrate you on your birthday! 🎂</p>}
                   </div>
@@ -441,6 +441,70 @@ function AuthPage() {
 
 function Required() {
   return <span aria-hidden="true" className="text-destructive">*</span>;
+}
+
+const DOB_MONTHS = [
+  ["01", "January"], ["02", "February"], ["03", "March"], ["04", "April"],
+  ["05", "May"], ["06", "June"], ["07", "July"], ["08", "August"],
+  ["09", "September"], ["10", "October"], ["11", "November"], ["12", "December"],
+] as const;
+
+const DOB_YEARS = Array.from({ length: 2010 - 1950 + 1 }, (_, i) => String(2010 - i));
+
+function daysInMonth(year: string, month: string): number {
+  if (!month) return 31;
+  const m = Number(month);
+  if (m === 2) {
+    const y = Number(year) || 2000;
+    return y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0) ? 29 : 28;
+  }
+  return [4, 6, 9, 11].includes(m) ? 30 : 31;
+}
+
+function DobSelects({ value, onChange, invalid }: { value: string; onChange: (v: string) => void; invalid: boolean }) {
+  const [parts, setParts] = useState<[string, string, string]>(() => {
+    const [y = "", m = "", d = ""] = value ? value.split("-") : [];
+    return [y, m, d];
+  });
+  const [year, month, day] = parts;
+  const maxDay = daysInMonth(year, month);
+
+  const update = (y: string, m: string, d: string) => {
+    if (d && Number(d) > daysInMonth(y, m)) d = "";
+    setParts([y, m, d]);
+    onChange(y && m && d ? `${y}-${m}-${d}` : "");
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="dob-label" aria-required="true" aria-invalid={invalid}>
+      <Select value={year} onValueChange={(v) => update(v, month, day)}>
+        <SelectTrigger aria-label="Birth year" className={`w-full ${GOLDEN_FIELD_CLASS}`}>
+          <SelectValue placeholder="Year" />
+        </SelectTrigger>
+        <SelectContent className="max-h-64">
+          {DOB_YEARS.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={month} onValueChange={(v) => update(year, v, day)}>
+        <SelectTrigger aria-label="Birth month" className={`w-full ${GOLDEN_FIELD_CLASS}`}>
+          <SelectValue placeholder="Month" />
+        </SelectTrigger>
+        <SelectContent className="max-h-64">
+          {DOB_MONTHS.map(([v, label]) => <SelectItem key={v} value={v}>{label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={day} onValueChange={(v) => update(year, month, v)}>
+        <SelectTrigger aria-label="Birth day" className={`w-full ${GOLDEN_FIELD_CLASS}`}>
+          <SelectValue placeholder="Day" />
+        </SelectTrigger>
+        <SelectContent className="max-h-64">
+          {Array.from({ length: maxDay }, (_, i) => String(i + 1).padStart(2, "0")).map((d) => (
+            <SelectItem key={d} value={d}>{Number(d)}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
 function FieldError({ message }: { message?: string | undefined }) {
