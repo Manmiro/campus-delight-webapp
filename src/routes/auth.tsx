@@ -370,7 +370,7 @@ function AuthPage() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="outlet">Your campus outlet <Required /></Label>
+                  <Label htmlFor="outlet">Your preferred outlet <Required /></Label>
                   <Select value={outletId} onValueChange={(v) => { setOutletId(v); clearError("outletId"); }} required>
                     <SelectTrigger id="outlet" className={`w-full ${GOLDEN_FIELD_CLASS}`} aria-required="true" aria-invalid={Boolean(errors.outletId)}>
                       <SelectValue placeholder="Select your outlet" />
