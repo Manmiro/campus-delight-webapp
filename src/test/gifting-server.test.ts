@@ -128,18 +128,19 @@ describe("public gift server boundary", () => {
       outlet_plan_prices: [],
       menu_items: [],
     };
+    mocks.sign.mockResolvedValueOnce({ data: { signedUrl: "https://signed/photo" } });
     const found = await lookupRecipient("CD050619", "chioma");
     expect(found).toEqual({
       foodieId: "CD050619",
       name: "Chioma E.",
+      avatarUrl: "https://signed/photo",
       outlet: { id: "outlet-id", name: "Campus kitchen", deliveryFeeKobo: 60000 },
       prices: [],
       menu: [],
     });
     expect(JSON.stringify(found)).not.toContain("private");
     expect(JSON.stringify(found)).not.toContain("female");
-    expect(JSON.stringify(found)).not.toContain("avatar");
-    expect(mocks.sign).not.toHaveBeenCalled();
+    expect(mocks.sign).toHaveBeenCalledWith("student-id/avatar.jpg", 300);
   });
   it("reveals nothing when the name does not match the Foodie ID", async () => {
     mocks.rows = {

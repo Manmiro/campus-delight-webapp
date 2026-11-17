@@ -17,7 +17,7 @@ export const lookupGiftRecipient = createServerFn({ method: "POST" })
     await enforcePublicRequestLimit("gift-lookup", 10);
     const { lookupRecipient } = await import("./gifting.server");
     // Only confirms a student the sponsor can already identify (Foodie ID + name);
-    // no gender, photo, contact or account details are ever returned.
+    // returns short name, photo and outlet — never contact or account details.
     return lookupRecipient(data.foodieId, data.recipientName);
   });
 

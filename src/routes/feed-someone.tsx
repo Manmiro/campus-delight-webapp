@@ -379,12 +379,13 @@ function FeedSomeone() {
                     )}
                     {recipient && (
                       <div className="mt-5 flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
-                        <span
-                          aria-hidden="true"
-                          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-golden/15 text-golden"
-                        >
-                          <Heart size={28} />
-                        </span>
+                        <img
+                          src={recipient.avatarUrl}
+                          alt={`${recipient.name}'s avatar`}
+                          width={64}
+                          height={64}
+                          className="h-16 w-16 shrink-0 rounded-full border-2 border-golden object-cover"
+                        />
                         <div className="min-w-0">
                           <p className="flex items-center gap-2 text-lg font-bold">
                             {recipient.name}

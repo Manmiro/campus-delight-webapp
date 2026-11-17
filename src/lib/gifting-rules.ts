@@ -41,6 +41,8 @@ export type GiftInput = z.infer<typeof giftInputSchema>;
 export type GiftRecipient = {
   foodieId: string;
   name: string;
+  /** The student's own photo (short-lived link) or their default cartoon avatar. */
+  avatarUrl: string;
   outlet: { id: string; name: string; deliveryFeeKobo: number };
   prices: { plan: string; tier: string; price_kobo: number }[];
   menu: {

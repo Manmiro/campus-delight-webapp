@@ -59,6 +59,7 @@ beforeEach(() => {
   fixtures.lookup.mockResolvedValue({
     foodieId: "CD050619",
     name: "Chioma E.",
+    avatarUrl: "/photo.webp",
     outlet: {
       id: "00000000-0000-0000-0000-000000000001",
       name: "Campus kitchen",
@@ -125,7 +126,7 @@ describe("guest gifting page", () => {
     expect(screen.queryByText("Chioma E.")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Yes, that’s my person/ })).toBeDisabled();
   });
-  it("never looks up a student without a first name and never shows their photo", async () => {
+  it("never looks up a student without a first name and shows their photo after a match", async () => {
     show();
     fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), {
       target: { value: "CD050619" },
@@ -134,7 +135,7 @@ describe("guest gifting page", () => {
     expect(fixtures.lookup).not.toHaveBeenCalled();
     await enterName();
     await screen.findByText("Chioma E.");
-    expect(screen.queryByRole("img", { name: /avatar/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /avatar/i })).toBeInTheDocument();
   });
   it("verifies a recipient live and sends the chosen gift without requiring an account", async () => {
     show();

@@ -3,6 +3,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { paystackInitialize, paystackVerify } from "./payments.server";
 import { verifiedPaymentMatches } from "./payment-rules";
+import maleAvatar from "@/assets/avatar-male.webp.asset.json";
+import femaleAvatar from "@/assets/avatar-female.webp.asset.json";
 import {
   recipientDisplayName,
   recipientNameMatches,
@@ -86,7 +88,7 @@ export function giftOrigin(value: string) {
 async function matchedRecipientProfile(foodieId: string, recipientName: string) {
   const { data: p, error } = await supabaseAdmin
     .from("profiles")
-    .select("id,full_name,outlet_id")
+    .select("id,full_name,gender,avatar_url,outlet_id")
     .eq("customer_code", foodieId)
     .eq("is_active", true)
     .maybeSingle();
@@ -130,9 +132,16 @@ export async function lookupRecipient(
   ]);
   for (const result of [role, outlet, prices, menu]) if (result.error) publicError(result.error);
   if (!role.data || !outlet.data) return null;
+  // Photo is shown only after the Foodie ID + name match; sign this student's own path only.
+  let avatarUrl = p.gender?.toLowerCase() === "female" ? femaleAvatar.url : maleAvatar.url;
+  if (p.avatar_url?.startsWith(`${p.id}/`)) {
+    const signed = await supabaseAdmin.storage.from("avatars").createSignedUrl(p.avatar_url, 300);
+    if (signed.data?.signedUrl) avatarUrl = signed.data.signedUrl;
+  }
   return {
     foodieId,
     name: recipientDisplayName(p.full_name),
+    avatarUrl,
     outlet: {
       id: outlet.data.id,
       name: outlet.data.name,
