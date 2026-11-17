@@ -24,7 +24,6 @@ import {
   giftStatusText,
   type GiftRecipient,
 } from "@/lib/gifting-rules";
-import { defaultAvatarFor } from "@/lib/avatar";
 import { naira } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +84,9 @@ function FeedSomeone() {
   const verify = useServerFn(verifyGift);
   const [step, setStep] = useState(1);
   const [foodieId, setFoodieId] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  // Name edits settle briefly before lookup so typing doesn't burn the rate limit.
+  const [lookupName, setLookupName] = useState("");
   const [recipient, setRecipient] = useState<GiftRecipient | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
@@ -102,18 +104,32 @@ function FeedSomeone() {
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
-    if (reference || step !== 1 || !/^CD\d{6}$/.test(foodieId)) return;
+    const next = recipientName.trim();
+    if (next === lookupName) return;
+    const timer = setTimeout(() => setLookupName(next), 500);
+    return () => clearTimeout(timer);
+  }, [recipientName, lookupName]);
+
+  useEffect(() => {
+    if (
+      reference ||
+      step !== 1 ||
+      !/^CD\d{6}$/.test(foodieId) ||
+      lookupName.length < 2 ||
+      lookupName !== recipientName.trim()
+    )
+      return;
     let cancelled = false;
     setChecking(true);
     setRecipient(null);
     setError("");
-    void lookup({ data: { foodieId } })
+    void lookup({ data: { foodieId, recipientName: lookupName } })
       .then((result) => {
         if (cancelled) return;
         setRecipient(result);
         if (!result)
           setError(
-            "We couldn’t find an active student with that Foodie ID. Check the ID with them and try again.",
+            "We couldn’t match that Foodie ID and first name to an active student. Check both with them and try again.",
           );
       })
       .catch((e) => {
@@ -125,7 +141,7 @@ function FeedSomeone() {
     return () => {
       cancelled = true;
     };
-  }, [foodieId, step, reference, lookup, lookupAttempt]);
+  }, [foodieId, lookupName, recipientName, step, reference, lookup, lookupAttempt]);
 
   const receipt = useQuery({
     queryKey: ["gift-receipt", reference],
@@ -165,6 +181,7 @@ function FeedSomeone() {
     setError("");
     const parsed = giftInputSchema.safeParse({
       foodieId,
+      recipientName: lookupName,
       outletId: recipient.outlet.id,
       kind,
       expectedAmountKobo: total,
@@ -313,7 +330,7 @@ function FeedSomeone() {
                 <>
                   <h2 className="font-display text-2xl font-bold">Who are we feeding?</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Ask them for their Foodie ID. We’ll help you check it’s the right person.
+                    Enter their Foodie ID and first name. We’ll confirm it’s the right person.
                   </p>
                   <Label htmlFor="foodie-id" className="mt-6 block">
                     Student’s Foodie ID
@@ -337,6 +354,23 @@ function FeedSomeone() {
                   <p className="mt-2 text-xs text-muted-foreground">
                     8 characters · starts with CD
                   </p>
+                  <Label htmlFor="recipient-name" className="mt-5 block">
+                    Student’s first name
+                  </Label>
+                  <Input
+                    id="recipient-name"
+                    value={recipientName}
+                    maxLength={60}
+                    autoComplete="off"
+                    placeholder="e.g. Chioma"
+                    className="mt-2 h-12"
+                    onChange={(e) => {
+                      setRecipientName(e.target.value);
+                      setRecipient(null);
+                      setChecking(false);
+                      setError("");
+                    }}
+                  />
                   <div aria-live="polite">
                     {checking && (
                       <p className="mt-4 flex items-center gap-2 text-sm">
@@ -345,19 +379,12 @@ function FeedSomeone() {
                     )}
                     {recipient && (
                       <div className="mt-5 flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
-                        <img
-                          src={recipient.avatarUrl ?? defaultAvatarFor(recipient.gender)}
-                          onError={(e) => {
-                            const fallback = defaultAvatarFor(recipient.gender);
-                            if (e.currentTarget.src === fallback)
-                              e.currentTarget.style.visibility = "hidden";
-                            else e.currentTarget.src = fallback;
-                          }}
-                          alt="Student avatar"
-                          width={64}
-                          height={64}
-                          className="h-16 w-16 shrink-0 rounded-full object-cover"
-                        />
+                        <span
+                          aria-hidden="true"
+                          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-golden/15 text-golden"
+                        >
+                          <Heart size={28} />
+                        </span>
                         <div className="min-w-0">
                           <p className="flex items-center gap-2 text-lg font-bold">
                             {recipient.name}

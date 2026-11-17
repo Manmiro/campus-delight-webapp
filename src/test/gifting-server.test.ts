@@ -60,7 +60,7 @@ afterEach(() => {
 describe("public gift server boundary", () => {
   it("looks up recipients directly without an external verification request", async () => {
     mocks.rows["profiles"] = null;
-    await expect(lookupRecipient("CD000000")).resolves.toBeNull();
+    await expect(lookupRecipient("CD000000", "Chioma")).resolves.toBeNull();
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
   it("verifies Paystack before service-only settlement and emails only committed gifts", async () => {
@@ -128,24 +128,56 @@ describe("public gift server boundary", () => {
       outlet_plan_prices: [],
       menu_items: [],
     };
-    mocks.sign.mockResolvedValue({ data: { signedUrl: "https://images.example/avatar" } });
-    const found = await lookupRecipient("CD050619");
+    const found = await lookupRecipient("CD050619", "chioma");
     expect(found).toEqual({
       foodieId: "CD050619",
       name: "Chioma E.",
-      gender: "female",
-      avatarUrl: "https://images.example/avatar",
       outlet: { id: "outlet-id", name: "Campus kitchen", deliveryFeeKobo: 60000 },
       prices: [],
       menu: [],
     });
     expect(JSON.stringify(found)).not.toContain("private");
+    expect(JSON.stringify(found)).not.toContain("female");
+    expect(JSON.stringify(found)).not.toContain("avatar");
+    expect(mocks.sign).not.toHaveBeenCalled();
+  });
+  it("reveals nothing when the name does not match the Foodie ID", async () => {
+    mocks.rows = {
+      profiles: { id: "student-id", full_name: "Chioma Eze", outlet_id: "outlet-id" },
+      user_roles: { user_id: "student-id" },
+      outlets: { id: "outlet-id", name: "Campus kitchen", delivery_fee_kobo: 60000 },
+      outlet_plan_prices: [],
+      menu_items: [],
+    };
+    await expect(lookupRecipient("CD050619", "Ada")).resolves.toBeNull();
+    await expect(lookupRecipient("CD050619", "eze")).resolves.not.toBeNull();
+  });
+  it("refuses checkout when the name does not match the Foodie ID", async () => {
+    mocks.rows["profiles"] = { id: "student-id", full_name: "Chioma Eze", outlet_id: "outlet-id" };
+    await expect(
+      startGift({
+        foodieId: "CD050619",
+        recipientName: "Ada",
+        outletId: "outlet-id",
+        kind: "wallet",
+        expectedAmountKobo: 200000,
+        sponsorName: "Mum",
+        sponsorEmail: "mum@example.com",
+        note: "",
+        fulfillment: "pickup",
+        address: "",
+        origin: "https://campusdelight.net",
+      }),
+    ).rejects.toThrow("couldn’t confirm that student");
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("uses the database quote and the sponsor receipt email for checkout", async () => {
     mocks.rpc.mockResolvedValue({ data: 200000, error: null });
     mocks.initialize.mockResolvedValue("https://checkout.paystack.com/test");
+    mocks.rows["profiles"] = { id: "student-id", full_name: "Chioma Eze", outlet_id: "outlet-id" };
     const result = await startGift({
       foodieId: "CD050619",
+      recipientName: "Chioma",
       outletId: "outlet-id",
       kind: "wallet",
       expectedAmountKobo: 200000,

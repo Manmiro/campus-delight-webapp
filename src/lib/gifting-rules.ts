@@ -5,10 +5,17 @@ export const foodieIdSchema = z
   .trim()
   .toUpperCase()
   .regex(/^CD\d{6}$/, "Enter an 8-character Foodie ID, e.g. CD050619");
+// Sponsors must already know the student's name; the public lookup only confirms a match.
+export const recipientNameSchema = z
+  .string()
+  .trim()
+  .min(2, "Enter the student’s first name")
+  .max(60, "Enter just the student’s first name");
 export const giftReferenceSchema = z.string().regex(/^CDG-[a-f0-9-]{36}$/);
 export const giftInputSchema = z
   .object({
     foodieId: foodieIdSchema,
+    recipientName: recipientNameSchema,
     outletId: z.guid(),
     kind: z.enum(["wallet", "plan", "meal"]),
     expectedAmountKobo: z.number().int().min(10000).max(100000000),
@@ -34,8 +41,6 @@ export type GiftInput = z.infer<typeof giftInputSchema>;
 export type GiftRecipient = {
   foodieId: string;
   name: string;
-  gender: string | null;
-  avatarUrl: string | null;
   outlet: { id: string; name: string; deliveryFeeKobo: number };
   prices: { plan: string; tier: string; price_kobo: number }[];
   menu: {
@@ -46,6 +51,22 @@ export type GiftRecipient = {
     image_url: string | null;
   }[];
 };
+function normalizeNamePart(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+}
+
+/** True when the entered name equals one of the student's names (or the full name). */
+export function recipientNameMatches(fullName: string, entered: string) {
+  const want = normalizeNamePart(entered);
+  if (want.length < 2) return false;
+  if (normalizeNamePart(fullName) === want) return true;
+  return fullName.split(/[\s-]+/).some((part) => normalizeNamePart(part) === want);
+}
+
 export function recipientDisplayName(name: string) {
   const parts = name.trim().split(/\s+/);
   return `${parts[0] ?? "Student"}${parts.length > 1 ? ` ${parts.at(-1)![0]}.` : ""}`;
