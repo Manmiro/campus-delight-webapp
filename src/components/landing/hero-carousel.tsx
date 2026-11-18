@@ -56,7 +56,7 @@ const slides = [
     stats: [
       { value: "3", label: "Plan options" },
       { value: "1–3", label: "Meals per day" },
-      { value: "₦1", label: "Wallet = ₦1" },
+      { value: "✓", label: "Daily delivery available" },
     ],
     primary: "Explore meal plans",
     primaryHref: "/auth",
