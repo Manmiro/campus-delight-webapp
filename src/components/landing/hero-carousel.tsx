@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -19,28 +19,6 @@ import { WELCOME_TOKENS } from "@/lib/prd-rules";
 const AUTO_ROTATE_MS = 5500;
 
 const slides = [
-  {
-    id: "meal-plans",
-    label: "Meal Plans",
-    badge: "Plan your week",
-    badgeIcon: CalendarDays,
-    title: (
-      <>
-        Put your daily meals <span className="block">on autopilot.</span>
-      </>
-    ),
-    description:
-      "Weekend, Weekly or Monthly plans with BASIC, STANDARD or TURBO daily meal entitlements. Choose the rhythm that fits campus life.",
-    stats: [
-      { value: "3", label: "Plan options" },
-      { value: "1–3", label: "Meals per day" },
-      { value: "₦1", label: "Wallet = ₦1" },
-    ],
-    primary: "Explore meal plans",
-    primaryHref: "/auth",
-    secondary: "See how it works",
-    secondaryHref: "#plans",
-  },
   {
     id: "pay-later",
     label: "Pay Later",
@@ -64,6 +42,28 @@ const slides = [
     secondaryHref: "#pay-later",
   },
   {
+    id: "meal-plans",
+    label: "Meal Plans",
+    badge: "Plan your week",
+    badgeIcon: CalendarDays,
+    title: (
+      <>
+        Put your daily meals <span className="block">on autopilot.</span>
+      </>
+    ),
+    description:
+      "Weekend, Weekly or Monthly plans with BASIC, STANDARD or TURBO daily meal entitlements. Choose the rhythm that fits campus life.",
+    stats: [
+      { value: "3", label: "Plan options" },
+      { value: "1–3", label: "Meals per day" },
+      { value: "₦1", label: "Wallet = ₦1" },
+    ],
+    primary: "Explore meal plans",
+    primaryHref: "/auth",
+    secondary: "Feed someone",
+    secondaryHref: "/feed-someone",
+  },
+  {
     id: "wallet-order",
     label: "Wallet Order",
     badge: "Fast, flexible checkout",
@@ -80,7 +80,7 @@ const slides = [
       { value: "3", label: "Ways to pay" },
       { value: "24/7", label: "Order access" },
     ],
-    primary: "Create your wallet",
+    primary: "Fund your wallet",
     primaryHref: "/auth",
     secondary: "Browse outlets",
     secondaryHref: "#outlets",
@@ -91,6 +91,7 @@ export function HeroCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -122,6 +123,25 @@ export function HeroCarousel() {
     goToSlide(activeIndex + 1);
   }
 
+  function onTouchStart(event: React.TouchEvent<HTMLElement>) {
+    touchStartX.current = event.changedTouches[0]?.clientX ?? null;
+    setIsPaused(true);
+  }
+
+  function onTouchEnd(event: React.TouchEvent<HTMLElement>) {
+    const startX = touchStartX.current;
+    const endX = event.changedTouches[0]?.clientX;
+    touchStartX.current = null;
+    setIsPaused(false);
+
+    if (startX === null || endX === undefined) return;
+
+    const distance = endX - startX;
+    if (Math.abs(distance) < 50) return;
+
+    goToSlide(activeIndex + (distance < 0 ? 1 : -1));
+  }
+
   return (
     <section
       aria-label="Campus Delight highlights"
@@ -132,6 +152,12 @@ export function HeroCarousel() {
       onPointerDown={() => setIsPaused(true)}
       onPointerUp={() => setIsPaused(false)}
       onPointerCancel={() => setIsPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={() => {
+        touchStartX.current = null;
+        setIsPaused(false);
+      }}
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsPaused(false);
@@ -150,7 +176,7 @@ export function HeroCarousel() {
         />
       </picture>
 
-      <div className="relative min-h-[640px] sm:min-h-[600px]">
+      <div className="relative min-h-[588px] sm:min-h-[548px]">
         {slides.map((slide, index) => {
           const SlideIcon = slide.badgeIcon;
           const isActive = index === activeIndex;
@@ -173,7 +199,7 @@ export function HeroCarousel() {
                 <Badge className="mb-4 max-w-full whitespace-normal bg-golden text-golden-foreground hover:bg-golden">
                   <SlideIcon className="mr-1 h-3.5 w-3.5" /> {slide.badge}
                 </Badge>
-                <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+                <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-[2.6rem]">
                   {slide.title}
                 </h1>
                 <p className="mt-4 text-base opacity-90 sm:text-lg">{slide.description}</p>
@@ -208,20 +234,15 @@ export function HeroCarousel() {
                     className="rounded-full border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
                     asChild
                   >
-                    <a href={slide.secondaryHref}>{slide.secondary}</a>
-                  </Button>
-                  {slide.id === "meal-plans" && (
-                    <Button
-                      size="lg"
-                      className="rounded-full bg-golden text-golden-foreground hover:bg-golden/90"
-                      asChild
-                    >
+                    {slide.id === "meal-plans" ? (
                       <Link to="/feed-someone">
                         <Gift className="mr-2 h-4 w-4" />
-                        Feed someone
+                        {slide.secondary}
                       </Link>
-                    </Button>
-                  )}
+                    ) : (
+                      <a href={slide.secondaryHref}>{slide.secondary}</a>
+                    )}
+                  </Button>
                 </div>
                 <p className="mt-4 flex items-center gap-1.5 text-xs opacity-85">
                   {slide.id === "wallet-order" ? (
@@ -239,6 +260,13 @@ export function HeroCarousel() {
             </article>
           );
         })}
+      </div>
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-24 right-4 z-0 h-20 w-20 overflow-hidden rounded-3xl border border-golden/30 bg-golden/15 opacity-70 shadow-soft sm:hidden"
+      >
+        <img src={heroImg.url} alt="" className="h-full w-full object-cover mix-blend-luminosity" />
       </div>
 
       <div className="absolute inset-x-6 bottom-5 flex items-center justify-between gap-4 sm:inset-x-10">
