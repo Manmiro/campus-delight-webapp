@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BadgeCheck, CalendarDays, Coins, Gift, MapPin, Users, Zap } from "lucide-react";
+import { ArrowRight, BadgeCheck, CalendarDays, Gift, MapPin, Users, Zap } from "lucide-react";
 import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
+import { HeroCarousel } from "@/components/landing/hero-carousel";
 import { PayLaterCalculator } from "@/components/landing/pay-later-calculator";
 import { Reveal } from "@/components/landing/reveal";
 import { OutletCountdown } from "@/components/landing/outlet-countdown";
@@ -57,7 +58,6 @@ const steps = [
 function UtensilsIcon(props: { className?: string }) {
   return <Zap className={props.className} />;
 }
-
 function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
@@ -107,52 +107,9 @@ function Landing() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-6 px-3 py-6 sm:px-4 sm:py-8">
-        {/* Hero banner — Eat Now & Pay Later */}
+        {/* Hero banner — rotating highlights */}
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-          <div className="relative min-w-0 overflow-hidden rounded-3xl bg-gradient-brand text-primary-foreground shadow-glow">
-            <picture><source media="(min-width: 640px)" srcSet={heroImg.url} /><img width={1200} height={640} fetchPriority="high" decoding="async" alt="A plate of Nigerian campus meals" className="absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover opacity-90 [mask-image:linear-gradient(to_right,transparent,black_40%)] sm:block" /></picture>
-            <div className="relative p-6 sm:max-w-[68%] sm:p-10">
-              <Badge className="mb-4 max-w-full whitespace-normal bg-golden text-golden-foreground hover:bg-golden">
-                <Zap className="mr-1 h-3.5 w-3.5" /> New · Eat Now &amp; Pay Later
-              </Badge>
-              <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                Hungry now?
-                <span className="block">Eat now, pay later.</span>
-              </h1>
-              <p className="mt-4 text-base opacity-90 sm:text-lg">
-                Order hot campus meals today and repay in 7, 14 or 30 days. Verified students start
-                with a ₦2,100 credit limit — repay on time and it doubles.
-              </p>
-              <div className="mt-5 grid max-w-md grid-cols-3 gap-2">
-                {[
-                  { v: "₦2,100", l: "Starter limit" },
-                  { v: "7–30", l: "Days to repay" },
-                  { v: "2×", l: "Limit on time" },
-                ].map((s) => (
-                  <div key={s.l} className="rounded-2xl bg-primary-foreground/15 px-3 py-2.5 backdrop-blur">
-                    <p className="font-display text-lg font-bold sm:text-xl">{s.v}</p>
-                    <p className="text-xs opacity-85">{s.l}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Button size="lg" variant="secondary" className="rounded-full transition-transform hover:-translate-y-0.5" asChild>
-                  <Link to="/auth" search={{}}>
-                    Start eating on credit <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="rounded-full border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" asChild>
-                  <a href="#pay-later">See what you'd repay</a>
-                </Button>
-                <Button size="lg" className="rounded-full bg-golden text-golden-foreground hover:bg-golden/90" asChild>
-                  <Link to="/feed-someone"><Gift className="mr-2 h-4 w-4" />Feed someone</Link>
-                </Button>
-              </div>
-              <p className="mt-4 flex items-center gap-1.5 text-xs opacity-85">
-                <Coins className="h-3.5 w-3.5" /> Plus {WELCOME_TOKENS.toLocaleString("en-NG")} free tokens on signup · 1 token = ₦1
-              </p>
-            </div>
-          </div>
+          <HeroCarousel />
           <div className="flex min-w-0 items-center justify-center rounded-3xl border border-border/60 bg-card p-4 shadow-soft">
             <DemoPhoneCard />
           </div>
