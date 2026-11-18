@@ -2,20 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   foodieIdSchema,
+  recipientNameSchema,
   giftInputSchema,
   giftReferenceSchema,
   type GiftInput,
 } from "./gifting-rules";
 
 export const lookupGiftRecipient = createServerFn({ method: "POST" })
-  .inputValidator((input: { foodieId: string }) =>
-    z.object({ foodieId: foodieIdSchema }).parse(input),
+  .inputValidator((input: { foodieId: string; recipientName: string }) =>
+    z.object({ foodieId: foodieIdSchema, recipientName: recipientNameSchema }).parse(input),
   )
   .handler(async ({ data }) => {
     const { enforcePublicRequestLimit } = await import("./rate-limit.server");
-    await enforcePublicRequestLimit("gift-lookup", 20);
+    await enforcePublicRequestLimit("gift-lookup", 10);
     const { lookupRecipient } = await import("./gifting.server");
-    return lookupRecipient(data.foodieId);
+    // Only confirms a student the sponsor can already identify (Foodie ID + name);
+    // returns short name, photo and outlet — never contact or account details.
+    return lookupRecipient(data.foodieId, data.recipientName);
   });
 
 export const initializeGift = createServerFn({ method: "POST" })

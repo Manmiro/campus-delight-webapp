@@ -3,7 +3,14 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { paystackInitialize, paystackVerify } from "./payments.server";
 import { verifiedPaymentMatches } from "./payment-rules";
-import { recipientDisplayName, type GiftInput, type GiftRecipient } from "./gifting-rules";
+import maleAvatar from "@/assets/avatar-male.webp.asset.json";
+import femaleAvatar from "@/assets/avatar-female.webp.asset.json";
+import {
+  recipientDisplayName,
+  recipientNameMatches,
+  type GiftInput,
+  type GiftRecipient,
+} from "./gifting-rules";
 
 // Proposed schema stays isolated until approved and generated types are refreshed.
 export type GiftRecord = {
@@ -77,7 +84,8 @@ export function giftOrigin(value: string) {
   throw new Error("Invalid payment return address");
 }
 
-export async function lookupRecipient(foodieId: string): Promise<GiftRecipient | null> {
+// Returns the profile only when the caller already knows both the Foodie ID and a name.
+async function matchedRecipientProfile(foodieId: string, recipientName: string) {
   const { data: p, error } = await supabaseAdmin
     .from("profiles")
     .select("id,full_name,gender,avatar_url,outlet_id")
@@ -85,6 +93,15 @@ export async function lookupRecipient(foodieId: string): Promise<GiftRecipient |
     .eq("is_active", true)
     .maybeSingle();
   if (error) publicError(error);
+  if (!p || !recipientNameMatches(p.full_name, recipientName)) return null;
+  return p;
+}
+
+export async function lookupRecipient(
+  foodieId: string,
+  recipientName: string,
+): Promise<GiftRecipient | null> {
+  const p = await matchedRecipientProfile(foodieId, recipientName);
   if (!p?.outlet_id) return null;
   const [role, outlet, prices, menu] = await Promise.all([
     supabaseAdmin
@@ -115,16 +132,15 @@ export async function lookupRecipient(foodieId: string): Promise<GiftRecipient |
   ]);
   for (const result of [role, outlet, prices, menu]) if (result.error) publicError(result.error);
   if (!role.data || !outlet.data) return null;
-  let avatarUrl: string | null = null;
-  // Only sign this student's own private avatar path, never a supplied storage path.
+  // Photo is shown only after the Foodie ID + name match; sign this student's own path only.
+  let avatarUrl = p.gender?.toLowerCase() === "female" ? femaleAvatar.url : maleAvatar.url;
   if (p.avatar_url?.startsWith(`${p.id}/`)) {
     const signed = await supabaseAdmin.storage.from("avatars").createSignedUrl(p.avatar_url, 300);
-    avatarUrl = signed.data?.signedUrl ?? null;
+    if (signed.data?.signedUrl) avatarUrl = signed.data.signedUrl;
   }
   return {
     foodieId,
     name: recipientDisplayName(p.full_name),
-    gender: p.gender,
     avatarUrl,
     outlet: {
       id: outlet.data.id,
@@ -141,8 +157,10 @@ export async function startGift(input: GiftInput) {
   // Check configuration before persisting a payment intent.
   if (!process.env["PAYSTACK_SECRET_KEY"])
     throw new Error("Paystack payments are not configured yet");
+  if (!(await matchedRecipientProfile(input.foodieId, input.recipientName)))
+    throw new Error("We couldn’t confirm that student. Check their Foodie ID and first name.");
   const reference = `CDG-${crypto.randomUUID()}`;
-  const { origin: _origin, ...selection } = input;
+  const { origin: _origin, recipientName: _recipientName, ...selection } = input;
   const { data: amount, error } = await giftDb.rpc("prepare_gift_payment", {
     p_reference: reference,
     p_input: selection as Json,

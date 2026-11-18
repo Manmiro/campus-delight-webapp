@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { foodieIdSchema, giftInputSchema, recipientDisplayName } from "@/lib/gifting-rules";
+import {
+  foodieIdSchema,
+  giftInputSchema,
+  recipientDisplayName,
+  recipientNameMatches,
+} from "@/lib/gifting-rules";
 
 const input = {
   foodieId: "CD050619",
+  recipientName: "Chioma",
   outletId: "00000000-0000-0000-0000-000000000001",
   kind: "wallet",
   expectedAmountKobo: 200000,
@@ -16,6 +22,13 @@ describe("public gift rules", () => {
     expect(foodieIdSchema.safeParse("CD05061").success).toBe(false);
     expect(recipientDisplayName("Chioma Eze")).toBe("Chioma E.");
   });
+  it("matches a recipient only by one of their real names", () => {
+    expect(recipientNameMatches("Chioma Eze", " CHIOMA ")).toBe(true);
+    expect(recipientNameMatches("Chioma Eze", "eze")).toBe(true);
+    expect(recipientNameMatches("Chioma Eze", "Chioma Eze")).toBe(true);
+    expect(recipientNameMatches("Chioma Eze", "Chi")).toBe(false);
+    expect(recipientNameMatches("Chioma Eze", "")).toBe(false);
+  });
   it("requires valid contact details, bounded amounts, choices and delivery address", () => {
     expect(giftInputSchema.safeParse(input).success).toBe(true);
     for (const change of [
@@ -27,6 +40,8 @@ describe("public gift rules", () => {
       { kind: "meal" },
       { kind: "meal", menuItemId: input.outletId, fulfillment: "delivery" },
       { note: "a".repeat(501) },
+      { recipientName: "" },
+      { recipientName: "C" },
     ]) {
       expect(giftInputSchema.safeParse({ ...input, ...change }).success).toBe(false);
     }

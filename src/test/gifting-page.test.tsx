@@ -42,7 +42,13 @@ function show() {
     </QueryClientProvider>,
   );
 }
+const settleName = () => act(() => new Promise((resolve) => setTimeout(resolve, 550)));
+async function enterName(name = "Chioma") {
+  fireEvent.change(screen.getByLabelText("Student’s first name"), { target: { value: name } });
+  await settleName();
+}
 async function findPerson() {
+  await enterName();
   fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), { target: { value: "cd050619" } });
   await waitFor(() => expect(screen.getByText("Chioma E.")).toBeInTheDocument());
   fireEvent.click(screen.getByRole("button", { name: /Yes, that’s my person/ }));
@@ -53,8 +59,7 @@ beforeEach(() => {
   fixtures.lookup.mockResolvedValue({
     foodieId: "CD050619",
     name: "Chioma E.",
-    gender: "female",
-    avatarUrl: null,
+    avatarUrl: "/photo.webp",
     outlet: {
       id: "00000000-0000-0000-0000-000000000001",
       name: "Campus kitchen",
@@ -74,19 +79,21 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("guest gifting page", () => {
-  it("starts lookup on the eighth character without waiting for a timer or extra action", async () => {
+  it("starts lookup on the eighth character once the student's first name is entered", async () => {
     show();
+    await enterName();
     const field = screen.getByLabelText("Student’s Foodie ID");
     for (const value of ["c", "cd", "cd050", "cd05061"])
       fireEvent.change(field, { target: { value } });
     expect(fixtures.lookup).not.toHaveBeenCalled();
     fireEvent.change(field, { target: { value: "cd050619" } });
-    expect(fixtures.lookup).toHaveBeenCalledExactlyOnceWith({ data: { foodieId: "CD050619" } });
+    expect(fixtures.lookup).toHaveBeenCalledExactlyOnceWith({ data: { foodieId: "CD050619", recipientName: "Chioma" } });
     await screen.findByText("Chioma E.");
   });
   it("retries a failed lookup immediately without refreshing", async () => {
     fixtures.lookup.mockRejectedValueOnce(new Error("Lookup unavailable"));
     show();
+    await enterName();
     fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), {
       target: { value: "CD050619" },
     });
@@ -105,6 +112,7 @@ describe("guest gifting page", () => {
         }),
     );
     show();
+    await enterName();
     const field = screen.getByLabelText("Student’s Foodie ID");
     fireEvent.change(field, { target: { value: "CD000001" } });
     fireEvent.change(field, { target: { value: "CD050619" } });
@@ -117,6 +125,17 @@ describe("guest gifting page", () => {
     fireEvent.change(field, { target: { value: "" } });
     expect(screen.queryByText("Chioma E.")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Yes, that’s my person/ })).toBeDisabled();
+  });
+  it("never looks up a student without a first name and shows their photo after a match", async () => {
+    show();
+    fireEvent.change(screen.getByLabelText("Student’s Foodie ID"), {
+      target: { value: "CD050619" },
+    });
+    await settleName();
+    expect(fixtures.lookup).not.toHaveBeenCalled();
+    await enterName();
+    await screen.findByText("Chioma E.");
+    expect(screen.getByRole("img", { name: /avatar/i })).toBeInTheDocument();
   });
   it("verifies a recipient live and sends the chosen gift without requiring an account", async () => {
     show();
@@ -137,6 +156,7 @@ describe("guest gifting page", () => {
       expect(fixtures.checkout).toHaveBeenCalledWith({
         data: expect.objectContaining({
           foodieId: "CD050619",
+          recipientName: "Chioma",
           kind: "wallet",
           expectedAmountKobo: 1000000,
           sponsorName: "Mum",
