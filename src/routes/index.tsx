@@ -96,11 +96,8 @@ function Landing() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link to="/auth" search={{}}>Sign in</Link>
-            </Button>
             <Button asChild className="rounded-full">
-              <Link to="/auth" search={{}}>Get started</Link>
+              <Link to="/auth" search={{}}>Sign in</Link>
             </Button>
           </div>
         </div>
