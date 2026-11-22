@@ -14,27 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      web_push_vapid_keys: {
-        Row: {
-          created_at: string
-          id: boolean
-          private_key: string
-          public_key: string
-        }
-        Insert: {
-          created_at?: string
-          id?: boolean
-          private_key: string
-          public_key: string
-        }
-        Update: {
-          created_at?: string
-          id?: boolean
-          private_key?: string
-          public_key?: string
-        }
-        Relationships: []
-      }
       audit_logs: {
         Row: {
           action: string
@@ -528,48 +507,6 @@ export type Database = {
           },
         ]
       }
-      meal_entitlements: {
-        Row: {
-          allowance: number
-          customer_id: string
-          id: string
-          redeemed: number
-          service_date: string
-          subscription_id: string
-        }
-        Insert: {
-          allowance: number
-          customer_id: string
-          id?: string
-          redeemed?: number
-          service_date: string
-          subscription_id: string
-        }
-        Update: {
-          allowance?: number
-          customer_id?: string
-          id?: string
-          redeemed?: number
-          service_date?: string
-          subscription_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meal_entitlements_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meal_entitlements_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       manager_push_subscriptions: {
         Row: {
           auth: string
@@ -617,6 +554,48 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_entitlements: {
+        Row: {
+          allowance: number
+          customer_id: string
+          id: string
+          redeemed: number
+          service_date: string
+          subscription_id: string
+        }
+        Insert: {
+          allowance: number
+          customer_id: string
+          id?: string
+          redeemed?: number
+          service_date: string
+          subscription_id: string
+        }
+        Update: {
+          allowance?: number
+          customer_id?: string
+          id?: string
+          redeemed?: number
+          service_date?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_entitlements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_entitlements_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -1021,12 +1000,12 @@ export type Database = {
           delivery_fee_kobo: number
           id: string
           location: string | null
+          manager_push_policy: string
           meal_cap_kobo: number
           name: string
           price_edit_locked: boolean
           status: string
           subscription_meal_cap_kobo: number
-          manager_push_policy: "on" | "off" | "locked"
         }
         Insert: {
           address?: string | null
@@ -1037,12 +1016,12 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          manager_push_policy?: string
           meal_cap_kobo?: number
           name: string
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
-          manager_push_policy?: "on" | "off" | "locked"
         }
         Update: {
           address?: string | null
@@ -1053,12 +1032,12 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          manager_push_policy?: string
           meal_cap_kobo?: number
           name?: string
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
-          manager_push_policy?: "on" | "off" | "locked"
         }
         Relationships: []
       }
@@ -1551,6 +1530,27 @@ export type Database = {
           },
         ]
       }
+      web_push_vapid_keys: {
+        Row: {
+          created_at: string
+          id: boolean
+          private_key: string
+          public_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          private_key: string
+          public_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          private_key?: string
+          public_key?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1613,12 +1613,12 @@ export type Database = {
         Args: { p_cap_kobo: number; p_outlet_id: string }
         Returns: Json
       }
-      admin_set_outlet_push_policy: {
-        Args: { p_outlet_id: string; p_policy: "on" | "off" | "locked" }
-        Returns: Json
-      }
       admin_set_outlet_price_edit_lock: {
         Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_set_outlet_push_policy: {
+        Args: { p_outlet_id: string; p_policy: string }
         Returns: Json
       }
       admin_update_outlet_details: {
