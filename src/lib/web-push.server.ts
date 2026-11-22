@@ -1,11 +1,8 @@
 import {
   createECDH,
   createCipheriv,
-  createPrivateKey,
-  createSign,
   hkdfSync,
   randomBytes,
-  type KeyObject,
 } from "node:crypto";
 
 type PushSubscription = {
@@ -47,33 +44,27 @@ function hkdf(ikm: Uint8Array, salt: Uint8Array, info: Uint8Array, length: numbe
   );
 }
 
-function vapidKeyPair(privateKeyValue: string): {
-  privateKey: KeyObject;
-  publicKey: Buffer;
-  publicKeyEncoded: string;
-} {
+function vapidPublicKey(privateKeyValue: string): string {
+  const privateBytes = decodeBase64Url(privateKeyValue);
+  if (privateBytes.length !== 32)
+    throw new Error("VAPID_PRIVATE_KEY must be a base64url-encoded P-256 private key");
+  const ecdh = createECDH("prime256v1");
+  ecdh.setPrivateKey(privateBytes);
+  return base64Url(ecdh.getPublicKey(undefined, "uncompressed"));
+}
+
+export async function vapidAuthorization(
+  endpoint: string,
+  privateKeyValue: string,
+  subject: string,
+): Promise<string> {
+  const endpointUrl = new URL(endpoint);
   const privateBytes = decodeBase64Url(privateKeyValue);
   if (privateBytes.length !== 32)
     throw new Error("VAPID_PRIVATE_KEY must be a base64url-encoded P-256 private key");
   const ecdh = createECDH("prime256v1");
   ecdh.setPrivateKey(privateBytes);
   const publicKey = ecdh.getPublicKey(undefined, "uncompressed");
-  const privateKey = createPrivateKey({
-    key: {
-      kty: "EC",
-      crv: "P-256",
-      d: base64Url(privateBytes),
-      x: base64Url(publicKey.subarray(1, 33)),
-      y: base64Url(publicKey.subarray(33, 65)),
-    },
-    format: "jwk",
-  });
-  return { privateKey, publicKey, publicKeyEncoded: base64Url(publicKey) };
-}
-
-export function vapidAuthorization(endpoint: string, privateKeyValue: string, subject: string): string {
-  const endpointUrl = new URL(endpoint);
-  const keys = vapidKeyPair(privateKeyValue);
   const header = base64Url(textEncoder.encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
   const payload = base64Url(
     textEncoder.encode(
@@ -85,12 +76,25 @@ export function vapidAuthorization(endpoint: string, privateKeyValue: string, su
     ),
   );
   const unsigned = `${header}.${payload}`;
-  const signer = createSign("SHA256");
-  signer.update(unsigned);
-  signer.end();
-  const signature = signer.sign({ key: keys.privateKey, dsaEncoding: "ieee-p1363" });
+  // Web Crypto works in the production server runtime; Node KeyObjects do not.
+  const key = await crypto.subtle.importKey(
+    "jwk",
+    {
+      kty: "EC",
+      crv: "P-256",
+      d: base64Url(privateBytes),
+      x: base64Url(publicKey.subarray(1, 33)),
+      y: base64Url(publicKey.subarray(33, 65)),
+    },
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"],
+  );
+  const signature = new Uint8Array(
+    await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, textEncoder.encode(unsigned)),
+  );
   // RFC 8292: t= carries the full signed JWT (header.payload.signature).
-  return `vapid t=${unsigned}.${base64Url(signature)}, k=${keys.publicKeyEncoded}`;
+  return `vapid t=${unsigned}.${base64Url(signature)}, k=${base64Url(publicKey)}`;
 }
 
 async function getVapidConfig(): Promise<VapidConfig> {
@@ -100,7 +104,7 @@ async function getVapidConfig(): Promise<VapidConfig> {
   if (configuredPrivateKey) {
     return {
       privateKey: configuredPrivateKey,
-      publicKey: vapidKeyPair(configuredPrivateKey).publicKeyEncoded,
+      publicKey: vapidPublicKey(configuredPrivateKey),
       subject,
     };
   }
@@ -195,7 +199,7 @@ export async function sendWebPush(
   const response = await fetch(subscription.endpoint, {
     method: "POST",
     headers: {
-      Authorization: vapidAuthorization(subscription.endpoint, privateKey, subject),
+      Authorization: await vapidAuthorization(subscription.endpoint, privateKey, subject),
       TTL: "300",
       "Content-Type": "application/octet-stream",
       "Content-Encoding": "aes128gcm",

@@ -6,10 +6,10 @@ import { describePushTestResult } from "@/lib/push-test-result";
 const b64url = (b: Buffer) => b.toString("base64url");
 
 describe("VAPID authorization header", () => {
-  it("sends a full three-part signed JWT that verifies with the public key", () => {
+  it("sends a full three-part signed JWT that verifies with the public key", async () => {
     const ecdh = createECDH("prime256v1");
     ecdh.generateKeys();
-    const header = vapidAuthorization(
+    const header = await vapidAuthorization(
       "https://fcm.googleapis.com/fcm/send/abc",
       b64url(ecdh.getPrivateKey()),
       "mailto:test@campusdelight.net",
