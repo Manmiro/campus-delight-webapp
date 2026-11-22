@@ -71,7 +71,7 @@ function vapidKeyPair(privateKeyValue: string): {
   return { privateKey, publicKey, publicKeyEncoded: base64Url(publicKey) };
 }
 
-function vapidAuthorization(endpoint: string, privateKeyValue: string, subject: string): string {
+export function vapidAuthorization(endpoint: string, privateKeyValue: string, subject: string): string {
   const endpointUrl = new URL(endpoint);
   const keys = vapidKeyPair(privateKeyValue);
   const header = base64Url(textEncoder.encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
@@ -89,7 +89,8 @@ function vapidAuthorization(endpoint: string, privateKeyValue: string, subject: 
   signer.update(unsigned);
   signer.end();
   const signature = signer.sign({ key: keys.privateKey, dsaEncoding: "ieee-p1363" });
-  return `vapid t=${base64Url(signature)}, k=${keys.publicKeyEncoded}`;
+  // RFC 8292: t= carries the full signed JWT (header.payload.signature).
+  return `vapid t=${unsigned}.${base64Url(signature)}, k=${keys.publicKeyEncoded}`;
 }
 
 async function getVapidConfig(): Promise<VapidConfig> {
