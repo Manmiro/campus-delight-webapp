@@ -14,6 +14,12 @@ type PushSubscription = {
   auth: string;
 };
 
+type VapidConfig = {
+  privateKey: string;
+  publicKey: string;
+  subject: string;
+};
+
 const textEncoder = new TextEncoder();
 
 function base64Url(value: Uint8Array): string {
@@ -86,6 +92,58 @@ function vapidAuthorization(endpoint: string, privateKeyValue: string, subject: 
   return `vapid t=${base64Url(signature)}, k=${keys.publicKeyEncoded}`;
 }
 
+async function getVapidConfig(): Promise<VapidConfig> {
+  const configuredPrivateKey = process.env["VAPID_PRIVATE_KEY"];
+  const subject = process.env["VAPID_SUBJECT"] ?? "mailto:notifications@campusdelight.net";
+
+  if (configuredPrivateKey) {
+    return {
+      privateKey: configuredPrivateKey,
+      publicKey: vapidKeyPair(configuredPrivateKey).publicKeyEncoded,
+      subject,
+    };
+  }
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: existing, error: readError } = await supabaseAdmin
+    .from("web_push_vapid_keys")
+    .select("public_key, private_key")
+    .eq("id", true)
+    .maybeSingle();
+  if (readError) throw new Error(`Unable to load push encryption keys: ${readError.message}`);
+  if (existing)
+    return { privateKey: existing.private_key, publicKey: existing.public_key, subject };
+
+  const ecdh = createECDH("prime256v1");
+  ecdh.generateKeys();
+  const privateKey = base64Url(ecdh.getPrivateKey());
+  const publicKey = base64Url(ecdh.getPublicKey(undefined, "uncompressed"));
+  const { error: insertError } = await supabaseAdmin.from("web_push_vapid_keys").insert({
+    id: true,
+    public_key: publicKey,
+    private_key: privateKey,
+  });
+
+  if (insertError && insertError.code !== "23505")
+    throw new Error(`Unable to initialize push encryption keys: ${insertError.message}`);
+  if (!insertError) return { privateKey, publicKey, subject };
+
+  const { data: raced, error: racedReadError } = await supabaseAdmin
+    .from("web_push_vapid_keys")
+    .select("public_key, private_key")
+    .eq("id", true)
+    .single();
+  if (racedReadError || !raced)
+    throw new Error(
+      `Unable to load initialized push encryption keys: ${racedReadError?.message ?? "missing key"}`,
+    );
+  return { privateKey: raced.private_key, publicKey: raced.public_key, subject };
+}
+
+export async function getVapidPublicKey(): Promise<string> {
+  return (await getVapidConfig()).publicKey;
+}
+
 /** RFC 8291 / RFC 8188 aes128gcm payload encryption for browser PushManager subscriptions. */
 function encryptPayload(subscription: PushSubscription, payload: string): Buffer {
   const clientPublicKey = decodeBase64Url(subscription.p256dh);
@@ -131,10 +189,7 @@ export async function sendWebPush(
   subscription: PushSubscription,
   payload: unknown,
 ): Promise<"sent" | "gone"> {
-  const privateKey = process.env["VAPID_PRIVATE_KEY"];
-  const subject = process.env["VAPID_SUBJECT"];
-  if (!privateKey || !subject)
-    throw new Error("VAPID_PRIVATE_KEY and VAPID_SUBJECT are required for push notifications");
+  const { privateKey, subject } = await getVapidConfig();
   const body = encryptPayload(subscription, JSON.stringify(payload));
   const response = await fetch(subscription.endpoint, {
     method: "POST",

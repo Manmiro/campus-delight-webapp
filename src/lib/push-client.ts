@@ -1,3 +1,5 @@
+import { getVapidPublicKey } from "@/lib/push.functions";
+
 function decodeApplicationServerKey(value: string): ArrayBuffer {
   const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
   const binary = window.atob(normalized + "=".repeat((4 - (normalized.length % 4)) % 4));
@@ -24,8 +26,8 @@ export function pushIsSupported() {
 export async function registerBrowserPush(): Promise<BrowserPushSubscription> {
   if (!pushIsSupported())
     throw new Error("This browser does not support lock-screen notifications");
-  const publicKey = import.meta.env["VITE_VAPID_PUBLIC_KEY"] as string | undefined;
-  if (!publicKey) throw new Error("Push notifications are not configured yet");
+  const configuredPublicKey = import.meta.env["VITE_VAPID_PUBLIC_KEY"] as string | undefined;
+  const publicKey = configuredPublicKey ?? (await getVapidPublicKey()).publicKey;
   const permission = await Notification.requestPermission();
   if (permission !== "granted")
     throw new Error("Allow notifications in your browser settings to enable lock-screen alerts");

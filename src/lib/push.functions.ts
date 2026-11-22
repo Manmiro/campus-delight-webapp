@@ -13,6 +13,13 @@ const subscriptionInput = z.object({
 
 type PushAuthContext = { supabase: SupabaseClient<Database> };
 
+export const getVapidPublicKey = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { getVapidPublicKey: loadVapidPublicKey } = await import("@/lib/web-push.server");
+    return { publicKey: await loadVapidPublicKey() };
+  });
+
 async function isCentralAdmin(context: PushAuthContext) {
   const { data, error } = await context.supabase.rpc("is_central_admin");
   if (error) throw new Error(error.message);
