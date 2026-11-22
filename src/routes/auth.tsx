@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Gift, Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ const GOLDEN_FIELD_CLASS =
 export const Route = createFileRoute("/auth")({
   ...searchSchema,
   loader: ({ context }) => {
-    context.queryClient.setQueryData(outletsQuery.queryKey, []);
+    void context.queryClient.prefetchQuery(outletsQuery);
     return [];
   },
   head: () => ({
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { data: outlets } = useSuspenseQuery(outletsQuery);
+  const { data: outlets = [], isLoading: outletsLoading } = useQuery(outletsQuery);
   const search = Route.useSearch();
   const initialMode = search["mode"];
   const ref = search["ref"] ?? "";
@@ -373,7 +373,7 @@ function AuthPage() {
                   <Label htmlFor="outlet">Your preferred outlet <Required /></Label>
                   <Select value={outletId} onValueChange={(v) => { setOutletId(v); clearError("outletId"); }} required>
                     <SelectTrigger id="outlet" className={`w-full ${GOLDEN_FIELD_CLASS}`} aria-required="true" aria-invalid={Boolean(errors.outletId)}>
-                      <SelectValue placeholder="Select your outlet" />
+                      <SelectValue placeholder={outletsLoading ? "Loading outlets…" : "Select your outlet"} />
                     </SelectTrigger>
                     <SelectContent>
                       {outlets.map((o) => (

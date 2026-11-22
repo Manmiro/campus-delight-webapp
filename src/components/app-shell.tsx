@@ -62,7 +62,7 @@ export function AppShell({
     </nav>
   );
 
-  const doSignOut = () => void signOut(queryClient, () => navigate({ to: "/auth", search: {}, replace: true }));
+  const doSignOut = () => void signOut(queryClient, () => navigate({ to: "/", replace: true }));
 
   return (
     <div className="min-h-screen bg-canvas">

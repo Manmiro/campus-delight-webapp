@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated")({
     const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", data.user.id).maybeSingle();
     if (profile?.is_active === false) {
       await supabase.auth.signOut();
-      throw redirect({ to: "/auth", search: { mode: "signin", ref: "" } });
+      throw redirect({ to: "/" });
     }
   },
   component: () => <Outlet />,
