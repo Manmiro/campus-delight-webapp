@@ -63,7 +63,7 @@ export async function paystackVerify(reference: string) {
 }
 
 export async function applyVerifiedPayment(reference: string) {
-  const { data: tx, error } = await db.from("payment_transactions").select("amount_kobo,purpose").eq("paystack_reference", reference).maybeSingle();
+  const { data: tx, error } = await db.from("payment_transactions").select("amount_kobo,purpose,related_id").eq("paystack_reference", reference).maybeSingle();
   if (error) throw new Error(error.message);
   if (!tx) return { applied: false, status: "unknown_reference", purpose: null };
   const verified = await paystackVerify(reference);
@@ -76,6 +76,14 @@ export async function applyVerifiedPayment(reference: string) {
   if (settlement.applied || settlement.already) {
     const { emailPayment, tryTransactionEmail } = await import('./transaction-emails.server');
     await tryTransactionEmail(() => emailPayment(reference));
+    if (tx.purpose === "order_payment" && tx.related_id) {
+      try {
+        const { dispatchConfirmedOrderPush } = await import("./push-dispatcher.server");
+        await dispatchConfirmedOrderPush(tx.related_id);
+      } catch (error) {
+        console.warn("Order push dispatch unavailable", error instanceof Error ? error.message : error);
+      }
+    }
   }
   return settlement;
 }

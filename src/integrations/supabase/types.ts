@@ -549,6 +549,57 @@ export type Database = {
           },
         ]
       }
+      manager_push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          enabled: boolean
+          endpoint: string
+          id: string
+          outlet_id: string
+          p256dh: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          enabled?: boolean
+          endpoint: string
+          id?: string
+          outlet_id: string
+          p256dh: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          enabled?: boolean
+          endpoint?: string
+          id?: string
+          outlet_id?: string
+          p256dh?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_push_subscriptions_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           category: string
@@ -954,6 +1005,7 @@ export type Database = {
           price_edit_locked: boolean
           status: string
           subscription_meal_cap_kobo: number
+          manager_push_policy: "on" | "off" | "locked"
         }
         Insert: {
           address?: string | null
@@ -969,6 +1021,7 @@ export type Database = {
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
+          manager_push_policy?: "on" | "off" | "locked"
         }
         Update: {
           address?: string | null
@@ -984,6 +1037,7 @@ export type Database = {
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
+          manager_push_policy?: "on" | "off" | "locked"
         }
         Relationships: []
       }
@@ -1536,6 +1590,10 @@ export type Database = {
       }
       admin_set_outlet_meal_cap: {
         Args: { p_cap_kobo: number; p_outlet_id: string }
+        Returns: Json
+      }
+      admin_set_outlet_push_policy: {
+        Args: { p_outlet_id: string; p_policy: "on" | "off" | "locked" }
         Returns: Json
       }
       admin_set_outlet_price_edit_lock: {

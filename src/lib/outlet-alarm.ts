@@ -1,8 +1,34 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-export function outletOrderAlarmMessage(customerName: string | null | undefined, outletId: string): string {
+export function outletOrderAlarmMessage(
+  customerName: string | null | undefined,
+  outletId: string,
+): string {
   return `Hello manager, there is a new order from ${customerName?.trim() || "a customer"} at outlet ID ${outletId}.`;
+}
+
+export const outletOrderAnnouncement = "You have a new Campus Delight order, check and fulfill.";
+
+/** Speak after a user gesture or an active dashboard receives an order alert. */
+export function announceNewOutletOrder(): void {
+  try {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(outletOrderAnnouncement);
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice =
+      voices.find((voice) =>
+        /female|samantha|zira|aria|jenny|ava|google us english/i.test(voice.name),
+      ) ?? voices.find((voice) => voice.lang.toLowerCase().startsWith("en"));
+    if (preferredVoice) utterance.voice = preferredVoice;
+    utterance.rate = 0.9;
+    utterance.pitch = 1.08;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    // Voice is an enhancement; the push banner, vibration, and chime remain available.
+  }
 }
 
 type BrowserWindow = Window & {
@@ -13,7 +39,8 @@ let alarmAudioContext: AudioContext | null = null;
 
 function getAlarmAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
-  const AudioContextConstructor = window.AudioContext ?? (window as BrowserWindow).webkitAudioContext;
+  const AudioContextConstructor =
+    window.AudioContext ?? (window as BrowserWindow).webkitAudioContext;
   if (!AudioContextConstructor) return null;
   alarmAudioContext ??= new AudioContextConstructor();
   return alarmAudioContext;
@@ -121,11 +148,12 @@ export function useOutletOrderAlarmListener({
       const message = outletOrderAlarmMessage(order.customer?.full_name, outletId);
       toast.info(message, { duration: 12_000 });
       try {
-        navigator.vibrate?.([220, 100, 220]);
+        navigator.vibrate?.([250, 120, 250]);
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("New Campus Delight order", { body: message });
         }
         void playOutletOrderAlarmChime();
+        announceNewOutletOrder();
       } catch {
         // Browser notification/audio permissions are optional; the toast remains visible.
       }

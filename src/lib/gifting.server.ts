@@ -223,6 +223,15 @@ export async function settleGift(
       settlement.emailStatus = "unavailable";
       if (retryEmailOnFailure) throw new Error("Gift settled; confirmation email needs retry");
     }
+    try {
+      const { data: gift } = await giftDb.from("gift_payments").select("related_id,kind").eq("reference", reference).maybeSingle();
+      if (gift?.kind === "meal" && gift.related_id) {
+        const { dispatchConfirmedOrderPush } = await import("./push-dispatcher.server");
+        await dispatchConfirmedOrderPush(gift.related_id);
+      }
+    } catch (error) {
+      console.warn("Gift order push dispatch unavailable", error instanceof Error ? error.message : error);
+    }
   }
   return settlement;
 }

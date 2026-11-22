@@ -5,6 +5,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { profileQuery } from "@/lib/queries";
 import { OutletOrderAlarmControls } from "@/components/outlet-order-alarm";
+import { HeadquartersPushNotificationCard, type PushOutlet } from "@/components/manager-push-notifications";
 import { Activity, Building2, CalendarDays, CreditCard, Landmark, MapPin, MessageSquare, Search, Settings, Users, Vote, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +71,14 @@ const auditQuery = queryOptions({
     return data ?? [];
   },
 });
+const pushOutletsQuery = queryOptions({
+  queryKey: ["admin", "push-outlets"],
+  queryFn: async (): Promise<PushOutlet[]> => {
+    const { data, error } = await supabase.from("outlets").select("id, name, manager_push_policy").order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as PushOutlet[];
+  },
+});
 
 function AdminOverview() {
   const { data: outletCount } = useSuspenseQuery(outletsQuery);
@@ -80,6 +89,7 @@ function AdminOverview() {
   const { data: tokens } = useSuspenseQuery(tokensQuery);
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: audit } = useQuery(auditQuery);
+  const { data: pushOutlets } = useQuery(pushOutletsQuery);
 
   const activeSubs = subs.filter((s) => s.status === "active");
   const subRevenue = activeSubs.reduce((a, s) => a + s.price_kobo, 0);
@@ -175,6 +185,7 @@ function AdminOverview() {
       </section>
 
       <OutletOrderAlarmControls isCentralAdmin enabled={profile.outlet_order_alarm_enabled ?? true} />
+      <HeadquartersPushNotificationCard outlets={pushOutlets ?? []} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         {/* Loan health */}

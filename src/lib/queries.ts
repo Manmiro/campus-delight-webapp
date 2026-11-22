@@ -17,7 +17,7 @@ export const staffAssignmentQuery = queryOptions({
     const id = await getUserId();
     const { data, error } = await supabase
       .from("outlet_staff")
-      .select("outlet_id, staff_role, outlet:outlets(id, name, code, location, status, price_edit_locked)")
+      .select("outlet_id, staff_role, outlet:outlets(id, name, code, location, status, price_edit_locked, manager_push_policy)")
       .eq("user_id", id)
       .limit(1)
       .maybeSingle();

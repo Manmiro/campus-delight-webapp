@@ -1,14 +1,26 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  ClipboardList, Home, LayoutDashboard, MessageSquare, ShoppingBag, Users, UtensilsCrossed, BarChart3, UserCog,
+  ClipboardList,
+  Home,
+  LayoutDashboard,
+  MessageSquare,
+  ShoppingBag,
+  Users,
+  UtensilsCrossed,
+  BarChart3,
+  UserCog,
 } from "lucide-react";
 import { getMyRole } from "@/lib/roles.functions";
 import { personalDashboardLink } from "@/lib/role-nav";
 import { staffAssignmentQuery, outletOrdersQuery, profileQuery } from "@/lib/queries";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { unlockOutletOrderAlarmAudio, useOutletOrderAlarmListener } from "@/lib/outlet-alarm";
+import {
+  announceNewOutletOrder,
+  unlockOutletOrderAlarmAudio,
+  useOutletOrderAlarmListener,
+} from "@/lib/outlet-alarm";
 import { AppShell, type NavItem } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated/outlet")({
@@ -23,9 +35,17 @@ export const Route = createFileRoute("/_authenticated/outlet")({
 
 const nav: NavItem[] = [
   { to: "/outlet", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" />, exact: true },
-  { to: "/outlet/orders", label: "Orders & Fulfillment", icon: <ClipboardList className="h-4 w-4" /> },
+  {
+    to: "/outlet/orders",
+    label: "Orders & Fulfillment",
+    icon: <ClipboardList className="h-4 w-4" />,
+  },
   { to: "/outlet/menu", label: "Menu & Pricing", icon: <UtensilsCrossed className="h-4 w-4" /> },
-  { to: "/outlet/subscriptions", label: "Subscriptions", icon: <ShoppingBag className="h-4 w-4" /> },
+  {
+    to: "/outlet/subscriptions",
+    label: "Subscriptions",
+    icon: <ShoppingBag className="h-4 w-4" />,
+  },
   { to: "/outlet/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
   { to: "/outlet/staff", label: "Staff", icon: <UserCog className="h-4 w-4" /> },
   { to: "/outlet/reports", label: "Reports", icon: <BarChart3 className="h-4 w-4" /> },
@@ -59,12 +79,39 @@ function OutletOrderAlarmListener() {
   });
 
   useEffect(() => {
+    const serviceWorker = navigator.serviceWorker;
+    const announceFromPush = (event: MessageEvent<{ type?: string }>) => {
+      if (
+        event.data?.type === "campus-delight-order-opened" ||
+        event.data?.type === "campus-delight-order-push"
+      ) {
+        announceNewOutletOrder();
+      }
+    };
+    serviceWorker?.addEventListener("message", announceFromPush);
+
+    const pushOrder = new URLSearchParams(window.location.search).get("pushOrder");
+    if (pushOrder) {
+      announceNewOutletOrder();
+      const url = new URL(window.location.href);
+      url.searchParams.delete("pushOrder");
+      window.history.replaceState({}, "", url);
+    }
+
+    return () => serviceWorker?.removeEventListener("message", announceFromPush);
+  }, []);
+
+  useEffect(() => {
     if (!outletId) return;
     const channel = supabase
       .channel(`outlet-orders:${outletId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `outlet_id=eq.${outletId}` }, () => {
-        void queryClient.invalidateQueries({ queryKey: outletOrdersQuery(outletId).queryKey });
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `outlet_id=eq.${outletId}` },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: outletOrdersQuery(outletId).queryKey });
+        },
+      )
       .subscribe();
 
     return () => {
@@ -73,7 +120,9 @@ function OutletOrderAlarmListener() {
   }, [outletId, queryClient]);
 
   useEffect(() => {
-    const unlock = () => { void unlockOutletOrderAlarmAudio(); };
+    const unlock = () => {
+      void unlockOutletOrderAlarmAudio();
+    };
     window.addEventListener("pointerdown", unlock, { once: true, passive: true });
     window.addEventListener("keydown", unlock, { once: true });
     return () => {

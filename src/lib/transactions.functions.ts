@@ -39,7 +39,17 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
       const { data: order } = await context.supabase.from('orders').select('reference').eq('id', orderId).maybeSingle();
       reference = order?.reference ?? null;
     }
+    let pushStatus: { sent: number; gone: number; failed: number; skipped?: boolean } = { sent: 0, gone: 0, failed: 0, skipped: true };
+    if (orderId) {
+      try {
+        const { dispatchConfirmedOrderPush } = await import('./push-dispatcher.server');
+        pushStatus = await dispatchConfirmedOrderPush(orderId);
+      } catch (error) {
+        console.warn('Order push dispatch unavailable', error instanceof Error ? error.message : error);
+      }
+    }
     return { ok: true, emailStatus, orderId, reference,
+      pushStatus,
       foodKobo: Number(tx['food_kobo']), totalKobo: Number(tx['total_kobo']),
       deliveryFeeKobo: Number(tx['delivery_fee_kobo']),
       mealPlanCoveredKobo: Number(tx['meal_plan_covered_kobo']), mealCopayKobo: Number(tx['meal_copay_kobo']),
