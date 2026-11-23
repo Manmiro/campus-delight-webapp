@@ -365,6 +365,13 @@
       "when": 1794536000001,
       "tag": "0052_scope_menu_item_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1795448294713,
+      "tag": "0053_telegram_order_alerts",
+      "breakpoints": true
     }
   ]
 }

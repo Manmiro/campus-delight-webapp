@@ -923,6 +923,44 @@ export type Database = {
           },
         ]
       }
+      outlet_telegram_chats: {
+        Row: {
+          chat_id: number
+          chat_title: string | null
+          chat_type: string
+          created_at: string
+          id: string
+          linked_by: string | null
+          outlet_id: string
+        }
+        Insert: {
+          chat_id: number
+          chat_title?: string | null
+          chat_type: string
+          created_at?: string
+          id?: string
+          linked_by?: string | null
+          outlet_id: string
+        }
+        Update: {
+          chat_id?: number
+          chat_title?: string | null
+          chat_type?: string
+          created_at?: string
+          id?: string
+          linked_by?: string | null
+          outlet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_telegram_chats_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outlet_transfer_applications: {
         Row: {
           completed_at: string | null
@@ -1300,6 +1338,64 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_link_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          outlet_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          outlet_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          outlet_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_link_codes_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_order_alert_claims: {
+        Row: {
+          claimed_at: string
+          order_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          order_id: string
+        }
+        Update: {
+          claimed_at?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_order_alert_claims_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       token_accounts: {
         Row: {
           available_tokens: number
@@ -1665,6 +1761,10 @@ export type Database = {
       consume_request_budget: {
         Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
+      }
+      consume_telegram_link_code: {
+        Args: { p_code_hash: string }
+        Returns: string
       }
       credit_purchased_tokens: {
         Args: { p_amount: number; p_customer: string; p_reference: string }
