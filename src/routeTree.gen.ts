@@ -56,6 +56,7 @@ import { Route as ApiInternalPingramAuthEmailRouteImport } from './routes/api/in
 import { Route as ApiPublicJobsBirthdayGreetingsRouteImport } from './routes/api/public/jobs/birthday-greetings'
 import { Route as ApiPublicJobsLoanRemindersRouteImport } from './routes/api/public/jobs/loan-reminders'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack.webhook'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram.webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -325,6 +326,12 @@ const ApiPublicPaystackWebhookRoute =
     path: '/api/public/paystack/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -388,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/api/public/jobs/birthday-greetings': typeof ApiPublicJobsBirthdayGreetingsRoute
   '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -436,6 +444,7 @@ export interface FileRoutesByTo {
   '/api/public/jobs/birthday-greetings': typeof ApiPublicJobsBirthdayGreetingsRoute
   '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -489,6 +498,7 @@ export interface FileRoutesById {
   '/api/public/jobs/birthday-greetings': typeof ApiPublicJobsBirthdayGreetingsRoute
   '/api/public/jobs/loan-reminders': typeof ApiPublicJobsLoanRemindersRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -541,6 +551,7 @@ export interface FileRouteTypes {
     | '/api/public/jobs/birthday-greetings'
     | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
+    | '/api/public/telegram/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -589,6 +600,7 @@ export interface FileRouteTypes {
     | '/api/public/jobs/birthday-greetings'
     | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
+    | '/api/public/telegram/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -641,6 +653,7 @@ export interface FileRouteTypes {
     | '/api/public/jobs/birthday-greetings'
     | '/api/public/jobs/loan-reminders'
     | '/api/public/paystack/webhook'
+    | '/api/public/telegram/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -660,6 +673,7 @@ export interface RootRouteChildren {
   ApiPublicJobsBirthdayGreetingsRoute: typeof ApiPublicJobsBirthdayGreetingsRoute
   ApiPublicJobsLoanRemindersRoute: typeof ApiPublicJobsLoanRemindersRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -996,6 +1010,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -1143,6 +1164,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicJobsBirthdayGreetingsRoute: ApiPublicJobsBirthdayGreetingsRoute,
   ApiPublicJobsLoanRemindersRoute: ApiPublicJobsLoanRemindersRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

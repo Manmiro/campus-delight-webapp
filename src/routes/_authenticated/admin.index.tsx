@@ -6,6 +6,7 @@ import { naira, tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { profileQuery } from "@/lib/queries";
 import { OutletOrderAlarmControls } from "@/components/outlet-order-alarm";
 import { HeadquartersPushNotificationCard, type PushOutlet } from "@/components/manager-push-notifications";
+import { HeadquartersTelegramCard } from "@/components/telegram-notifications";
 import { Activity, Building2, CalendarDays, CreditCard, Landmark, MapPin, MessageSquare, Search, Settings, Users, Vote, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,6 +80,14 @@ const pushOutletsQuery = queryOptions({
     return (data ?? []) as PushOutlet[];
   },
 });
+const telegramOutletsQuery = queryOptions({
+  queryKey: ["admin", "telegram-outlets"],
+  queryFn: async (): Promise<{ id: string; name: string }[]> => {
+    const { data, error } = await supabase.from("outlets").select("id, name").order("name");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+});
 
 function AdminOverview() {
   const { data: outletCount } = useSuspenseQuery(outletsQuery);
@@ -90,6 +99,7 @@ function AdminOverview() {
   const { data: profile } = useSuspenseQuery(profileQuery);
   const { data: audit } = useQuery(auditQuery);
   const { data: pushOutlets } = useQuery(pushOutletsQuery);
+  const { data: telegramOutlets } = useQuery(telegramOutletsQuery);
 
   const activeSubs = subs.filter((s) => s.status === "active");
   const subRevenue = activeSubs.reduce((a, s) => a + s.price_kobo, 0);
@@ -186,6 +196,7 @@ function AdminOverview() {
 
       <OutletOrderAlarmControls isCentralAdmin enabled={profile.outlet_order_alarm_enabled ?? true} />
       <HeadquartersPushNotificationCard outlets={pushOutlets ?? []} />
+      <HeadquartersTelegramCard outlets={telegramOutlets ?? []} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         {/* Loan health */}

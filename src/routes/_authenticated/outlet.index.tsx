@@ -5,6 +5,7 @@ import { naira } from "@/lib/format";
 import { StatCard, PageLoader } from "@/components/bits";
 import { OutletOrderAlarmControls } from "@/components/outlet-order-alarm";
 import { ManagerPushNotificationCard } from "@/components/manager-push-notifications";
+import { ManagerTelegramCard } from "@/components/telegram-notifications";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +52,7 @@ function OutletOverview() {
 
       <OutletOrderAlarmControls isManager={isManager} enabled={profile.outlet_order_alarm_enabled ?? true} />
       {isManager && <ManagerPushNotificationCard outletId={outletId} outletName={assignment.outlet?.name ?? "your outlet"} policy={assignment.outlet?.manager_push_policy ?? "on"} isManager />}
+      {isManager && <ManagerTelegramCard outletId={outletId} outletName={assignment.outlet?.name ?? "your outlet"} />}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

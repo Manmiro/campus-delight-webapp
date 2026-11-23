@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      telegram_link_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          outlet_id: string
+          purpose: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          outlet_id: string
+          purpose: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          outlet_id?: string
+          purpose?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_chats: {
+        Row: {
+          active: boolean
+          chat_id: string
+          chat_type: string
+          connected_by: string
+          created_at: string
+          id: string
+          last_seen_at: string
+          outlet_id: string
+          title: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          active?: boolean
+          chat_id: string
+          chat_type: string
+          connected_by: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          outlet_id: string
+          title?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          active?: boolean
+          chat_id?: string
+          chat_type?: string
+          connected_by?: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          outlet_id?: string
+          title?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      telegram_order_alert_claims: {
+        Row: {
+          chat_id: string
+          created_at: string
+          order_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          order_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          order_id?: string
+        }
+        Relationships: []
+      }
       web_push_vapid_keys: {
         Row: {
           created_at: string

@@ -80,8 +80,10 @@ export async function applyVerifiedPayment(reference: string) {
       try {
         const { dispatchConfirmedOrderPush } = await import("./push-dispatcher.server");
         await dispatchConfirmedOrderPush(tx.related_id);
+          const { dispatchConfirmedOrderTelegram } = await import("./telegram.server");
+          await dispatchConfirmedOrderTelegram(tx.related_id);
       } catch (error) {
-        console.warn("Order push dispatch unavailable", error instanceof Error ? error.message : error);
+          console.warn("Order alert dispatch unavailable", error instanceof Error ? error.message : error);
       }
     }
   }

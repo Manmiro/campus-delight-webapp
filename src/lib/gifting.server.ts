@@ -228,9 +228,11 @@ export async function settleGift(
       if (gift?.kind === "meal" && gift.related_id) {
         const { dispatchConfirmedOrderPush } = await import("./push-dispatcher.server");
         await dispatchConfirmedOrderPush(gift.related_id);
+        const { dispatchConfirmedOrderTelegram } = await import("./telegram.server");
+        await dispatchConfirmedOrderTelegram(gift.related_id);
       }
     } catch (error) {
-      console.warn("Gift order push dispatch unavailable", error instanceof Error ? error.message : error);
+      console.warn("Gift order alert dispatch unavailable", error instanceof Error ? error.message : error);
     }
   }
   return settlement;

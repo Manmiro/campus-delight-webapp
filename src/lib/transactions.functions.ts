@@ -48,8 +48,18 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
         console.warn('Order push dispatch unavailable', error instanceof Error ? error.message : error);
       }
     }
+    let telegramStatus: { sent: number; failed: number; registered: number; skipped?: boolean } = { sent: 0, failed: 0, registered: 0, skipped: true };
+    if (orderId) {
+      try {
+        const { dispatchConfirmedOrderTelegram } = await import('./telegram.server');
+        telegramStatus = await dispatchConfirmedOrderTelegram(orderId);
+      } catch (error) {
+        console.warn('Order Telegram dispatch unavailable', error instanceof Error ? error.message : error);
+      }
+    }
     return { ok: true, emailStatus, orderId, reference,
       pushStatus,
+      telegramStatus,
       foodKobo: Number(tx['food_kobo']), totalKobo: Number(tx['total_kobo']),
       deliveryFeeKobo: Number(tx['delivery_fee_kobo']),
       mealPlanCoveredKobo: Number(tx['meal_plan_covered_kobo']), mealCopayKobo: Number(tx['meal_copay_kobo']),
