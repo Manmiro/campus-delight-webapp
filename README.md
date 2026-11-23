@@ -14,6 +14,18 @@ See [gifting rollout notes](drizzle/proposed/feed_someone.md) before enabling ch
 
 ## Telegram kitchen alerts
 
+Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, and a long random `TELEGRAM_WEBHOOK_SECRET` in the server environment, then apply the Telegram migration. Configure the bot webhook once after deployment:
+
+```sh
+curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=https://campus-delight-webapp.lovable.app/api/public/telegram/webhook" \
+  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+```
+
+Managers and headquarters can then use the Telegram cards on their dashboards. `Connect my Telegram` opens a private bot chat, while `Add to kitchen group` opens Telegram's group-add flow. The bot replies to `/start` and only accepts short-lived links issued by an authorized dashboard user.
+
+## Telegram kitchen alerts
+
 Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, and a long random `TELEGRAM_WEBHOOK_SECRET` in the server environment, then apply `drizzle/migrations/0055_telegram_order_alerts.sql`. Configure the bot webhook once after deployment:
 
 ```sh

@@ -1,5 +1,6 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { supabaseAdmin as db } from "@/integrations/supabase/client.server";
+import { orderAlertHtml, parseStartCommand, telegramLinkUrls } from "@/lib/telegram-rules";
 
 type TelegramPurpose = "private" | "group";
 type TelegramChatType = "private" | "group" | "supergroup";
@@ -12,6 +13,7 @@ type TelegramOrder = {
   delivery_address: string | null;
   status: string;
   total_kobo: number;
+  payment_method: string;
   order_items: { item_name: string; quantity: number }[];
   customer: { full_name: string; customer_code: string } | null;
   outlet: { name: string } | null;
@@ -59,29 +61,28 @@ export async function createTelegramConnectionLink(
   purpose: TelegramPurpose,
 ) {
   const username = botUsername();
-  const token = randomBytes(32).toString("base64url");
-  const { error } = await db.from("telegram_link_tokens").insert({
-    token,
-    user_id: userId,
+  const code = `${purpose === "group" ? "g" : "p"}${randomBytes(31).toString("base64url")}`;
+  const codeHash = createHash("sha256").update(code).digest("hex");
+  const { error } = await db.from("telegram_link_codes").insert({
+    code_hash: codeHash,
+    created_by: userId,
     outlet_id: outletId,
-    purpose,
     expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
   });
   if (error) throw new Error(error.message);
-  const parameter = purpose === "group" ? "startgroup" : "start";
+  const urls = telegramLinkUrls(username, code);
   return {
-    url: `https://t.me/${username}?${parameter}=${encodeURIComponent(token)}`,
+    url: purpose === "group" ? urls.groupUrl : urls.personalUrl,
     expiresInMinutes: 15,
   };
 }
 
 export async function getTelegramConnectionStatus(outletId: string, userId?: string) {
   let query = db
-    .from("telegram_chats")
+    .from("outlet_telegram_chats")
     .select("chat_type")
     .eq("outlet_id", outletId)
-    .eq("active", true);
-  if (userId) query = query.eq("connected_by", userId);
+  if (userId) query = query.eq("linked_by", userId);
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   const chats = data ?? [];
@@ -91,59 +92,36 @@ export async function getTelegramConnectionStatus(outletId: string, userId?: str
   };
 }
 
-function orderMessage(order: TelegramOrder) {
-  const items =
-    order.order_items.map((item) => `${item.item_name} ×${item.quantity}`).join(", ") ||
-    "Meal order";
-  const destination =
-    order.fulfillment_method === "delivery"
-      ? order.delivery_address?.trim() || "Delivery address not provided"
-      : `Pickup at ${order.outlet?.name ?? "the outlet"}`;
-  return [
-    "🍽️ New Campus Delight order",
-    order.reference,
-    `Customer: ${order.customer?.full_name ?? "Customer"} (${order.customer?.customer_code ?? "—"})`,
-    `Items: ${items}`,
-    `Destination: ${destination}`,
-    `Total: ₦${(order.total_kobo / 100).toLocaleString("en-NG")}`,
-    "Open the dashboard to fulfill or cancel this order.",
-  ].join("\n");
-}
-
 async function sendToChats(outletId: string, text: string, connectedBy?: string, orderId?: string) {
-  let query = db
-    .from("telegram_chats")
+  const chatsQuery = db
+    .from("outlet_telegram_chats")
     .select("id,chat_id")
-    .eq("outlet_id", outletId)
-    .eq("active", true);
-  if (connectedBy) query = query.eq("connected_by", connectedBy);
+    .eq("outlet_id", outletId);
+  const query = connectedBy ? chatsQuery.eq("linked_by", connectedBy) : chatsQuery;
   const { data, error } = await query;
   if (error) throw new Error(error.message);
+  if (!data?.length) return { sent: 0, failed: 0, registered: 0 };
+
+  if (orderId) {
+    const { error: claimError } = await db
+      .from("telegram_order_alert_claims")
+      .insert({ order_id: orderId });
+    if (claimError?.code === "23505") return { sent: 0, failed: 0, registered: data.length, skipped: true };
+    if (claimError) throw new Error(claimError.message);
+  }
 
   let sent = 0;
   let failed = 0;
   for (const chat of data ?? []) {
-    if (orderId) {
-      const { error: claimError } = await db
-        .from("telegram_order_alert_claims")
-        .insert({ order_id: orderId, chat_id: chat.chat_id });
-      if (claimError?.code === "23505") continue;
-      if (claimError) throw new Error(claimError.message);
-    }
     try {
       await telegramApi("sendMessage", {
         chat_id: chat.chat_id,
         text,
+        parse_mode: "HTML",
         disable_web_page_preview: true,
       });
       sent++;
     } catch (sendError) {
-      if (orderId)
-        await db
-          .from("telegram_order_alert_claims")
-          .delete()
-          .eq("order_id", orderId)
-          .eq("chat_id", chat.chat_id);
       failed++;
       console.warn("Telegram delivery failed", {
         chatId: chat.chat_id,
@@ -158,7 +136,7 @@ export async function dispatchConfirmedOrderTelegram(orderId: string) {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id,reference,outlet_id,fulfillment_method,delivery_address,status,total_kobo,order_items(item_name,quantity),customer:profiles(full_name,customer_code),outlet:outlets(name)",
+      "id,reference,outlet_id,fulfillment_method,delivery_address,status,total_kobo,payment_method,order_items(item_name,quantity),customer:profiles(full_name,customer_code),outlet:outlets(name)",
     )
     .eq("id", orderId)
     .maybeSingle();
@@ -166,7 +144,20 @@ export async function dispatchConfirmedOrderTelegram(orderId: string) {
   const order = data as unknown as TelegramOrder | null;
   if (!order || order.status !== "confirmed")
     return { sent: 0, failed: 0, registered: 0, skipped: true };
-  return sendToChats(order.outlet_id, orderMessage(order), undefined, order.id);
+  return sendToChats(
+    order.outlet_id,
+    orderAlertHtml({
+      reference: order.reference,
+      outletName: order.outlet?.name ?? "the outlet",
+      items: order.order_items,
+      fulfillmentMethod: order.fulfillment_method,
+      deliveryAddress: order.delivery_address,
+      totalKobo: order.total_kobo,
+      paymentMethod: order.payment_method,
+    }),
+    undefined,
+    order.id,
+  );
 }
 
 export async function dispatchTelegramTest(outletId: string, connectedBy?: string) {
@@ -184,10 +175,6 @@ export async function dispatchTelegramTest(outletId: string, connectedBy?: strin
   );
 }
 
-function startPayload(text: string) {
-  return text.trim().match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/i)?.[1] ?? null;
-}
-
 async function reply(chatId: string, text: string) {
   await telegramApi("sendMessage", { chat_id: chatId, text, disable_web_page_preview: true });
 }
@@ -196,11 +183,14 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
   const message = update.message;
   const chat = message?.chat;
   const text = message?.text;
-  if (!chat || !text?.trim() || !text.trim().toLowerCase().startsWith("/start"))
+  if (!chat || !text?.trim())
+    return { handled: false };
+  const parsed = parseStartCommand(text, botUsername());
+  if (!parsed.isStart)
     return { handled: false };
 
   const chatId = String(chat.id);
-  const payload = startPayload(text);
+  const payload = parsed.code;
   if (!payload) {
     await reply(
       chatId,
@@ -210,11 +200,11 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
   }
 
   const { data: link, error: linkError } = await db
-    .from("telegram_link_tokens")
-    .select("token,user_id,outlet_id,purpose,expires_at,consumed_at,outlet:outlets(name)")
-    .eq("token", payload)
+    .from("telegram_link_codes")
+    .select("code_hash,created_by,outlet_id,expires_at,used_at,outlet:outlets(name)")
+    .eq("code_hash", createHash("sha256").update(payload).digest("hex"))
     .gt("expires_at", new Date().toISOString())
-    .is("consumed_at", null)
+    .is("used_at", null)
     .maybeSingle();
   if (linkError) throw new Error(linkError.message);
   if (!link) {
@@ -229,14 +219,14 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
     db
       .from("outlet_staff")
       .select("id")
-      .eq("user_id", link.user_id)
+      .eq("user_id", link.created_by)
       .eq("outlet_id", link.outlet_id)
       .eq("staff_role", "outlet_manager")
       .maybeSingle(),
     db
       .from("user_roles")
       .select("user_id")
-      .eq("user_id", link.user_id)
+      .eq("user_id", link.created_by)
       .eq("role", "central_admin")
       .maybeSingle(),
   ]);
@@ -250,13 +240,14 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
     return { handled: true, connected: false };
   }
 
+  const connectionPurpose = payload.startsWith("g") ? "group" : "private";
   if (
-    (link.purpose === "private" && chat.type !== "private") ||
-    (link.purpose === "group" && chat.type === "private")
+    (connectionPurpose === "private" && chat.type !== "private") ||
+    (connectionPurpose === "group" && chat.type === "private")
   ) {
     await reply(
       chatId,
-      link.purpose === "group"
+      connectionPurpose === "group"
         ? "Please use Add to kitchen group and select the kitchen group in Telegram."
         : "Please open this link in a private chat with the Campus Delight bot.",
     );
@@ -264,12 +255,12 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
   }
 
   const { data: existing, error: existingError } = await db
-    .from("telegram_chats")
-    .select("outlet_id,connected_by")
-    .eq("chat_id", chatId)
-    .maybeSingle();
+      .from("outlet_telegram_chats")
+      .select("outlet_id")
+      .eq("chat_id", Number(chatId))
+      .limit(10);
   if (existingError) throw new Error(existingError.message);
-  if (existing && existing.outlet_id !== link.outlet_id) {
+  if ((existing ?? []).some((row) => row.outlet_id !== link.outlet_id)) {
     await reply(
       chatId,
       "This Telegram chat is already connected to another outlet. Ask headquarters to move it before reconnecting.",
@@ -277,14 +268,11 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
     return { handled: true, connected: false };
   }
 
-  const { data: consumed, error: consumeError } = await db
-    .from("telegram_link_tokens")
-    .update({ consumed_at: new Date().toISOString() })
-    .eq("token", payload)
-    .is("consumed_at", null)
-    .select("token");
+  const { data: consumed, error: consumeError } = await db.rpc("consume_telegram_link_code", {
+    p_code_hash: createHash("sha256").update(payload).digest("hex"),
+  });
   if (consumeError) throw new Error(consumeError.message);
-  if (!consumed?.length) {
+  if (!consumed) {
     await reply(
       chatId,
       "That connection link has already been used. Please generate a new one from the Campus Delight dashboard.",
@@ -292,26 +280,22 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
     return { handled: true, connected: false };
   }
 
-  const { error: chatError } = await db.from("telegram_chats").upsert(
+  const { error: chatError } = await db.from("outlet_telegram_chats").upsert(
     {
-      chat_id: chatId,
+      chat_id: Number(chatId),
       outlet_id: link.outlet_id,
-      connected_by: link.user_id,
+      linked_by: link.created_by,
       chat_type: chat.type,
-      title: chat.title ?? null,
-      username: chat.username ?? null,
-      active: true,
-      updated_at: new Date().toISOString(),
-      last_seen_at: new Date().toISOString(),
+      chat_title: chat.title ?? null,
     },
-    { onConflict: "chat_id" },
+    { onConflict: "outlet_id,chat_id" },
   );
   if (chatError) throw new Error(chatError.message);
 
   const outletName = (link.outlet as { name?: string } | null)?.name ?? "your outlet";
   await reply(
     chatId,
-    link.purpose === "group"
+    chat.type !== "private"
       ? `✅ Kitchen group connected to ${outletName}. New confirmed orders will appear here.`
       : `✅ Telegram connected to ${outletName}. I’ll send new confirmed order alerts here.`,
   );

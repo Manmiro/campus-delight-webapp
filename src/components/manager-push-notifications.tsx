@@ -15,6 +15,7 @@ import {
   removeBrowserPushSubscription,
 } from "@/lib/push-client";
 import { showFoodieError } from "@/lib/foodie-errors";
+import { describePushTestResult } from "@/lib/push-test-result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,8 +107,9 @@ export function ManagerPushNotificationCard({
   async function testAlert() {
     try {
       const result = await test({ data: { outletId } });
-      if (result.sent === 0) toast.error("No active device is registered for this outlet");
-      else toast.success("Test alert sent — check the device banner");
+      const outcome = describePushTestResult(result, "manager");
+      if (outcome.ok) toast.success(outcome.message);
+      else toast.error(outcome.message);
     } catch (error) {
       showFoodieError(error, "Could not send the test alert");
     }
@@ -241,9 +243,9 @@ export function HeadquartersPushNotificationCard({ outlets }: { outlets: PushOut
     setWorkingOutletId(outletId);
     try {
       const result = await test({ data: { outletId } });
-      if (result.sent === 0)
-        toast.error("No active manager or HQ device is registered for this outlet");
-      else toast.success("Test alert sent");
+      const outcome = describePushTestResult(result, "hq");
+      if (outcome.ok) toast.success(outcome.message);
+      else toast.error(outcome.message);
     } catch (error) {
       showFoodieError(error, "Could not send the test alert");
     } finally {

@@ -14,117 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      telegram_link_tokens: {
-        Row: {
-          consumed_at: string | null
-          created_at: string
-          expires_at: string
-          outlet_id: string
-          purpose: string
-          token: string
-          user_id: string
-        }
-        Insert: {
-          consumed_at?: string | null
-          created_at?: string
-          expires_at: string
-          outlet_id: string
-          purpose: string
-          token: string
-          user_id: string
-        }
-        Update: {
-          consumed_at?: string | null
-          created_at?: string
-          expires_at?: string
-          outlet_id?: string
-          purpose?: string
-          token?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      telegram_chats: {
-        Row: {
-          active: boolean
-          chat_id: string
-          chat_type: string
-          connected_by: string
-          created_at: string
-          id: string
-          last_seen_at: string
-          outlet_id: string
-          title: string | null
-          updated_at: string
-          username: string | null
-        }
-        Insert: {
-          active?: boolean
-          chat_id: string
-          chat_type: string
-          connected_by: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string
-          outlet_id: string
-          title?: string | null
-          updated_at?: string
-          username?: string | null
-        }
-        Update: {
-          active?: boolean
-          chat_id?: string
-          chat_type?: string
-          connected_by?: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string
-          outlet_id?: string
-          title?: string | null
-          updated_at?: string
-          username?: string | null
-        }
-        Relationships: []
-      }
-      telegram_order_alert_claims: {
-        Row: {
-          chat_id: string
-          created_at: string
-          order_id: string
-        }
-        Insert: {
-          chat_id: string
-          created_at?: string
-          order_id: string
-        }
-        Update: {
-          chat_id?: string
-          created_at?: string
-          order_id?: string
-        }
-        Relationships: []
-      }
-      web_push_vapid_keys: {
-        Row: {
-          created_at: string
-          id: boolean
-          private_key: string
-          public_key: string
-        }
-        Insert: {
-          created_at?: string
-          id?: boolean
-          private_key: string
-          public_key: string
-        }
-        Update: {
-          created_at?: string
-          id?: boolean
-          private_key?: string
-          public_key?: string
-        }
-        Relationships: []
-      }
       audit_logs: {
         Row: {
           action: string
@@ -618,48 +507,6 @@ export type Database = {
           },
         ]
       }
-      meal_entitlements: {
-        Row: {
-          allowance: number
-          customer_id: string
-          id: string
-          redeemed: number
-          service_date: string
-          subscription_id: string
-        }
-        Insert: {
-          allowance: number
-          customer_id: string
-          id?: string
-          redeemed?: number
-          service_date: string
-          subscription_id: string
-        }
-        Update: {
-          allowance?: number
-          customer_id?: string
-          id?: string
-          redeemed?: number
-          service_date?: string
-          subscription_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meal_entitlements_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meal_entitlements_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       manager_push_subscriptions: {
         Row: {
           auth: string
@@ -707,6 +554,48 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_entitlements: {
+        Row: {
+          allowance: number
+          customer_id: string
+          id: string
+          redeemed: number
+          service_date: string
+          subscription_id: string
+        }
+        Insert: {
+          allowance: number
+          customer_id: string
+          id?: string
+          redeemed?: number
+          service_date: string
+          subscription_id: string
+        }
+        Update: {
+          allowance?: number
+          customer_id?: string
+          id?: string
+          redeemed?: number
+          service_date?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_entitlements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_entitlements_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -1034,6 +923,44 @@ export type Database = {
           },
         ]
       }
+      outlet_telegram_chats: {
+        Row: {
+          chat_id: number
+          chat_title: string | null
+          chat_type: string
+          created_at: string
+          id: string
+          linked_by: string | null
+          outlet_id: string
+        }
+        Insert: {
+          chat_id: number
+          chat_title?: string | null
+          chat_type: string
+          created_at?: string
+          id?: string
+          linked_by?: string | null
+          outlet_id: string
+        }
+        Update: {
+          chat_id?: number
+          chat_title?: string | null
+          chat_type?: string
+          created_at?: string
+          id?: string
+          linked_by?: string | null
+          outlet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_telegram_chats_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outlet_transfer_applications: {
         Row: {
           completed_at: string | null
@@ -1111,12 +1038,12 @@ export type Database = {
           delivery_fee_kobo: number
           id: string
           location: string | null
+          manager_push_policy: string
           meal_cap_kobo: number
           name: string
           price_edit_locked: boolean
           status: string
           subscription_meal_cap_kobo: number
-          manager_push_policy: "on" | "off" | "locked"
         }
         Insert: {
           address?: string | null
@@ -1127,12 +1054,12 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          manager_push_policy?: string
           meal_cap_kobo?: number
           name: string
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
-          manager_push_policy?: "on" | "off" | "locked"
         }
         Update: {
           address?: string | null
@@ -1143,12 +1070,12 @@ export type Database = {
           delivery_fee_kobo?: number
           id?: string
           location?: string | null
+          manager_push_policy?: string
           meal_cap_kobo?: number
           name?: string
           price_edit_locked?: boolean
           status?: string
           subscription_meal_cap_kobo?: number
-          manager_push_policy?: "on" | "off" | "locked"
         }
         Relationships: []
       }
@@ -1411,6 +1338,64 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_link_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          outlet_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          outlet_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          outlet_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_link_codes_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_order_alert_claims: {
+        Row: {
+          claimed_at: string
+          order_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          order_id: string
+        }
+        Update: {
+          claimed_at?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_order_alert_claims_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       token_accounts: {
         Row: {
           available_tokens: number
@@ -1641,6 +1626,27 @@ export type Database = {
           },
         ]
       }
+      web_push_vapid_keys: {
+        Row: {
+          created_at: string
+          id: boolean
+          private_key: string
+          public_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          private_key: string
+          public_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          private_key?: string
+          public_key?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1703,12 +1709,12 @@ export type Database = {
         Args: { p_cap_kobo: number; p_outlet_id: string }
         Returns: Json
       }
-      admin_set_outlet_push_policy: {
-        Args: { p_outlet_id: string; p_policy: "on" | "off" | "locked" }
-        Returns: Json
-      }
       admin_set_outlet_price_edit_lock: {
         Args: { p_locked: boolean; p_outlet_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_set_outlet_push_policy: {
+        Args: { p_outlet_id: string; p_policy: string }
         Returns: Json
       }
       admin_update_outlet_details: {
@@ -1755,6 +1761,10 @@ export type Database = {
       consume_request_budget: {
         Args: { p_key_hash: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
+      }
+      consume_telegram_link_code: {
+        Args: { p_code_hash: string }
+        Returns: string
       }
       credit_purchased_tokens: {
         Args: { p_amount: number; p_customer: string; p_reference: string }
