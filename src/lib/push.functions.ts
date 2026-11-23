@@ -114,14 +114,3 @@ export const setOutletPushPolicy = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return result;
   });
-
-export const sendWhatsAppTest = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ outletId: z.string().uuid() }).parse(input))
-  .handler(async ({ context, data }) => {
-    const central = await isCentralAdmin(context);
-    if (!central && !(await canManageOutlet(context, data.outletId)))
-      throw new Error("Only the active outlet manager or headquarters can test WhatsApp alerts");
-    const { dispatchWhatsAppTest } = await import("@/lib/whatsapp.server");
-    return dispatchWhatsAppTest(data.outletId);
-  });

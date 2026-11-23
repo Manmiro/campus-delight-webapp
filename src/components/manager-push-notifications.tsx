@@ -7,7 +7,6 @@ import {
   registerManagerPushSubscription,
   removeManagerPushSubscription,
   sendManagerPushTest,
-  sendWhatsAppTest,
   setOutletPushPolicy,
 } from "@/lib/push.functions";
 import {
@@ -62,7 +61,6 @@ export function ManagerPushNotificationCard({
   const register = useServerFn(registerManagerPushSubscription);
   const remove = useServerFn(removeManagerPushSubscription);
   const test = useServerFn(sendManagerPushTest);
-  const testWhatsApp = useServerFn(sendWhatsAppTest);
   const [enabled, setEnabled] = useState(false);
   const [working, setWorking] = useState(false);
 
@@ -114,17 +112,6 @@ export function ManagerPushNotificationCard({
       else toast.error(outcome.message);
     } catch (error) {
       showFoodieError(error, "Could not send the test alert");
-    }
-  }
-
-  async function whatsAppAlert() {
-    try {
-      const r = await testWhatsApp({ data: { outletId } });
-      if (r.sent > 0) toast.success("WhatsApp test sent — check the manager's phone 📱");
-      else if (r.recipients === 0) toast.error("No outlet manager with a valid phone number was found for this outlet");
-      else toast.error("WhatsApp couldn't deliver the test alert. Please try again shortly.");
-    } catch (error) {
-      showFoodieError(error, "Could not send the WhatsApp test");
     }
   }
 
@@ -182,9 +169,6 @@ export function ManagerPushNotificationCard({
             onClick={() => void testAlert()}
           >
             Send Test Alert
-          </Button>
-          <Button type="button" variant="outline" size="sm" disabled={working} onClick={() => void whatsAppAlert()}>
-            Send WhatsApp Test
           </Button>
           {enabled && (
             <span className="flex items-center gap-1 text-xs text-primary">

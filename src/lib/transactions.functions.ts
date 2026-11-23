@@ -48,14 +48,6 @@ export const placeFoodOrder = createServerFn({ method: 'POST' }).middleware([req
         console.warn('Order push dispatch unavailable', error instanceof Error ? error.message : error);
       }
     }
-    if (orderId) {
-      try {
-        const { dispatchOrderWhatsApp } = await import('./whatsapp.server');
-        await dispatchOrderWhatsApp(orderId, Number.isFinite(Number(tx['total_kobo'])) ? Number(tx['total_kobo']) : null);
-      } catch (error) {
-        console.warn('Order WhatsApp dispatch unavailable', error instanceof Error ? error.message : error);
-      }
-    }
     return { ok: true, emailStatus, orderId, reference,
       pushStatus,
       foodKobo: Number(tx['food_kobo']), totalKobo: Number(tx['total_kobo']),
