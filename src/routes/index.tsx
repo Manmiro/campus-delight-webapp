@@ -21,7 +21,8 @@ export const Route = createFileRoute("/")({
     // Load the live outlet list so the count and directory reflect the
     // database. If the backend is briefly unavailable the page still renders
     // and the client retries the query.
-    await context.queryClient.ensureQueryData(outletsQuery).catch(() => undefined);
+    const outlets = await context.queryClient.ensureQueryData(outletsQuery).catch(() => []);
+    return { outlets };
   },
   head: () => ({
     links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
@@ -75,7 +76,16 @@ function Logo({ size = "md" }: { size?: "sm" | "md" }) {
 }
 
 function Landing() {
-  const { data: outlets = [] } = useQuery(outletsQuery);
+  const { outlets: prerenderedOutlets } = Route.useLoaderData();
+  const { data } = useQuery({
+    ...outletsQuery,
+    // This directory is enhancement-only. Keep the server-rendered list when
+    // a background refresh fails instead of promoting the query error to the
+    // route error boundary.
+    placeholderData: prerenderedOutlets,
+    throwOnError: false,
+  });
+  const outlets = data ?? prerenderedOutlets;
 
   return (
     <div className="min-h-screen bg-canvas">

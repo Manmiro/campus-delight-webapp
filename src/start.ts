@@ -32,12 +32,21 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   }
 });
 
+const trustedOrigins = ["https://campusdelight.net", "https://www.campusdelight.net"];
+
 // Start installs this automatically when src/start.ts is absent; defining the
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
 const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) =>
     !new URL(ctx.request.url).pathname.startsWith("/lovable/") && ctx.handlerType === "serverFn",
+  origin: trustedOrigins,
+  // The apex and www hosts are different origins but the same site. When the
+  // browser sends Sec-Fetch-Site, validate that same-site request against the
+  // explicit origin allow-list as well.
+  secFetchSite: (site, ctx) =>
+    site === "same-origin" ||
+    (site === "same-site" && trustedOrigins.includes(ctx.request.headers.get("Origin") ?? "")),
 });
 
 export const startInstance = createStart(() => ({
