@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, CalendarDays, Gift, MapPin, Users, Zap } from "lucide-react";
 import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
+import { loadLandingOutlets } from "@/lib/landing-outlets";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DemoPhoneCard } from "@/components/landing/demo-phone-card";
@@ -17,13 +18,7 @@ import heroImg from "@/assets/hero-meal.webp.asset.json";
 import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/")({
-  loader: async ({ context }) => {
-    // Load the live outlet list so the count and directory reflect the
-    // database. If the backend is briefly unavailable the page still renders
-    // and the client retries the query.
-    const outlets = await context.queryClient.ensureQueryData(outletsQuery).catch(() => []);
-    return { outlets };
-  },
+  loader: ({ context }) => loadLandingOutlets(context.queryClient),
   head: () => ({
     links: [{ rel: "preload", as: "image", href: heroImg.url, media: "(min-width: 640px)", fetchpriority: "high" }],
     meta: [
@@ -76,16 +71,15 @@ function Logo({ size = "md" }: { size?: "sm" | "md" }) {
 }
 
 function Landing() {
-  const { outlets: prerenderedOutlets } = Route.useLoaderData();
-  const { data } = useQuery({
+  const snapshot = Route.useLoaderData();
+  const { data: outlets, isError, refetch, isFetching } = useQuery({
     ...outletsQuery,
-    // This directory is enhancement-only. Keep the server-rendered list when
-    // a background refresh fails instead of promoting the query error to the
-    // route error boundary.
-    placeholderData: prerenderedOutlets,
+    ...(snapshot.outlets === null ? {} : {
+      initialData: snapshot.outlets,
+      initialDataUpdatedAt: snapshot.updatedAt,
+    }),
     throwOnError: false,
   });
-  const outlets = data ?? prerenderedOutlets;
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -125,7 +119,7 @@ function Landing() {
         {/* KPI cards */}
         <section className="grid grid-cols-3 gap-3 sm:gap-6">
           {[
-            { label: "Outlets", value: <OutletCountdown value={outlets.length} />, icon: MapPin },
+            { label: "Outlets", value: outlets ? <OutletCountdown value={outlets.length} /> : "—", icon: MapPin },
             { label: "Meal plans", value: "3", icon: CalendarDays },
             { label: "Daily tiers", value: "B–T", icon: Zap },
           ].map((s) => (
@@ -221,8 +215,14 @@ function Landing() {
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Campus Delight outlets</h2>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">Pick your outlet when you register — your menu, prices and services follow your outlet.</p>
+          {!outlets && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground" role="status">
+              <p>{isError ? "Our outlet list couldn’t load just now. Please try again." : "Finding your preferred outlets…"}</p>
+              {isError && <Button variant="outline" size="sm" disabled={isFetching} onClick={() => void refetch()}>Try again</Button>}
+            </div>
+          )}
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {outlets.map((o) => (
+            {outlets?.map((o) => (
               <div key={o.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-canvas px-4 py-3 transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-primary">
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-card text-primary">
                   <MapPin className="h-4 w-4" />

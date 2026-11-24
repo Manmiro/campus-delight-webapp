@@ -3,6 +3,7 @@
 Scope decision: build everything (phases 1–4) in this session; seed demo data; Paystack keys provided.
 
 ## Tasks
+- [x] Fix homepage domain trust and outlet snapshot hydration; preserve the directory during refresh failures and show retry for initial failures. Phone/desktop browser checks show 15 outlets, no hydration errors or overflow; malformed-response recovery and 28 focused tests pass. Updated code needs publishing for the custom domains.
 - [x] Refine the hero dining pass into a glowing ticket beside the customer name/outlet, share quick-copy feedback with chip-accented wallet IDs; signed-in copying verified on dashboard and wallet, with 320/393px and desktop displays checked.
 - [x] Add the full customer dining pass with profile photo, outlet and copyable ID; Eat Now & Pay Later is fourth and Refer & Earn fifth. Signed-in copying verified; desktop, 320/390px phones, tablet and dark-mode pass checked without overflow or page errors.
 - [x] Optimize image delivery and fonts, intent navigation, safe catalog caching and route bundles; desktop/mobile checks passed, 129 tests pass.

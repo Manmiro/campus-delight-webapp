@@ -24,21 +24,16 @@ function publicClient() {
 
 export const listOutlets = createServerFn({ method: "GET" }).handler(async () => {
   const db = publicClient();
-  try {
-    const { data, error } = await db
-      .from("outlets")
-      .select("id, name, code, location, status")
-      .eq("status", "active")
-      .order("name");
+  const { data, error } = await db
+    .from("outlets")
+    .select("id, name, code, location, status")
+    .eq("status", "active")
+    .order("name");
 
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  } catch (cause) {
-    if (cause instanceof TypeError || (typeof DOMException !== "undefined" && cause instanceof DOMException)) {
-      return [];
-    }
-    throw cause;
-  }
+  // Failures must remain failures so optional consumers can keep their last
+  // successful directory rather than cache a misleading zero-outlet result.
+  if (error) throw new Error(error.message);
+  return data ?? [];
 });
 
 export const getMenuForOutlet = createServerFn({ method: "GET" })
