@@ -3,6 +3,7 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { checkRequestSize, withSecurityHeaders } from "./lib/request-security";
+import { isTrustedAppOrigin, isTrustedFetchSite } from "./lib/csrf-rules";
 
 const securityMiddleware = createMiddleware().server(async ({ request, next }) => {
   const path = new URL(request.url).pathname;
@@ -16,8 +17,9 @@ const securityMiddleware = createMiddleware().server(async ({ request, next }) =
   return { ...result, response: withSecurityHeaders(result.response, request) };
 });
 
-const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
-  if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
+const errorMiddleware = createMiddleware().server(async ({ next, request, handlerType }) => {
+  // RPC failures belong to Start's serializer, not the HTML error-page renderer.
+  if (handlerType === "serverFn" || new URL(request.url).pathname.startsWith("/lovable/")) return next();
   try {
     return await next();
   } catch (error) {
@@ -36,6 +38,8 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
 const csrfMiddleware = createCsrfMiddleware({
+  origin: (origin, ctx) => isTrustedAppOrigin(origin, ctx.request.url),
+  secFetchSite: (site, ctx) => isTrustedFetchSite(site, ctx.request),
   filter: (ctx) =>
     !new URL(ctx.request.url).pathname.startsWith("/lovable/") && ctx.handlerType === "serverFn",
 });
