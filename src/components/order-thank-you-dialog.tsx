@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Bike, CalendarDays, Check, Coins, CreditCard, MapPin, ShoppingBasket, Sparkles, Wallet } from 'lucide-react';
-import logo from '@/assets/logo.webp.asset.json';
-import heroMeal from '@/assets/hero-meal.webp.asset.json';
+import logo from '@/assets/logo';
+import heroMeal from '@/assets/hero-meal';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Confetti } from '@/components/fun/confetti';

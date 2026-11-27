@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useIsMutating } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
-import logoImg from "@/assets/logo.webp.asset.json";
+import logoImg from "@/assets/logo";
 
 const LOADING_THRESHOLD_MS = 150;
 const EXIT_DURATION_MS = 220;

@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LegalLinks } from "@/components/legal-page";
-import logo from "@/assets/logo.webp.asset.json";
+import logo from "@/assets/logo";
 import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/feed-someone")({

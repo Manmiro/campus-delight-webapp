@@ -3,8 +3,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { paystackInitialize, paystackVerify } from "./payments.server";
 import { verifiedPaymentMatches } from "./payment-rules";
-import maleAvatar from "@/assets/avatar-male.webp.asset.json";
-import femaleAvatar from "@/assets/avatar-female.webp.asset.json";
+import maleAvatar from "@/assets/avatar-male";
+import femaleAvatar from "@/assets/avatar-female";
 import {
   recipientDisplayName,
   recipientNameMatches,

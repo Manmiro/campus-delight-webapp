@@ -5,7 +5,7 @@ import { tokenAccountQuery, tokenLedgerQuery } from '@/lib/queries';
 import { tokens as fmtTokens, naira, formatDateTime, statusLabel } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import logo from '@/assets/logo.webp.asset.json';
+import logo from '@/assets/logo';
 import { formatFoodieError } from '@/lib/foodie-errors';
 
 export const Route = createFileRoute('/_authenticated/_customer/tokens')({

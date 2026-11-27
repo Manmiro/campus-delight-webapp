@@ -2,7 +2,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, Coins, Wallet, CreditCard, Bell, ArrowRight, ShoppingBag, CalendarDays, Gift, ReceiptText, Trophy } from "lucide-react";
-import heroMeal from "@/assets/hero-meal.webp.asset.json";
+import heroMeal from "@/assets/hero-meal";
 import { toast } from "sonner";
 import { initializePayment } from "@/lib/payments.functions";
 import {

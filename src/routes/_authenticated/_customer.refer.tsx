@@ -20,7 +20,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { toast } from "sonner";
-import logoImg from "@/assets/logo.webp.asset.json";
+import logoImg from "@/assets/logo";
 import { profileQuery, referralsQuery } from "@/lib/queries";
 import { tokens as fmtTokens, formatDateTime } from "@/lib/format";
 import { referralLinkFor, referralQrImageUrl } from "@/lib/referrals";

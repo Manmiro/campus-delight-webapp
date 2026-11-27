@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 import { ArrowRight, CalendarDays, Check, Loader2, ReceiptText, Sparkles, Trash2, UtensilsCrossed, Wallet, Zap } from "lucide-react";
-import heroMeal from "@/assets/hero-meal.webp.asset.json";
+import heroMeal from "@/assets/hero-meal";
 import { initializePayment } from "@/lib/payments.functions";
 import { paySubscriptionFromWallet, removePendingSubscription } from "@/lib/subscriptions.functions";
 import { profileQuery, subscriptionsQuery, myPlanPricesQuery, walletQuery } from "@/lib/queries";
