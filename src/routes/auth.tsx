@@ -134,21 +134,24 @@ function AuthPage() {
     await navigate({ to: roleHome(role) });
   }
 
-  // Already signed in? Head straight to the right dashboard.
+  // Already signed in? Show a welcome-back screen and head straight to the right dashboard.
+  const [restoring, setRestoring] = useState(true);
   useEffect(() => {
     let active = true;
+    const stop = () => { if (active) setRestoring(false); };
     void (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!active || !data.user || !hasConfirmedEmail(data.user)) return;
-      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", data.user.id).maybeSingle();
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user ?? null;
+      if (!active || !user || !hasConfirmedEmail(user)) return stop();
+      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", user.id).maybeSingle();
       if (profile?.is_active === false) {
         await supabase.auth.signOut();
-        return;
+        return stop();
       }
-      await welcomeReceipt().catch(() => {});
+      void welcomeReceipt().catch(() => {});
       const role = await getRole();
       if (active) await navigate({ to: roleHome(role) });
-    })().catch(() => { /* Signed-out visitors stay on the sign-in form. */ });
+    })().catch(stop);
     return () => { active = false; };
   }, [getRole, navigate, welcomeReceipt]);
 
@@ -228,6 +231,16 @@ function AuthPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (restoring && !awaitingConfirm) {
+    return (
+      <CenterCard>
+        <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
+        <h1 className="mt-4 font-display text-2xl font-bold">Welcome back!</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Loading your meals…</p>
+      </CenterCard>
+    );
   }
 
   if (awaitingConfirm) {

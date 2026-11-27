@@ -1,4 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useSessionHome } from "@/hooks/use-session-home";
+import { isInstalledAppEnvironment } from "@/lib/app-environment";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, CalendarDays, Gift, MapPin, Users, Zap } from "lucide-react";
 import { publicOutletsQuery as outletsQuery } from "@/lib/catalog.queries";
@@ -80,6 +83,14 @@ function Landing() {
     }),
     throwOnError: false,
   });
+  const session = useSessionHome();
+  const navigate = useNavigate();
+  // In the installed app, signed-in students skip the landing page entirely.
+  useEffect(() => {
+    if (session.status === "signedIn" && session.home && isInstalledAppEnvironment()) {
+      void navigate({ to: session.home, replace: true });
+    }
+  }, [session, navigate]);
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -101,7 +112,11 @@ function Landing() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button asChild className="rounded-full">
-              <Link to="/auth" search={{}}>Sign in</Link>
+              {session.status === "signedIn" && session.home ? (
+                <Link to={session.home}>Go to Dashboard</Link>
+              ) : (
+                <Link to="/auth" search={{}}>Sign in</Link>
+              )}
             </Button>
           </div>
         </div>

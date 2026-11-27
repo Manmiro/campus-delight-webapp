@@ -29,3 +29,4 @@
 - Trust same-site server-function requests only between the exact custom-domain pair, retaining same-origin preview access and rejecting other subdomains; let Start serialize RPC errors instead of returning HTML.
 - Serve existing imagery as compressed CDN asset pointers and self-host variable brand fonts; preserve original media and automatic route splitting, and keep unused chart/carousel wrappers outside the imported graph.
 - Keep the hero dining pass in a focused presentation component using existing private-photo resolution and gender-based defaults; share ID copying and optional haptics with wallet cards through FoodieIdBadge so only the committed customer code is copied without changing identity or account rules.
+- Restore sessions with `supabase.auth.getSession()` (landing, /auth, and the `_authenticated` gate) so the Android app keeps students signed in across launches and slow networks; the installed app skips the landing page for signed-in users.
