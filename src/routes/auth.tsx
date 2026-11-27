@@ -18,8 +18,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
 import { PasswordInput, PasswordStrengthMeter } from "@/components/password-field";
-import logoImg from "@/assets/logo.webp.asset.json";
-import heroImg from "@/assets/hero-meal.webp.asset.json";
+import logoImg from "@/assets/logo";
+import heroImg from "@/assets/hero-meal";
 import { formatFoodieError, showFoodieError } from "@/lib/foodie-errors";
 
 const searchSchema = {

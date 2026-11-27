@@ -13,7 +13,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import heroImg from "@/assets/hero-meal.webp.asset.json";
+import heroImg from "@/assets/hero-meal";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
 
 const AUTO_ROTATE_MS = 5500;

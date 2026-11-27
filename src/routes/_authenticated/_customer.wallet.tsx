@@ -10,7 +10,7 @@ import { naira, formatDateTime, statusLabel } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import logo from '@/assets/logo.webp.asset.json';
+import logo from '@/assets/logo';
 import { FoodieIdBadge } from '@/components/foodie-id-badge';
 import { formatFoodieError } from '@/lib/foodie-errors';
 

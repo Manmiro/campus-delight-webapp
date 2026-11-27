@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/public/jobs/loan-reminders",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/public/jobs/birthday-greetings",
+      "schedule": "0 23 * * *"
+    }
+  ]
+}

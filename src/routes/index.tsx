@@ -13,8 +13,8 @@ import { OutletCountdown } from "@/components/landing/outlet-countdown";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
 import { WELCOME_TOKENS } from "@/lib/prd-rules";
-import logoImg from "@/assets/logo.webp.asset.json";
-import heroImg from "@/assets/hero-meal.webp.asset.json";
+import logoImg from "@/assets/logo";
+import heroImg from "@/assets/hero-meal";
 import { formatFoodieError } from "@/lib/foodie-errors";
 
 export const Route = createFileRoute("/")({

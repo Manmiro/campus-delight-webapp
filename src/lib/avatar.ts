@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import maleAvatar from "@/assets/avatar-male.webp.asset.json";
-import femaleAvatar from "@/assets/avatar-female.webp.asset.json";
+import maleAvatar from "@/assets/avatar-male";
+import femaleAvatar from "@/assets/avatar-female";
 export const AVATAR_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 /** Default cartoon avatar matching the gender chosen at registration (falls back to male). */
