@@ -32,7 +32,7 @@ vi.mock("@tanstack/react-router", () => ({
   }: ComponentProps<"a"> & { to: string; search?: unknown }) => <a href={to} {...props} />,
 }));
 vi.mock("@tanstack/react-query", () => ({
-  useSuspenseQuery: () => ({ data: [{ id: outletId, name: "Campus kitchen" }] }),
+  useQuery: () => ({ data: [{ id: outletId, name: "Campus kitchen" }], isLoading: false }),
 }));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
 vi.mock("@/lib/catalog.queries", () => ({ publicOutletsQuery: {} }));
@@ -58,11 +58,12 @@ vi.mock("@/components/ui/select", () => ({
     children: ReactNode;
   }) => {
     const elements = Children.toArray(children).filter(
-      isValidElement<{ id?: string; children?: ReactNode }>,
+      isValidElement<{ id?: string; "aria-label"?: string; children?: ReactNode }>,
     );
     return (
       <select
         id={elements[0]?.props.id}
+        aria-label={elements[0]?.props["aria-label"]}
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
       >
@@ -117,8 +118,10 @@ describe("account form submission", () => {
     change(/^Email address/, "ada@ebsonu.edu.ng");
     change(/^Phone number/, "08030000000");
     change(/^Gender/, "female");
-    change(/^Date of birth/, "2004-05-12");
-    change(/^Your campus outlet/, outletId);
+    change(/^Birth year/, "2004");
+    change(/^Birth month/, "05");
+    change(/^Birth day/, "12");
+    change(/^Your preferred outlet/, outletId);
     change(/^Password/, "sunset-garden");
     change(/^Confirm password/, "sunset-garden");
     fireEvent.click(screen.getByRole("checkbox"));
