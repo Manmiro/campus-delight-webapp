@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   signIn: vi.fn(),
   signUp: vi.fn(),
   getUser: vi.fn(),
+  getSession: vi.fn(),
+  maybeSingle: vi.fn(),
   navigate: vi.fn(),
   getRole: vi.fn(),
   welcomeReceipt: vi.fn(),
@@ -42,7 +44,14 @@ vi.mock("@/lib/transactions.functions", () => ({
 }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    auth: { signInWithPassword: mocks.signIn, signUp: mocks.signUp, getUser: mocks.getUser },
+    auth: {
+      signInWithPassword: mocks.signIn,
+      signUp: mocks.signUp,
+      getUser: mocks.getUser,
+      getSession: mocks.getSession,
+      signOut: vi.fn(),
+    },
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.maybeSingle }) }) }),
   },
 }));
 vi.mock("sonner", () => ({ toast: { error: mocks.toastError } }));
@@ -82,12 +91,18 @@ vi.mock("@/components/ui/select", () => ({
 
 import { Route } from "@/routes/auth";
 const Page = Route.options.component as ComponentType;
-const change = (label: RegExp, value: string) =>
-  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+const change = async (label: RegExp, value: string) => {
+  const field = await screen.findByLabelText(label);
+  fireEvent.change(field, { target: { value } });
+};
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.mode = "signin";
   mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
+  mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
+  mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
+  mocks.welcomeReceipt.mockResolvedValue(undefined);
+  mocks.getRole.mockResolvedValue("customer");
   mocks.signIn.mockResolvedValue({ error: { code: "email_not_confirmed" } });
   mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
 });
@@ -96,8 +111,8 @@ afterEach(cleanup);
 describe("account form submission", () => {
   it("sends validated login credentials immediately and keeps email confirmation required", async () => {
     render(<Page />);
-    change(/^Email address/, "ada@ebsonu.edu.ng");
-    change(/^Password/, "sunset-garden");
+    await change(/^Email address/, "ada@ebsonu.edu.ng");
+    await change(/^Password/, "sunset-garden");
     fireEvent.click(
       within(screen.getByLabelText(/^Password/).closest("form")!).getByRole("button", {
         name: "Sign in",
@@ -113,17 +128,17 @@ describe("account form submission", () => {
   it("sends a complete signup immediately and waits for email confirmation", async () => {
     mocks.mode = "signup";
     render(<Page />);
-    change(/^First name/, "Ada");
-    change(/^Last name/, "Obi");
-    change(/^Email address/, "ada@ebsonu.edu.ng");
-    change(/^Phone number/, "08030000000");
-    change(/^Gender/, "female");
-    change(/^Birth year/, "2004");
-    change(/^Birth month/, "05");
-    change(/^Birth day/, "12");
-    change(/^Your preferred outlet/, outletId);
-    change(/^Password/, "sunset-garden");
-    change(/^Confirm password/, "sunset-garden");
+    await change(/^First name/, "Ada");
+    await change(/^Last name/, "Obi");
+    await change(/^Email address/, "ada@ebsonu.edu.ng");
+    await change(/^Phone number/, "08030000000");
+    await change(/^Gender/, "female");
+    await change(/^Birth year/, "2004");
+    await change(/^Birth month/, "05");
+    await change(/^Birth day/, "12");
+    await change(/^Your preferred outlet/, outletId);
+    await change(/^Password/, "sunset-garden");
+    await change(/^Confirm password/, "sunset-garden");
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Create my account" }));
     expect(mocks.signUp).toHaveBeenCalledExactlyOnceWith({
@@ -146,10 +161,11 @@ describe("account form submission", () => {
     expect(await screen.findByText("Check your email")).toBeInTheDocument();
     expect(mocks.navigate).not.toHaveBeenCalled();
   });
-  it("rejects incomplete credentials locally without starting a request", () => {
+  it("rejects incomplete credentials locally without starting a request", async () => {
     render(<Page />);
+    const password = await screen.findByLabelText(/^Password/);
     fireEvent.click(
-      within(screen.getByLabelText(/^Password/).closest("form")!).getByRole("button", {
+      within(password.closest("form")!).getByRole("button", {
         name: "Sign in",
       }),
     );
@@ -158,5 +174,49 @@ describe("account form submission", () => {
       "Let's get your seat ready",
       expect.objectContaining({ description: expect.stringContaining("Enter your email address") }),
     );
+  });
+});
+
+describe("returning student greeting", () => {
+  const returningUser = (user_metadata: Record<string, unknown>) => ({
+    data: {
+      session: {
+        user: {
+          id: "11111111-1111-1111-1111-111111111111",
+          email_confirmed_at: "2026-01-01T00:00:00Z",
+          user_metadata,
+        },
+      },
+    },
+    error: null,
+  });
+
+  it("greets the signed-in student by first name while their dashboard loads", async () => {
+    mocks.getSession.mockResolvedValue(returningUser({ first_name: "Ada" }));
+    render(<Page />);
+    expect(await screen.findByText("Welcome back, Ada!")).toBeInTheDocument();
+    expect(screen.getByText("Loading your meals…")).toBeInTheDocument();
+    expect(screen.queryByText("Welcome back 👋")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the stored full name when the session has no first name", async () => {
+    mocks.getSession.mockResolvedValue(returningUser({}));
+    mocks.maybeSingle.mockResolvedValue({ data: { is_active: true, full_name: "Chidi Okeke" }, error: null });
+    render(<Page />);
+    expect(await screen.findByText("Welcome back, Chidi!")).toBeInTheDocument();
+  });
+
+  it("keeps a plain greeting when no name is stored yet", async () => {
+    mocks.getSession.mockResolvedValue(returningUser({}));
+    mocks.maybeSingle.mockResolvedValue({ data: { is_active: true, full_name: null }, error: null });
+    render(<Page />);
+    expect(await screen.findByText("Welcome back!")).toBeInTheDocument();
+    expect(screen.getByText("Loading your meals…")).toBeInTheDocument();
+  });
+
+  it("shows the sign-in form, not a greeting, to a signed-out visitor", async () => {
+    render(<Page />);
+    expect(await screen.findByText("Welcome back 👋")).toBeInTheDocument();
+    expect(screen.queryByText(/^Welcome back,/)).not.toBeInTheDocument();
   });
 });

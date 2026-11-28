@@ -69,6 +69,26 @@ export function hasConfirmedEmail(user: { email_confirmed_at?: string | null } |
   return Boolean(user?.email_confirmed_at);
 }
 
+/** The first word of a stored full name, or "" when there is nothing usable. */
+export function firstNameFromFullName(fullName: string | null | undefined): string {
+  if (typeof fullName !== "string") return "";
+  const firstWord = (fullName.trim().split(/\s+/)[0] ?? "").trim();
+  return firstWord.length > 32 ? "" : firstWord;
+}
+
+/**
+ * The name shown on the "welcome back" screen. Read from the signed-in user's own
+ * metadata so it appears with no network wait; the full name is the fallback.
+ */
+export function greetingFirstName(user: { user_metadata?: Record<string, unknown> | null } | null): string {
+  const meta = user?.user_metadata;
+  if (!meta || typeof meta !== "object") return "";
+  const first = meta["first_name"];
+  if (typeof first === "string" && first.trim()) return firstNameFromFullName(first);
+  const full = meta["full_name"];
+  return typeof full === "string" ? firstNameFromFullName(full) : "";
+}
+
 export type SignUpForm = {
   firstName: string;
   lastName: string;

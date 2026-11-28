@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasConfirmedEmail, isDisposableEmailAddress, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, passwordStrength } from "@/lib/auth-rules";
+import { firstNameFromFullName, greetingFirstName, hasConfirmedEmail, isDisposableEmailAddress, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, passwordStrength } from "@/lib/auth-rules";
 
 describe("Customer email verification and sign-in", () => {
   it("requires an email address to sign in", () => {
@@ -156,5 +156,23 @@ describe("password confirmation and strength", () => {
     expect(passwordStrength("abc").label).toBe("Too short");
     expect(passwordStrength("abcdefgh").score).toBe(1);
     expect(passwordStrength("Sunset-Garden42").score).toBe(4);
+  });
+});
+
+describe("welcome-back greeting name", () => {
+  it("uses the signed-in session's first name", () => {
+    expect(greetingFirstName({ user_metadata: { first_name: "Ada" } })).toBe("Ada");
+  });
+  it("falls back to the first word of the stored full name", () => {
+    expect(greetingFirstName({ user_metadata: { full_name: "  Chidi   Okeke " } })).toBe("Chidi");
+  });
+  it("returns nothing when the session carries no usable name", () => {
+    expect(greetingFirstName(null)).toBe("");
+    expect(greetingFirstName({ user_metadata: null })).toBe("");
+    expect(greetingFirstName({ user_metadata: { first_name: "   " } })).toBe("");
+  });
+  it("ignores an implausibly long name", () => {
+    expect(firstNameFromFullName("a".repeat(40))).toBe("");
+    expect(firstNameFromFullName(null)).toBe("");
   });
 });

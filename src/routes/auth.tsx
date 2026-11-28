@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { hasConfirmedEmail, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
+import { firstNameFromFullName, greetingFirstName, hasConfirmedEmail, normalizeEmailAddress, validateSignInCredentials, validateSignInForm, validateSignUpForm, type FormErrors } from "@/lib/auth-rules";
 import { normalizeNigerianPhone } from "@/lib/sms-rules";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalLinks } from "@/components/legal-page";
@@ -136,6 +136,7 @@ function AuthPage() {
 
   // Already signed in? Show a welcome-back screen and head straight to the right dashboard.
   const [restoring, setRestoring] = useState(true);
+  const [welcomeName, setWelcomeName] = useState("");
   useEffect(() => {
     let active = true;
     const stop = () => { if (active) setRestoring(false); };
@@ -143,7 +144,14 @@ function AuthPage() {
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user ?? null;
       if (!active || !user || !hasConfirmedEmail(user)) return stop();
-      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", user.id).maybeSingle();
+      setWelcomeName(greetingFirstName(user));
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active, full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!active) return;
+      if (!greetingFirstName(user)) setWelcomeName(firstNameFromFullName(profile?.full_name));
       if (profile?.is_active === false) {
         await supabase.auth.signOut();
         return stop();
@@ -237,7 +245,9 @@ function AuthPage() {
     return (
       <CenterCard>
         <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
-        <h1 className="mt-4 font-display text-2xl font-bold">Welcome back!</h1>
+        <h1 className="mt-4 font-display text-2xl font-bold">
+          {welcomeName ? `Welcome back, ${welcomeName}!` : "Welcome back!"}
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">Loading your meals…</p>
       </CenterCard>
     );
